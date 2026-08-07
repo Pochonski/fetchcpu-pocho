@@ -3,10 +3,19 @@
   "version": "1.0.0",
   "type": "module",
   "description": "Pocho LMC — an interactive Little Man Computer simulator with FDE cycle visualization",
+  "homepage": "https://pocho-lmc.vercel.app",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Pochonski/pocho-lmc.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Pochonski/pocho-lmc/issues"
+  },
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint js",
+    "audit:i18n": "node scripts/audit-i18n.mjs",
     "serve": "node scripts/serve.mjs",
     "start": "npm run serve"
   },
@@ -15,16 +24,22 @@
     "simulator",
     "education",
     "cpu",
-    "assembly"
+    "assembly",
+    "von-neumann",
+    "fde-cycle",
+    "pocho",
+    "little-man-computer"
   ],
+  "engines": {
+    "node": ">=20"
+  },
   "license": "MIT",
   "private": true,
   "devDependencies": {
     "eslint": "^9.13.0",
+    "globals": "^15.11.0",
     "jsdom": "^25.0.1",
     "vitest": "^2.1.4"
-  },
-  "dependencies": {
-    "globals": "^17.9.0"
   }
 }
+

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://pocho-lmc.vercel.app/sitemap.xml
