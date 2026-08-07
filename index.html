@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Pocho LMC — Little Man Computer</title>
+    <meta name="description" content="Interactive Little Man Computer simulator with FDE cycle visualization" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/reset.css" />
+    <link rel="stylesheet" href="css/tokens.css" />
+    <link rel="stylesheet" href="css/themes.css" />
+    <link rel="stylesheet" href="css/layout.css" />
+    <link rel="stylesheet" href="css/components.css" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+  </head>
+  <body>
+    <header class="app-header">
+      <h1>
+        <span class="logo" aria-hidden="true"></span>
+        <span class="title-text">
+          <span class="title-eyebrow" data-i18n="app.eyebrow">Little Man Computer</span>
+          <span data-i18n="app.name">Pocho LMC</span>
+        </span>
+      </h1>
+      <div class="header-actions">
+        <div class="lang-switch" role="group" aria-label="Language">
+          <button class="lang-btn" data-lang="en" type="button" aria-pressed="true">EN</button>
+          <button class="lang-btn" data-lang="es" type="button" aria-pressed="false">ES</button>
+        </div>
+        <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme" data-i18n-attr="title:app.theme" title="Toggle theme">
+          <span aria-hidden="true">☀</span>
+        </button>
+        <button class="icon-btn" id="sound-toggle" aria-label="Sound effects" data-i18n-attr="title:app.sound" title="Sound">
+          <span aria-hidden="true">♪</span>
+        </button>
+        <button class="icon-btn" id="share-btn" aria-label="Copy share URL" data-i18n-attr="title:app.share" title="Copy share link">
+          <span aria-hidden="true">↗</span>
+        </button>
+        <button class="link-btn" id="tutorial-btn" data-i18n="app.tutorial" title="Walkthrough">Tutorial</button>
+        <button class="link-btn" id="help-link" data-i18n="app.reference">Reference</button>
+        <button class="link-btn" id="about-link" data-i18n="app.about">About</button>
+      </div>
+    </header>
+
+    <main class="app-grid" id="app-grid">
+      <!-- ============== EDITOR ============== -->
+      <section class="panel editor-panel" aria-labelledby="editor-title">
+        <header class="panel-header">
+          <h2 id="editor-title" data-i18n="panels.editor.title">Program · Assembly</h2>
+          <div class="panel-actions">
+            <button class="btn btn-secondary" id="btn-load" data-i18n="panels.editor.load" title="Assemble and load into RAM">Load</button>
+            <button class="btn btn-primary" id="btn-run" data-i18n="panels.editor.run" title="Run at clock speed (F5)">Run</button>
+          </div>
+        </header>
+        <div class="editor-wrap">
+          <div class="editor-gutter" id="editor-gutter" aria-hidden="true"></div>
+          <div class="editor-stage">
+            <div class="editor-highlight" id="editor-highlight" aria-hidden="true"></div>
+            <textarea
+              id="codeListing"
+              class="code-editor"
+              spellcheck="false"
+              autocapitalize="off"
+              autocomplete="off"
+              autocorrect="off"
+              aria-label="Assembly source code"
+            ></textarea>
+          </div>
+        </div>
+        <div class="program-blurb" id="program-blurb" aria-live="polite">
+          <span class="blurb-title" id="blurb-title">Adding 2 inputs</span>
+          <span class="blurb-text" id="blurb-text">Classic starter — read two numbers from input and print their sum.</span>
+          <span class="blurb-expected">
+            <span class="blurb-eyebrow" data-i18n="panels.editor.expectedEyebrow">Expected output</span>
+            <code id="blurb-expected">7</code>
+          </span>
+        </div>
+        <div class="program-loader">
+          <span class="label-eyebrow" data-i18n="panels.editor.examples">Examples</span>
+          <label for="files" class="visually-hidden" data-i18n="panels.editor.choose">Choose example program</label>
+          <select id="files" data-i18n-attr="aria-label:panels.editor.choose"></select>
+          <button class="btn btn-secondary" id="btn-select-program" data-i18n="panels.editor.loadExample">Load example</button>
+          <button class="btn btn-primary" id="btn-try-example" data-i18n="panels.editor.tryExample" title="Load the example, assemble, and run it">Try example</button>
+          <button class="btn btn-ghost" id="btn-import" data-i18n="panels.editor.import" title="Import a .lmc file">Import…</button>
+          <input type="file" id="file-input" accept=".lmc,.txt" hidden />
+          <button class="btn btn-ghost" id="btn-clear" data-i18n="panels.editor.clear" title="Empty the editor">Clear</button>
+        </div>
+      </section>
+
+      <!-- ============== CPU ============== -->
+      <section class="panel cpu-panel" aria-labelledby="cpu-title">
+        <header class="panel-header">
+          <h2 id="cpu-title" data-i18n="panels.cpu.title">CPU · State</h2>
+          <div class="panel-actions">
+            <button class="btn btn-ghost" id="btn-reset" data-i18n="panels.cpu.reset" title="Reset CPU, RAM and IO">Reset</button>
+          </div>
+        </header>
+
+        <div class="fde-flow" id="fde-indicator" aria-live="polite">
+          <div class="fde-step" data-phase="fetch"><span data-i18n="panels.cpu.phaseFetch">Fetch</span></div>
+          <span class="fde-arrow" aria-hidden="true">→</span>
+          <div class="fde-step" data-phase="decode"><span data-i18n="panels.cpu.phaseDecode">Decode</span></div>
+          <span class="fde-arrow" aria-hidden="true">→</span>
+          <div class="fde-step" data-phase="execute"><span data-i18n="panels.cpu.phaseExecute">Execute</span></div>
+        </div>
+
+        <div class="cpu-disasm" aria-label="Current and next instructions">
+          <div class="disasm-row">
+            <span class="disasm-label" data-i18n="panels.cpu.now">NOW</span>
+            <span class="disasm-mnemonic" id="disasm-current">HLT</span>
+          </div>
+          <div class="disasm-row">
+            <span class="disasm-label" data-i18n="panels.cpu.next">NEXT</span>
+            <span class="disasm-mnemonic" id="disasm-next">—</span>
+          </div>
+        </div>
+
+        <div class="bus" aria-hidden="true">
+          <div class="bus-line" id="bus-memory-out" data-direction="out">
+            <span class="bus-arrow">↗</span> <span data-i18n="panels.cpu.busWrite">CPU writes to RAM</span>
+          </div>
+          <div class="bus-line" id="bus-memory-in" data-direction="in">
+            <span class="bus-arrow">↘</span> <span data-i18n="panels.cpu.busRead">CPU reads from RAM</span>
+          </div>
+        </div>
+
+        <div class="access-log" aria-label="Recent memory accesses">
+          <span class="access-log-label" data-i18n="access.label">Last access</span>
+          <span class="access-tag" id="access-tag" data-direction="none">—</span>
+          <span class="access-detail">
+            <span class="access-addr" id="access-addr">--</span>
+            <span class="access-eq">=</span>
+            <span class="access-value" id="access-value">---</span>
+          </span>
+          <span class="access-phase" id="access-phase">idle</span>
+        </div>
+
+        <div class="cpu-card">
+          <div class="cpu-chip">
+            <div class="register" data-register="pc">
+              <label for="pc" data-i18n="panels.cpu.registers.pc">PC</label>
+              <div class="register-value">
+                <input type="text" id="pc" value="00" inputmode="numeric" maxlength="2" />
+                <span class="diff" id="pc-diff"></span>
+              </div>
+            </div>
+            <div class="register" data-register="cir">
+              <label for="cir" data-i18n="panels.cpu.registers.cir">CIR</label>
+              <div class="register-value">
+                <input type="text" id="cir" value="000" inputmode="numeric" maxlength="3" />
+                <span class="diff" id="cir-diff"></span>
+              </div>
+            </div>
+            <div class="register" data-register="mar">
+              <label for="mar" data-i18n="panels.cpu.registers.mar">MAR</label>
+              <div class="register-value">
+                <input type="text" id="mar" value="00" inputmode="numeric" maxlength="2" />
+                <span class="diff" id="mar-diff"></span>
+              </div>
+            </div>
+            <div class="register" data-register="mdr">
+              <label for="mdr" data-i18n="panels.cpu.registers.mdr">MDR</label>
+              <div class="register-value">
+                <input type="text" id="mdr" value="000" inputmode="numeric" maxlength="3" />
+                <span class="diff" id="mdr-diff"></span>
+              </div>
+            </div>
+            <div class="register" data-register="acc">
+              <label for="acc" data-i18n="panels.cpu.registers.acc">ACC</label>
+              <div class="register-value">
+                <input type="text" id="acc" value="0000" inputmode="numeric" maxlength="4" />
+                <span class="diff" id="acc-diff"></span>
+              </div>
+            </div>
+            <div class="register" data-register="flags-host" aria-hidden="true">
+              <label data-i18n="panels.cpu.registers.flags">FLAGS</label>
+              <div class="register-value flags">
+                <span class="flag" id="flag-z" data-i18n-attr="title:panels.cpu.flagZ" title="Zero">Z</span>
+                <span class="flag" id="flag-n" data-i18n-attr="title:panels.cpu.flagN" title="Negative">N</span>
+                <span class="flag" id="flag-p" data-i18n-attr="title:panels.cpu.flagP" title="Positive">P</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="cpu-controls">
+          <div class="control-buttons">
+            <button class="btn btn-ghost icon-only" id="btn-rewind" data-i18n-attr="title:panels.cpu.rewind;aria-label:panels.cpu.rewind" aria-label="Step backward" title="Step backward (F8)">
+              <span aria-hidden="true">◂</span>
+            </button>
+            <button class="btn btn-primary icon-only" id="btn-step" data-i18n-attr="title:panels.cpu.step;aria-label:panels.cpu.step" aria-label="Step one FDE cycle" title="Step (F9)">
+              <span aria-hidden="true">▸</span>
+            </button>
+            <button class="btn btn-secondary icon-only" id="btn-pause" data-i18n-attr="title:panels.cpu.pauseRun;aria-label:panels.cpu.pauseRun" aria-label="Run/Pause" title="Run (F5)">
+              <span aria-hidden="true">▶</span>
+            </button>
+            <button class="btn btn-ghost icon-only" id="btn-fast-forward" data-i18n-attr="title:panels.cpu.fastForward;aria-label:panels.cpu.fastForward" aria-label="Run to halt" title="Run to halt (⇧ F5)">
+              <span aria-hidden="true">⏵</span>
+            </button>
+          </div>
+          <div class="speed-control">
+            <label for="clock" data-i18n="panels.cpu.clock">Clock</label>
+            <button class="btn btn-ghost icon-only clock-step" id="btn-clock-down" data-i18n-attr="title:panels.cpu.slower;aria-label:panels.cpu.slower" aria-label="Slower" title="Slow down">
+              <span aria-hidden="true">−</span>
+            </button>
+            <input type="range" id="clock" min="50" max="3000" value="500" step="25" aria-valuemin="50" aria-valuemax="3000" />
+            <button class="btn btn-ghost icon-only clock-step" id="btn-clock-up" data-i18n-attr="title:panels.cpu.faster;aria-label:panels.cpu.faster" aria-label="Faster" title="Speed up">
+              <span aria-hidden="true">+</span>
+            </button>
+            <output id="clock-value" for="clock">120 ms</output>
+          </div>
+        </div>
+
+        <div class="io-panels">
+          <div class="io-panel">
+            <label for="input" data-i18n="panels.cpu.inputLabel">Input · stdin</label>
+            <textarea id="input" class="io-textarea" rows="4" data-i18n-placeholder="panels.cpu.inputPlaceholder" placeholder="One numeric value per line"></textarea>
+          </div>
+          <div class="io-panel">
+            <label for="output" data-i18n="panels.cpu.outputLabel">Output · stdout</label>
+            <textarea id="output" class="io-textarea" rows="4" readonly aria-label="Program output"></textarea>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============== RAM ============== -->
+      <section class="panel ram-panel" aria-labelledby="ram-title">
+        <header class="panel-header">
+          <h2 id="ram-title" data-i18n="panels.ram.title">RAM · 100 mailboxes</h2>
+          <div class="legend">
+            <span class="legend-item legend-active" data-i18n="panels.ram.legend.pc">PC</span>
+            <span class="legend-item legend-mar" data-i18n="panels.ram.legend.mar">MAR</span>
+            <span class="legend-item legend-code" data-i18n="panels.ram.legend.code">Code</span>
+            <span class="legend-item legend-data" data-i18n="panels.ram.legend.data">Data</span>
+          </div>
+        </header>
+        <div class="ram-map-wrap">
+          <div class="ram-map" id="ram-map" aria-label="Memory map"></div>
+          <div class="ram-stats" id="ram-stats"></div>
+        </div>
+        <table class="ram-table" id="RAM" role="grid">
+          <tbody id="ram-body"></tbody>
+        </table>
+      </section>
+
+      <!-- ============== TABS: Live / Log / History / Stats ============== -->
+      <section class="panel log-panel" aria-labelledby="log-title">
+        <header class="panel-header">
+          <h2 id="log-title" data-i18n="panels.log.title">Activity</h2>
+          <div class="panel-actions">
+            <button class="btn btn-ghost" id="btn-clear-log" data-i18n="panels.log.clear">Clear</button>
+            <button class="btn btn-secondary" id="btn-export" data-i18n="panels.log.export" title="Export program as .lmc">Export</button>
+          </div>
+        </header>
+        <div class="tabs" role="tablist">
+          <button class="tab" id="tab-live" role="tab" aria-selected="true" aria-controls="panel-live" data-i18n="panels.log.tabs.live">Live feed</button>
+          <button class="tab" id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history" data-i18n="panels.log.tabs.history">History <span class="tab-count" id="tab-history-count">0</span></button>
+          <button class="tab" id="tab-stats" role="tab" aria-selected="false" aria-controls="panel-stats" data-i18n="panels.log.tabs.stats">Stats</button>
+          <button class="tab" id="tab-log" role="tab" aria-selected="false" aria-controls="panel-log" data-i18n="panels.log.tabs.log">Log file</button>
+        </div>
+
+        <div class="tab-panel" id="panel-live" role="tabpanel" aria-labelledby="tab-live">
+          <div class="live-feed" id="liveFeed" aria-live="polite"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-history" role="tabpanel" aria-labelledby="tab-history" hidden>
+          <div class="history-list" id="history-list"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-stats" role="tabpanel" aria-labelledby="tab-stats" hidden>
+          <div id="stats-grid" class="stats-grid"></div>
+        </div>
+
+        <div class="tab-panel" id="panel-log" role="tabpanel" aria-labelledby="tab-log" hidden>
+          <div class="log-actions">
+            <label>
+              <input type="checkbox" id="logFile" checked />
+              <span data-i18n="panels.log.logFileToggle">Capture to log file</span>
+            </label>
+            <button class="btn btn-ghost" id="btn-download-log" data-i18n="panels.log.downloadLog">Download .txt</button>
+          </div>
+          <pre class="log-file" id="log" tabindex="0"></pre>
+        </div>
+      </section>
+    </main>
+
+    <footer class="app-footer">
+      <span class="pocho-badge" data-i18n="app.tagline">A simulator built by Pocho</span>
+      ·
+      <span data-i18n-html="footer.text"></span>
+    </footer>
+
+    <div class="modal" id="linkPopup" hidden role="dialog" aria-labelledby="popup-title" aria-modal="true">
+      <div class="modal-content">
+        <button class="modal-close" data-close="linkPopup" data-i18n-attr="aria-label:modal.close" aria-label="Close">×</button>
+        <h3 id="popup-title" data-i18n="modal.instructions.title">LMC Instruction Set</h3>
+        <p class="modal-note" id="instructions-intro" data-i18n-html="modal.instructions.intro"></p>
+        <table class="instruction-table" id="instructions-table">
+          <thead><tr id="instructions-thead-row"></tr></thead>
+          <tbody id="instructions-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="modal" id="aboutPopup" hidden role="dialog" aria-labelledby="about-title" aria-modal="true">
+      <div class="modal-content">
+        <button class="modal-close" data-close="aboutPopup" data-i18n-attr="aria-label:modal.close" aria-label="Close">×</button>
+        <h3 id="about-title" data-i18n="modal.about.title">About this LMC Simulator</h3>
+        <p id="about-p1" data-i18n-html="modal.about.paragraphs"></p>
+        <p id="about-p2" data-i18n-html="modal.about.paragraph2"></p>
+        <p id="about-p3" data-i18n-html="modal.about.paragraph3"></p>
+        <p id="about-shortcuts" data-i18n-html="modal.about.shortcuts"></p>
+        <p id="about-credits" data-i18n-html="modal.about.credits"></p>
+      </div>
+    </div>
+
+    <div class="modal" id="tutorialPopup" hidden role="dialog" aria-labelledby="tutorial-title" aria-modal="true">
+      <div class="modal-content">
+        <button class="modal-close" data-close="tutorialPopup" data-i18n-attr="aria-label:modal.close" aria-label="Close">×</button>
+        <h3 id="tutorial-title" data-i18n="modal.tutorial.title">Quick tutorial</h3>
+        <ol class="tutorial-steps" id="tutorial-steps"></ol>
+      </div>
+    </div>
+
+    <script type="module" src="js/main.js"></script>
+  </body>
+</html>

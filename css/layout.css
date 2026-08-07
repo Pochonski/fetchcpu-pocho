@@ -1,0 +1,129 @@
+/* Header */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: var(--space-4);
+  padding: var(--space-3) var(--space-6);
+  background: var(--glass-bg);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-bottom: 1px solid var(--border);
+}
+.app-header h1 {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: 1rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.app-header .logo {
+  display: inline-block;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  background: var(--brand-grad);
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+.app-header .logo::after {
+  content: "L";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: white;
+  font-size: 0.875rem;
+}
+.app-header .title-text { display: flex; flex-direction: column; gap: 1px; line-height: 1.1; }
+.app-header .title-eyebrow { font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); font-weight: 600; }
+.header-actions { display: flex; align-items: center; gap: var(--space-2); }
+
+/* Layout grid */
+.app-grid {
+  display: grid;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  grid-template-columns: 1fr;
+  grid-template-areas:
+    "editor"
+    "cpu"
+    "ram"
+    "stats"
+    "log";
+}
+
+@media (min-width: 880px) {
+  .app-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-areas:
+      "editor cpu"
+      "ram cpu"
+      "stats stats"
+      "log  log";
+  }
+}
+
+@media (min-width: 1280px) {
+  .app-grid {
+    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-areas:
+      "editor cpu ram"
+      "stats stats ram"
+      "log  log  ram";
+  }
+}
+
+.editor-panel { grid-area: editor; }
+.cpu-panel    { grid-area: cpu; }
+.ram-panel    { grid-area: ram; }
+.stats-panel  { grid-area: stats; }
+.log-panel    { grid-area: log; }
+
+.app-footer {
+  padding: var(--space-4) var(--space-6);
+  font-size: 0.8125rem;
+  color: var(--fg-muted);
+  text-align: center;
+  max-width: var(--layout-max-width);
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  justify-content: center;
+  align-items: center;
+}
+.app-footer kbd {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  padding: 1px 6px;
+  border-radius: var(--radius-xs);
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  color: var(--fg);
+  margin: 0 2px;
+}
+.pocho-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  background: var(--brand-grad);
+  color: var(--bg);
+  font-weight: 700;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+  box-shadow: var(--shadow-sm);
+}

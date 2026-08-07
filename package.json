@@ -1,0 +1,30 @@
+{
+  "name": "pocho-lmc",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Pocho LMC — an interactive Little Man Computer simulator with FDE cycle visualization",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint js",
+    "serve": "node scripts/serve.mjs",
+    "start": "npm run serve"
+  },
+  "keywords": [
+    "lmc",
+    "simulator",
+    "education",
+    "cpu",
+    "assembly"
+  ],
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "jsdom": "^25.0.1",
+    "vitest": "^2.1.4"
+  },
+  "dependencies": {
+    "globals": "^17.9.0"
+  }
+}

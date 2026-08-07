@@ -1,0 +1,109 @@
+:root[data-theme="dark"] {
+  /* Surfaces */
+  --bg:              #0a0d14;
+  --bg-grad-1:       #0e1320;
+  --bg-grad-2:       #0a0d14;
+  --bg-elevated:     #131825;
+  --bg-panel:        rgba(20, 24, 38, 0.78);
+  --bg-input:        #0c111c;
+  --bg-hover:        #1c2233;
+  --bg-active:       #2a324a;
+
+  /* Text */
+  --fg:        #e7eaf3;
+  --fg-muted:  #98a0b4;
+  --fg-dim:    #5d6480;
+
+  /* Borders & strokes */
+  --border:        rgba(255, 255, 255, 0.06);
+  --border-strong: rgba(255, 255, 255, 0.12);
+
+  /* Accent (electric blue/cyan) */
+  --accent:        #5b9eff;
+  --accent-strong: #4080f0;
+  --accent-fg:     #0a0d14;
+  --accent-soft:   rgba(91, 158, 255, 0.18);
+
+  /* Semantic */
+  --success: #4ade80;
+  --warning: #ffb84d;
+  --danger:  #ff6b6b;
+  --info:    #66d9ef;
+
+  /* FDE cycle colors (slightly different hues for distinction) */
+  --phase-fetch:    #38bdf8;
+  --phase-decode:   #c084fc;
+  --phase-execute:  #4ade80;
+
+  /* Cell highlights */
+  --pc-marker:  #ff5d6c;
+  --mar-marker: #facc15;
+  --modified:   #5b9eff;
+
+  /* Glass */
+  --glass-bg:    rgba(20, 24, 38, 0.7);
+  --glass-blur:  14px;
+
+  /* Brand gradient (logo strip) */
+  --brand-grad: linear-gradient(90deg, #5b9eff 0%, #38bdf8 50%, #4ade80 100%);
+}
+
+:root[data-theme="light"] {
+  --bg:           #f5f6fb;
+  --bg-grad-1:    #ffffff;
+  --bg-grad-2:    #eef1f9;
+  --bg-elevated:  #ffffff;
+  --bg-panel:     rgba(255, 255, 255, 0.86);
+  --bg-input:     #f4f6fb;
+  --bg-hover:     #ebeef7;
+  --bg-active:    #dde2f0;
+
+  --fg:        #0d1322;
+  --fg-muted:  #4a5468;
+  --fg-dim:    #98a0b4;
+
+  --border:        rgba(13, 19, 34, 0.08);
+  --border-strong: rgba(13, 19, 34, 0.18);
+
+  --accent:        #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-fg:     #ffffff;
+  --accent-soft:   rgba(37, 99, 235, 0.14);
+
+  --success: #16a34a;
+  --warning: #d97706;
+  --danger:  #dc2626;
+  --info:    #0891b2;
+
+  --phase-fetch:    #0284c7;
+  --phase-decode:   #7c3aed;
+  --phase-execute:  #16a34a;
+
+  --pc-marker:  #dc2626;
+  --mar-marker: #b45309;
+  --modified:   #2563eb;
+
+  --glass-bg:    rgba(255, 255, 255, 0.75);
+  --glass-blur:  12px;
+
+  --brand-grad: linear-gradient(90deg, #2563eb 0%, #0891b2 50%, #16a34a 100%);
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  letter-spacing: -0.005em;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background:
+    radial-gradient(1200px 600px at 80% -20%, var(--accent-soft), transparent 60%),
+    radial-gradient(900px 500px at -10% 100%, var(--accent-soft), transparent 60%),
+    linear-gradient(180deg, var(--bg-grad-1), var(--bg-grad-2));
+  z-index: -1;
+  pointer-events: none;
+}

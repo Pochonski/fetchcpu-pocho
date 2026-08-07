@@ -1,0 +1,614 @@
+// Entry point: wires up all DOM, simulator modules and event handlers.
+
+import { createRAM } from "./lmc/ram.js";
+import { createCPU } from "./lmc/cpu.js";
+import { parse, encodeInstruction, resolveLabels } from "./lmc/parser.js";
+import { createExecutor } from "./lmc/executor.js";
+import { createEvents } from "./lmc/events.js";
+import { createStats } from "./lmc/stats.js";
+import { createIO } from "./ui/io.js";
+import { createRAMView } from "./ui/ramView.js";
+import { createCPUView } from "./ui/cpuView.js";
+import { createEditorView } from "./ui/editor.js";
+import { createLogger } from "./ui/logger.js";
+import { createDisassemblerView } from "./ui/disassemblerView.js";
+import { createStatsView } from "./ui/statsView.js";
+import { createHistoryView } from "./ui/historyView.js";
+import { createSound } from "./ui/sound.js";
+import { createTabs } from "./ui/tabs.js";
+import { initTheme } from "./ui/theme.js";
+import { PROGRAMS, getProgramMeta } from "./programs/examples.js";
+import { decodeShare, currentShare } from "./ui/share.js";
+import { parseFile, downloadAs } from "./ui/fileIO.js";
+import { t, currentLanguage, setLanguage, translateDom, initI18n } from "./ui/i18n/index.js";
+import { en as enDict, es as esDict } from "./ui/i18n/dictionaries.js";
+
+const STORAGE_KEY = "lmc-source";
+const INPUT_KEY = "lmc-input";
+
+const $ = (id) => document.getElementById(id);
+
+let booted = false;
+function boot() {
+  if (booted) return;
+  booted = true;
+
+  initI18n();
+  initTheme($("theme-toggle"));
+
+  // Module-level references cached up front (avoid TDZ in nested functions).
+  const sel = $("files");
+  const events = createEvents();
+  const stats = createStats();
+  const sound = createSound();
+  const cpu = createCPU();
+  const ram = createRAM();
+  const io = createIO($("input"), $("output"));
+  const executor = createExecutor(cpu, ram, io, events, stats);
+
+  const cpuView = createCPUView(cpu, events);
+  const ramView = createRAMView(ram, cpu);
+  const disasmView = createDisassemblerView(executor, ram, cpu);
+  const statsView = createStatsView(stats);
+  const historyView = createHistoryView(executor);
+  const logger = createLogger($("liveFeed"), $("log"));
+
+  const editor = createEditorView(
+    $("codeListing"),
+    $("editor-gutter"),
+    $("editor-highlight"),
+    {
+      onChange: () => localStorage.setItem(STORAGE_KEY, $("codeListing").value),
+      onToggleBreakpoint: () => {},
+    },
+  );
+
+  const currentAddressesBySourceLine = new Map();
+  let currentBreakpointsByAddress = new Set();
+
+  // Populate example dropdown with current-language labels.
+  function fillExamples() {
+    sel.innerHTML = "";
+    PROGRAMS.forEach((p) => {
+      const opt = document.createElement("option");
+      opt.value = p.value;
+      opt.textContent = getProgramMeta(p, t).label;
+      sel.appendChild(opt);
+    });
+  }
+  fillExamples();
+  sel.value = "1";
+
+  function updateBlurb() {
+    const program = PROGRAMS.find((p) => p.value === sel.value);
+    if (!program) return;
+    const meta = getProgramMeta(program, t);
+    const title = $("blurb-title");
+    const text = $("blurb-text");
+    const expected = $("blurb-expected");
+    if (title) title.textContent = meta.label;
+    if (text) text.textContent = meta.blurb || "";
+    if (expected) expected.textContent = meta.expected || "—";
+  }
+
+  // Apply translations to static DOM and dynamic content.
+  function applyAllTranslations() {
+    translateDom(document.body);
+    fillExamples();
+    updateBlurb();
+    rebuildModalContent();
+    refreshView();
+  }
+
+  function refreshView() {
+    cpuView.render();
+    ramView.sync();
+    disasmView.render();
+    statsView.render();
+    historyView.render();
+  }
+
+  function rebuildModalContent() {
+    // About
+    const a1 = $("about-p1");
+    const a2 = $("about-p2");
+    const a3 = $("about-p3");
+    const shorts = $("about-shortcuts");
+    const creds = $("about-credits");
+    if (a1) a1.innerHTML = t("modal.about.paragraphs");
+    if (a2) a2.innerHTML = t("modal.about.paragraph2");
+    if (a3) a3.innerHTML = t("modal.about.paragraph3");
+    if (shorts) {
+      const k = keysForFooter();
+      shorts.innerHTML = t("modal.about.shortcuts", { shortcuts: k });
+    }
+    if (creds) creds.innerHTML = t("modal.about.credits");
+
+    // Instructions table
+    const head = $("instructions-thead-row");
+    const body = $("instructions-tbody");
+    const intro = $("instructions-intro");
+    if (intro) intro.innerHTML = t("modal.instructions.intro");
+    if (head) {
+      head.innerHTML = [
+        t("modal.instructions.th.mnemonic"),
+        t("modal.instructions.th.desc"),
+        t("modal.instructions.th.code"),
+      ].map((s) => `<th>${s}</th>`).join("");
+    }
+    if (body) {
+      const list = readArray("modal.instructions.instructions");
+      body.innerHTML = "";
+      if (Array.isArray(list)) {
+        for (const [mnemonic, desc, code] of list) {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><code>${mnemonic}</code></td><td>${desc}</td><td><code>${code}</code></td>`;
+          body.appendChild(tr);
+        }
+      }
+    }
+
+    // Tutorial
+    const tlist = $("tutorial-steps");
+    if (tlist) {
+      const steps = readArray("modal.tutorial.steps");
+      tlist.innerHTML = "";
+      if (Array.isArray(steps)) {
+        for (const step of steps) {
+          const li = document.createElement("li");
+          li.innerHTML = step;
+          tlist.appendChild(li);
+        }
+      }
+    }
+
+    // Footer
+    const footer = document.querySelector(".app-footer");
+    if (footer) {
+      footer.innerHTML = t("footer.text", { keys: keysForFooter() });
+    }
+  }
+
+  function keysForFooter() {
+    return [
+      `<kbd>${t("shortcutFormat.f5")}</kbd> ${t("footer.keys.run")}`,
+      `· <kbd>${t("shortcutFormat.f6")}</kbd> ${t("footer.keys.pause")}`,
+      `· <kbd>${t("shortcutFormat.f9")}</kbd> ${t("footer.keys.step")}`,
+      `· <kbd>${t("shortcutFormat.f8")}</kbd> ${t("footer.keys.back")}`,
+      `· <kbd>${t("shortcutFormat.ctrlS")}</kbd> ${t("footer.keys.save")}`,
+    ].join(" ");
+  }
+
+  function readArray(key) {
+    const dicts = { en: enDict, es: esDict };
+    const d = dicts[currentLanguage()] || enDict;
+    const parts = key.split(".");
+    let cur = d;
+    for (const p of parts) { if (cur == null) return undefined; cur = cur[p]; }
+    return cur;
+  }
+
+  sel.addEventListener("change", updateBlurb);
+
+  // Wire language switch buttons.
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const lang = btn.dataset.lang;
+      setLanguage(lang);
+      document.querySelectorAll(".lang-btn").forEach((b) => {
+        b.setAttribute("aria-pressed", b.dataset.lang === lang ? "true" : "false");
+      });
+      applyAllTranslations();
+    });
+  });
+
+  // Sync aria-pressed to the active language on boot.
+  document.querySelectorAll(".lang-btn").forEach((b) => {
+    b.setAttribute("aria-pressed", b.dataset.lang === currentLanguage() ? "true" : "false");
+  });
+
+  // Apply once on boot.
+  applyAllTranslations();
+
+  // ---- Loading a program into RAM ----
+  function loadProgram() {
+    logger.clear();
+    cpu.reset();
+    ram.reset();
+    io.reset();
+    stats.reset();
+
+    const source = $("codeListing").value;
+    const result = parse(source);
+    if (!result.ok) {
+      for (const err of result.errors) logger.onError(`Line ${err.line}: ${err.message}`);
+      refreshView();
+      return;
+    }
+
+    const { instructions, labels } = result.program;
+
+    const dataCells = [];
+    const allocator = 99;
+    const usedAddresses = new Set(instructions.map((i) => i.address));
+    const indirectSourceLines = new Set();
+
+    for (const instr of instructions) {
+      if (instr.mnemonic === "DAT") continue;
+      if (!instr.operand) continue;
+      if (instr.operand.mode === "immediate") {
+        let dataAddr = allocator;
+        while (usedAddresses.has(dataAddr) && dataAddr > 0) dataAddr -= 1;
+        if (dataAddr < 0) {
+          logger.onError(`Out of memory cells for immediate on line ${instr.sourceLine}`);
+          return;
+        }
+        dataCells.push({ addr: dataAddr, value: Number(instr.operand.value) });
+        usedAddresses.add(dataAddr);
+        instr.operand = { mode: "direct", value: String(dataAddr), ref: null };
+      } else if (instr.operand.mode === "indirect") {
+        indirectSourceLines.add(instr.sourceLine);
+      }
+    }
+
+    const entries = [];
+    currentAddressesBySourceLine.clear();
+    instructions.forEach((instr) => {
+      try {
+        const code = encodeInstruction(instr);
+        entries.push({ ...instr, code });
+        currentAddressesBySourceLine.set(instr.sourceLine, instr.address);
+      } catch (e) {
+        logger.onError(e.message);
+        return;
+      }
+    });
+
+    try {
+      resolveLabels(entries, labels);
+    } catch (e) {
+      logger.onError(e.message);
+      return;
+    }
+
+    entries.forEach((e) => {
+      const addr = e.address;
+      let value = 0;
+      if (e.mnemonic === "DAT") value = e.code.value ?? 0;
+      else if (e.code.value != null) value = e.code.value;
+      ram.write(addr, value);
+    });
+    for (const { addr, value } of dataCells) {
+      ram.write(addr, value);
+    }
+
+    const indirectAddrs = new Set();
+    for (const sl of indirectSourceLines) {
+      const addr = currentAddressesBySourceLine.get(sl);
+      if (addr != null) indirectAddrs.add(addr);
+    }
+    executor.setIndirectAddresses(indirectAddrs);
+
+    currentBreakpointsByAddress = new Set();
+    editor.state.breakpoints.forEach((lineIdx) => {
+      const addr = currentAddressesBySourceLine.get(lineIdx + 1);
+      if (addr != null) currentBreakpointsByAddress.add(addr);
+    });
+
+    ramView.setProgramMetadata({
+      labels,
+      instructions,
+      immediates: dataCells.map((d) => d.addr),
+    });
+
+    logger.onProgramLoaded(entries.length);
+    refreshView();
+  }
+
+  function refreshView() {
+    cpuView.render();
+    ramView.sync();
+    disasmView.render();
+    statsView.render();
+    historyView.render();
+  }
+
+  function runProgram() {
+    if (cpu.state.halted) loadProgram();
+    if (!executor.isRunning()) {
+      executor.run({
+        getSpeed: () => Number($("clock").value),
+        breakpoints: [...currentBreakpointsByAddress],
+        onTick: () => {
+          refreshView();
+          const sourceLine = lineOf(cpu.state.halted ? cpu.state.haltedAt : cpu.state.pc - 1);
+          if (sourceLine != null) editor.highlightLine(sourceLine);
+        },
+      });
+      $("btn-pause").querySelector("span").textContent = "⏸";
+    }
+  }
+
+  function runUntilHalt() {
+    if (cpu.state.halted) loadProgram();
+    executor.run({
+      // Fast-forward: cap at 20 ms so the UI can still render between cycles.
+      getSpeed: () => Math.min(Number($("clock").value) || 50, 20),
+      breakpoints: [...currentBreakpointsByAddress],
+      onTick: () => {
+        refreshView();
+        const sourceLine = lineOf(cpu.state.halted ? cpu.state.haltedAt : cpu.state.pc - 1);
+        if (sourceLine != null) editor.highlightLine(sourceLine);
+      },
+    });
+    $("btn-pause").querySelector("span").textContent = "⏸";
+  }
+
+  function pauseProgram() {
+    executor.stop();
+    $("btn-pause").querySelector("span").textContent = "▶";
+  }
+
+  function singleStep() {
+    if (cpu.state.halted) return;
+    if (executor.isRunning()) pauseProgram();
+    try {
+      const cont = executor.step();
+      refreshView();
+      const src = currentAddressesBySourceLine.get(cpu.state.halted ? cpu.state.haltedAt : cpu.state.pc - 1);
+      if (src != null) editor.highlightLine(src);
+      if (!cont) {
+        logger.onProgramHalted(cpu);
+        sound.halt();
+      }
+    } catch (e) {
+      logger.onError(e.message);
+      pauseProgram();
+    }
+  }
+
+  function stepBack() {
+    if (executor.isRunning()) pauseProgram();
+    if (executor.stepBack()) refreshView();
+  }
+
+  function lineOf(addr) {
+    for (const [sl, a] of currentAddressesBySourceLine.entries()) {
+      if (a === addr) return sl;
+    }
+    return null;
+  }
+
+  function selectExample() {
+    const v = $("files").value;
+    const program = PROGRAMS.find((p) => p.value === v);
+    if (!program) return;
+    editor.setProgram(program.code);
+    editor.state.breakpoints.clear();
+    editor.rerender();
+    if (program.input != null) {
+      $("input").value = program.input;
+      localStorage.setItem(INPUT_KEY, program.input);
+    }
+    updateBlurb();
+  }
+
+  function tryExample() {
+    selectExample();
+    loadProgram();
+    runProgram();
+  }
+
+  function clearEditor() { editor.setProgram(""); }
+  function resetState() {
+    pauseProgram();
+    executor.reset();
+    logger.clear();
+    cpuView.resetAccessLog();
+    refreshView();
+  }
+  function resetStats() {
+    stats.reset();
+    refreshView();
+  }
+
+  function downloadLog() {
+    if (!logger.isLogFileEnabled()) logger.setLogFile(true);
+    logger.download();
+  }
+
+  function exportProgram() {
+    const source = $("codeListing").value;
+    const input = $("input").value;
+    downloadAs(source, input, "program.lmc");
+  }
+
+  function importProgramFile(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const text = String(reader.result ?? "");
+      const { source, input } = parseFile(text);
+      editor.setProgram(source);
+      $("input").value = input;
+      localStorage.setItem(STORAGE_KEY, source);
+      localStorage.setItem(INPUT_KEY, input);
+      refreshView();
+    };
+    reader.readAsText(file);
+  }
+
+  function copyShareUrl() {
+    const url = currentShare($("codeListing").value, $("input").value);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(
+        () => flashShare("Copied!", true),
+        () => flashShare("Copy failed", false),
+      );
+    } else {
+      prompt("Share URL", url);
+    }
+  }
+
+  let shareFlashTimer = null;
+  function flashShare(message, ok) {
+    const btn = $("share-btn");
+    btn.querySelector("span").textContent = ok ? "✓" : "✕";
+    btn.setAttribute("title", message);
+    clearTimeout(shareFlashTimer);
+    shareFlashTimer = setTimeout(() => {
+      btn.querySelector("span").textContent = "↗";
+      btn.setAttribute("title", "Copy share link");
+    }, 1500);
+  }
+
+  function openModal(id) { $(id).hidden = false; }
+  function closeModal(el) { el.hidden = true; }
+
+  // ----- Wire DOM listeners -----
+  $("btn-load").addEventListener("click", loadProgram);
+  $("btn-run").addEventListener("click", runProgram);
+  $("btn-step").addEventListener("click", singleStep);
+  $("btn-pause").addEventListener("click", () => {
+    if (executor.isRunning()) pauseProgram(); else runProgram();
+  });
+  $("btn-rewind").addEventListener("click", stepBack);
+  $("btn-fast-forward").addEventListener("click", runUntilHalt);
+  $("btn-select-program").addEventListener("click", selectExample);
+  $("btn-try-example")?.addEventListener("click", tryExample);
+  $("btn-clear").addEventListener("click", clearEditor);
+  $("btn-reset").addEventListener("click", resetState);
+  $("btn-reset-stats")?.addEventListener("click", resetStats);
+  $("btn-download-log").addEventListener("click", downloadLog);
+  $("btn-clear-log").addEventListener("click", () => logger.clear());
+  $("btn-export").addEventListener("click", exportProgram);
+  $("btn-import").addEventListener("click", () => $("file-input").click());
+  $("file-input").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (file) importProgramFile(file);
+  });
+
+  $("clock").addEventListener("input", (e) => {
+    updateClockDisplay(e.target.value);
+  });
+
+  function formatClock(value) {
+    const ms = Math.max(0, Number(value) || 0);
+    return `${ms} ms`;
+  }
+
+  function updateClockDisplay(value) {
+    const out = $("clock-value");
+    out.textContent = formatClock(value);
+    out.dataset.changed = "true";
+    clearTimeout(updateClockDisplay._t);
+    updateClockDisplay._t = setTimeout(() => { out.dataset.changed = "false"; }, 250);
+  }
+
+  function stepClock(deltaMs) {
+    const slider = $("clock");
+    const min = Number(slider.min);
+    const max = Number(slider.max);
+    const next = Math.min(max, Math.max(min, Number(slider.value) + deltaMs));
+    slider.value = String(next);
+    updateClockDisplay(next);
+    slider.dispatchEvent(new Event("input"));
+  }
+
+  $("btn-clock-down")?.addEventListener("click", () => stepClock(+50));
+  $("btn-clock-up")?.addEventListener("click", () => stepClock(-50));
+  $("btn-clock-down")?.addEventListener("dblclick", () => stepClock(+250));
+  $("btn-clock-up")?.addEventListener("dblclick", () => stepClock(-250));
+
+  $("logFile").addEventListener("change", (e) => logger.setLogFile(e.target.checked));
+
+  $("sound-toggle").addEventListener("click", (e) => {
+    const enabled = !sound.isEnabled();
+    sound.enable(enabled);
+    e.currentTarget.querySelector("span").textContent = enabled ? "♪" : "✕";
+    e.currentTarget.dataset.enabled = enabled;
+  });
+
+  $("share-btn").addEventListener("click", copyShareUrl);
+  $("tutorial-btn").addEventListener("click", (e) => { e.preventDefault(); openModal("tutorialPopup"); });
+
+  document.querySelectorAll(".modal-close").forEach((b) => {
+    b.addEventListener("click", () => closeModal(b.closest(".modal")));
+  });
+  document.querySelectorAll(".modal").forEach((m) => {
+    m.addEventListener("click", (e) => { if (e.target === m) closeModal(m); });
+  });
+  $("help-link").addEventListener("click", (e) => { e.preventDefault(); openModal("linkPopup"); });
+  $("about-link").addEventListener("click", (e) => { e.preventDefault(); openModal("aboutPopup"); });
+
+  // Tab controller for the Activity panel.
+  createTabs(document.querySelector(".log-panel"));
+
+  document.addEventListener("keydown", (e) => {
+    if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+    if (e.key === "F9") { e.preventDefault(); singleStep(); }
+    else if (e.key === "F5" && e.shiftKey) { e.preventDefault(); runUntilHalt(); }
+    else if (e.key === "F5") { e.preventDefault(); runProgram(); }
+    else if (e.key === "F6") { e.preventDefault(); executor.isRunning() ? pauseProgram() : runProgram(); }
+    else if (e.key === "F8") { e.preventDefault(); stepBack(); }
+    else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+      e.preventDefault(); downloadLog();
+    }
+  });
+
+  events.on("tick", () => refreshView());
+  events.on("halt", () => { sound.halt(); refreshView(); });
+  events.on("memory-access", ({ direction }) => {
+    const el = direction === "out" ? $("bus-memory-out") : $("bus-memory-in");
+    if (!el) return;
+    el.dataset.active = "true";
+    setTimeout(() => { el.dataset.active = "false"; }, 130);
+  });
+
+  // First-time state: shared URL > localStorage > default example.
+  const shared = decodeShare(location.hash);
+  if (shared) {
+    editor.setProgram(shared.source);
+    $("input").value = shared.input || "";
+    localStorage.setItem(STORAGE_KEY, shared.source);
+    localStorage.setItem(INPUT_KEY, shared.input || "");
+  } else {
+    const savedSource = localStorage.getItem(STORAGE_KEY);
+    const savedInput = localStorage.getItem(INPUT_KEY);
+    if (savedSource && savedSource.trim().length > 0) editor.setProgram(savedSource);
+    else selectExample();
+    if (savedInput != null) $("input").value = savedInput;
+  }
+
+  $("codeListing").addEventListener("input", () => {
+    localStorage.setItem(STORAGE_KEY, $("codeListing").value);
+  });
+  $("input").addEventListener("input", () => {
+    localStorage.setItem(INPUT_KEY, $("input").value);
+  });
+
+  $("clock-value").textContent = formatClock(Number($("clock").value));
+  refreshView();
+
+  // expose clock helper for tests
+  globalThis.__lmc = {
+    stepClock,
+    getClock: () => Number($("clock").value),
+    setClock: (v) => { $("clock").value = String(v); updateClockDisplay(v); },
+  };
+}
+
+// Auto-boot detection: only call boot() in the actual browser, not in tests.
+// Vitest's jsdom env exposes `globalThis.__vitest_worker__` so we gate on that.
+if (typeof globalThis !== "undefined" &&
+    typeof globalThis.__vitest_worker__ === "undefined" &&
+    typeof document !== "undefined") {
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+}
+
+export { boot, resetBoot };
+
+function resetBoot() { booted = false; }

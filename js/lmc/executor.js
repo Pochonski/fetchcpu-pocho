@@ -1,0 +1,392 @@
+// LMC Executor - performs the Fetch / Decode / Execute cycle.
+//
+// Emits events and updates a stats counter along the way. The numeric word
+// stored in RAM uses the standard LMC encoding:
+//   INP=901, OUT=902, HLT=000, LDA=5xx, STA=3xx, ADD=1xx, SUB=2xx,
+//   BRP=8xx, BRZ=7xx, BRA=6xx (xx = memory address 00..99).
+//
+// Immediate addressing is handled by the LOADER: literals are pre-stored in
+// allocated data cells and the instruction is rewritten to reference them.
+// Indirect addressing is preserved by a Set of instruction addresses that
+// the executor consults during decode.
+
+import { OPCODES } from "./opcodes.js";
+
+export function createExecutor(cpu, ram, io, events = null, stats = null) {
+  const history = []; // {cpu, ram, output, inputIndex, mnemonic, phase}
+  let running = false;
+  let timer = null;
+  let indirectAddresses = new Set();
+
+  function snapshot() {
+    return {
+      cpu: cpu.snapshot(),
+      ram: ram.snapshot(),
+      output: io.outputValue(),
+      inputIndex: io.inputIndex(),
+    };
+  }
+
+  function restore(snap) {
+    cpu.restore(snap.cpu);
+    ram.load(arrayToObject(snap.ram));
+    io.setOutput(snap.output);
+    io.setInputIndex(snap.inputIndex);
+  }
+
+  function arrayToObject(arr) {
+    const o = {};
+    arr.forEach((v, i) => { if (v !== 0) o[i] = v; });
+    return o;
+  }
+
+  function record(prevPc, decoded) {
+    history.push({
+      ...snapshot(),
+      mnemonic: decoded?.mnemonic ?? null,
+      address: prevPc,
+    });
+  }
+
+  function performFetch() {
+    cpu.state.phase = "fetch";
+    cpu.clearChanged();
+    cpu.state.mar = cpu.state.pc;
+    cpu.markChanged("mar");
+    cpu.state.mdr = ram.read(cpu.state.mar);
+    cpu.markChanged("mdr");
+    if (stats) stats.onMemoryRead();
+    emitMemoryAccess("in", cpu.state.mar, cpu.state.mdr);
+    cpu.state.cir = cpu.state.mdr;
+    cpu.markChanged("cir");
+    cpu.state.pc += 1;
+    cpu.markChanged("pc");
+  }
+
+  function performDecode(prevPc) {
+    cpu.state.phase = "decode";
+    const word = cpu.state.cir;
+    const decoded = decodeInstruction(word);
+
+    // For I/O and HLT there is no operand. Keep MAR pointing at the
+    // instruction's own address so the highlight stays meaningful instead
+    // of resetting to 0.
+    if (decoded.mnemonic === "HLT" || decoded.mnemonic === "INP" || decoded.mnemonic === "OUT") {
+      cpu.state.mar = prevPc;
+      cpu.markChanged("mar");
+      return decoded;
+    }
+
+    const isIndirect = indirectAddresses.has(prevPc);
+    const finalMode = isIndirect ? "indirect" : "direct";
+    cpu.state.mar = decoded.operandValue;
+    cpu.markChanged("mar");
+    return { ...decoded, mode: finalMode };
+  }
+
+  function performExecute(decoded) {
+    cpu.state.phase = "execute";
+    const { mnemonic, operandValue, mode } = decoded;
+
+    switch (mnemonic) {
+      case "HLT":
+        cpu.state.halted = true;
+        cpu.state.haltedAt = cpu.state.pc - 1;
+        cpu.state.mar = cpu.state.haltedAt;
+        cpu.markChanged("mar");
+        break;
+
+      case "INP": {
+        const value = io.readInput();
+        cpu.state.acc = value;
+        cpu.markChanged("acc");
+        emitFlag();
+        break;
+      }
+
+      case "OUT": {
+        io.writeOutput(cpu.state.acc);
+        // MDR holds the value being output so the LED shows what was sent.
+        cpu.state.mdr = cpu.state.acc;
+        cpu.markChanged("mdr");
+        break;
+      }
+
+      case "LDA": {
+        let value;
+        if (mode === "indirect") {
+          const ptr = ram.read(cpu.state.mar);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", cpu.state.mar, ptr);
+          // MDR momentarily holds the pointer.
+          cpu.state.mdr = ptr;
+          cpu.markChanged("mdr");
+          cpu.state.mar = ptr;
+          cpu.markChanged("mar");
+          value = ram.read(ptr);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", ptr, value);
+          cpu.state.mdr = value;
+          cpu.markChanged("mdr");
+        } else {
+          value = ram.read(cpu.state.mar);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", cpu.state.mar, value);
+          cpu.state.mdr = value;
+          cpu.markChanged("mdr");
+        }
+        cpu.state.acc = value;
+        cpu.markChanged("acc");
+        emitFlag();
+        break;
+      }
+
+      case "STA": {
+        if (mode === "indirect") {
+          const ptr = ram.read(cpu.state.mar);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", cpu.state.mar, ptr);
+          cpu.state.mdr = ptr;
+          cpu.markChanged("mdr");
+          cpu.state.mar = ptr;
+          cpu.markChanged("mar");
+        }
+        // MDR shows the value being written so users can verify what the
+        // CPU is sending to RAM.
+        cpu.state.mdr = cpu.state.acc;
+        cpu.markChanged("mdr");
+        ram.write(cpu.state.mar, cpu.state.acc);
+        if (stats) stats.onMemoryWrite();
+        emitMemoryAccess("out", cpu.state.mar, cpu.state.acc);
+        break;
+      }
+
+      case "ADD": {
+        let value;
+        if (mode === "indirect") {
+          const ptr = ram.read(cpu.state.mar);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", cpu.state.mar, ptr);
+          cpu.state.mdr = ptr;
+          cpu.markChanged("mdr");
+          cpu.state.mar = ptr;
+          cpu.markChanged("mar");
+          value = ram.read(ptr);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", ptr, value);
+          cpu.state.mdr = value;
+          cpu.markChanged("mdr");
+        } else {
+          value = ram.read(cpu.state.mar);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", cpu.state.mar, value);
+          cpu.state.mdr = value;
+          cpu.markChanged("mdr");
+        }
+        cpu.state.acc = cpu.state.acc + value;
+        cpu.markChanged("acc");
+        emitFlag();
+        break;
+      }
+
+      case "SUB": {
+        let value;
+        if (mode === "indirect") {
+          const ptr = ram.read(cpu.state.mar);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", cpu.state.mar, ptr);
+          cpu.state.mdr = ptr;
+          cpu.markChanged("mdr");
+          cpu.state.mar = ptr;
+          cpu.markChanged("mar");
+          value = ram.read(ptr);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", ptr, value);
+          cpu.state.mdr = value;
+          cpu.markChanged("mdr");
+        } else {
+          value = ram.read(cpu.state.mar);
+          if (stats) stats.onMemoryRead();
+          emitMemoryAccess("in", cpu.state.mar, value);
+          cpu.state.mdr = value;
+          cpu.markChanged("mdr");
+        }
+        cpu.state.acc = cpu.state.acc - value;
+        cpu.markChanged("acc");
+        emitFlag();
+        break;
+      }
+
+      case "BRP":
+        if (cpu.state.acc >= 0) {
+          branchTo(operandValue);
+          if (stats) stats.onBranchTaken();
+        }
+        break;
+      case "BRZ":
+        if (cpu.state.acc === 0) {
+          branchTo(operandValue);
+          if (stats) stats.onBranchTaken();
+        }
+        break;
+      case "BRA":
+        branchTo(operandValue);
+        if (stats) stats.onBranchTaken();
+        break;
+
+      default:
+        throw new Error(`Unknown mnemonic ${mnemonic}`);
+    }
+    if (stats) stats.onInstruction(mnemonic);
+  }
+
+  function emitFlag() {
+    if (!events) return;
+    const flag = cpu.state.acc === 0 ? "Z" : cpu.state.acc < 0 ? "N" : "P";
+    events.emit("flag", { acc: cpu.state.acc, flag });
+  }
+
+  function emitMemoryAccess(direction, address, value) {
+    if (!events) return;
+    events.emit("memory-access", {
+      direction,
+      address,
+      value,
+      phase: cpu.state.phase,
+    });
+  }
+
+  function branchTo(addr) {
+    cpu.state.pc = addr;
+    cpu.markChanged("pc");
+  }
+
+  function decodeInstruction(word) {
+    if (word === 0) return { mnemonic: "HLT", operandValue: 0, mode: "direct" };
+    if (word === OPCODES.INP.code) return { mnemonic: "INP", operandValue: 0 };
+    if (word === OPCODES.OUT.code) return { mnemonic: "OUT", operandValue: 0 };
+
+    const opcode = Math.floor(word / 100);
+    const operand = word % 100;
+    switch (opcode) {
+      case 5: return { mnemonic: "LDA", operandValue: operand, mode: "direct" };
+      case 3: return { mnemonic: "STA", operandValue: operand, mode: "direct" };
+      case 1: return { mnemonic: "ADD", operandValue: operand, mode: "direct" };
+      case 2: return { mnemonic: "SUB", operandValue: operand, mode: "direct" };
+      case 8: return { mnemonic: "BRP", operandValue: operand, mode: "direct" };
+      case 7: return { mnemonic: "BRZ", operandValue: operand, mode: "direct" };
+      case 6: return { mnemonic: "BRA", operandValue: operand, mode: "direct" };
+      default:
+        // Not an instruction word. Treat as data (HLT-equivalent).
+        return { mnemonic: "HLT", operandValue: 0, mode: "direct" };
+    }
+  }
+
+  function step() {
+    if (cpu.state.halted) return false;
+    performFetch();
+    const prevPc = cpu.state.pc - 1;
+    const decoded = performDecode(prevPc);
+
+    // Record snapshot AFTER decode so history shows what was about to execute.
+    record(prevPc, decoded);
+
+    performExecute(decoded);
+    cpu.state.cycle += 1;
+    if (stats) stats.tickCycle();
+    setTimeout(() => cpu.clearChanged(), 80);
+
+    if (events) {
+      events.emit("tick", {
+        cycle: cpu.state.cycle,
+        phase: cpu.state.phase,
+        mnemonic: decoded.mnemonic,
+        pc: prevPc,
+        acc: cpu.state.acc,
+      });
+      if (cpu.state.halted) events.emit("halt", { pc: cpu.state.haltedAt });
+    }
+
+    return !cpu.state.halted;
+  }
+
+  function stepBack() {
+    if (history.length === 0) return false;
+    const snap = history.pop();
+    restore(snap);
+    return true;
+  }
+
+  function reset() {
+    history.length = 0;
+    cpu.reset();
+    ram.reset();
+    io.reset();
+    cpu.state.phase = "fetch";
+    running = false;
+    if (timer != null) { clearTimeout(timer); timer = null; }
+    if (stats) stats.reset();
+  }
+
+  function setIndirectAddresses(set) {
+    indirectAddresses = set instanceof Set ? new Set(set) : new Set(set || []);
+  }
+
+  function run({ speed, breakpoints = [], onTick, getSpeed: getSpeedArg } = {}) {
+    if (running) return;
+    running = true;
+    if (stats) stats.startRun();
+    if (events) events.emit("run-start", null);
+
+    const gs = typeof getSpeedArg === "function" ? getSpeedArg : null;
+    const fb = Math.max(0, Number(speed) || 500);
+    function readSpeed() {
+      if (gs) return Math.max(0, Number(gs()) || 0);
+      return fb;
+    }
+
+    function tick() {
+      if (!running) return;
+      if (cpu.state.halted) { stop(); return; }
+      if (breakpoints.includes(cpu.state.pc)) { stop(); return; }
+      const continueRunning = step();
+      if (onTick) onTick();
+      if (!continueRunning || !running) { stop(); return; }
+      timer = setTimeout(tick, readSpeed());
+    }
+
+    tick();
+  }
+
+  function stop() {
+    if (!running) return;
+    running = false;
+    if (timer != null) { clearTimeout(timer); timer = null; }
+    if (stats) stats.stopRun();
+    if (events) events.emit("run-stop", null);
+  }
+
+  function getCurrentInstruction() {
+    const word = cpu.state.cir;
+    return decodeInstruction(word);
+  }
+
+  function getNextInstruction() {
+    const nextPc = cpu.state.pc;
+    const word = ram.read(nextPc);
+    return decodeInstruction(word);
+  }
+
+  return {
+    step,
+    stepBack,
+    run,
+    stop,
+    reset,
+    isRunning: () => running,
+    history: () => history.slice(),
+    setIndirectAddresses,
+    getCurrentInstruction,
+    getNextInstruction,
+  };
+}
