@@ -24,6 +24,14 @@ describe("i18n module", () => {
     expect(t("log.loaded", [42])).toMatch(/42/);
   });
 
+  it("supports named placeholders like {keys}", async () => {
+    const { t } = await import("../js/ui/i18n/index.js");
+    // footer.text contains {keys}
+    const out = t("footer.text", { keys: "<kbd>F5</kbd>" });
+    expect(out).toContain("<kbd>F5</kbd>");
+    expect(out).not.toContain("{keys}");
+  });
+
   it("falls back to the key text when missing", async () => {
     const { t } = await import("../js/ui/i18n/index.js");
     expect(t("nonexistent.path.here")).toBe("nonexistent.path.here");
@@ -159,5 +167,42 @@ describe("Language switch (EN/ES)", () => {
     document.querySelector(".lang-btn[data-lang='en']").click();
     const enLabels = Array.from(document.querySelectorAll(".stat-label")).map((e) => e.textContent);
     expect(enLabels.some((l) => /Cycles/i.test(l))).toBe(true);
+  });
+});
+
+describe("LMC Instruction Set modal content", () => {
+  it("renders Mnemonic / Name / Description / Op Code columns and eleven rows", async () => {
+    // Open the modal (in case it's not auto-mounted).
+    document.getElementById("linkPopup").hidden = false;
+    // rebuildModalContent is called on language change — call it now.
+    const main = await import("../js/main.js?v=lmc");
+    main.resetBoot();
+    main.boot();
+
+    const head = document.querySelectorAll("#instructions-thead-row th");
+    expect(head.length).toBe(4);
+    expect(head[0].textContent.toLowerCase()).toContain("mnemonic");
+    expect(head[1].textContent.toLowerCase()).toContain("name");
+    expect(head[2].textContent.toLowerCase()).toContain("description");
+    expect(head[3].textContent.toLowerCase()).toContain("op");
+
+    const rows = document.querySelectorAll("#instructions-tbody tr");
+    // 11 standard mnemonics + len in row
+    expect(rows.length).toBeGreaterThanOrEqual(11);
+
+    // Confirm INP row uses the new four-column shape and the long description.
+    const inpRow = Array.from(rows).find((r) => r.textContent.includes("INPUT"));
+    expect(inpRow).toBeTruthy();
+    expect(inpRow.textContent).toMatch(/Retrieve user input/i);
+    expect(inpRow.textContent).toMatch(/901/);
+
+    // DAT row has no op code cell.
+    const datRow = Array.from(rows).find((r) => r.textContent.includes("DATA LOCATION"));
+    expect(datRow).toBeTruthy();
+    expect(datRow.querySelectorAll("td").length).toBe(3);
+
+    // The phase key + F10 shortcut is rendered in the footer.
+    const footer = document.querySelector(".app-footer");
+    expect(footer.textContent).toContain("F10");
   });
 });

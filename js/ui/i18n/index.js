@@ -48,16 +48,21 @@ export function t(key, ...args) {
   }
   if (typeof value === "string") {
     if (args.length === 0) return value;
-    // Accept either an array/object as first arg, or varargs
     const interpolated = Array.isArray(args[0]) || (args.length === 1 && typeof args[0] === "object")
       ? args[0]
       : args;
-    return value.replace(/\{(\d+)\}/g, (_, n) => {
-      const idx = Number(n);
-      return Object.prototype.hasOwnProperty.call(interpolated, idx)
-        ? String(interpolated[idx])
-        : "";
-    });
+    return value
+      .replace(/\{(\d+)\}/g, (_, n) => {
+        const idx = Number(n);
+        return Object.prototype.hasOwnProperty.call(interpolated, idx)
+          ? String(interpolated[idx])
+          : "";
+      })
+      .replace(/\{([a-zA-Z_][\w]*)\}/g, (_, name) => {
+        return Object.prototype.hasOwnProperty.call(interpolated, name)
+          ? String(interpolated[name])
+          : "";
+      });
   }
   return value;
 }

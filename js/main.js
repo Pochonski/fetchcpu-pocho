@@ -124,7 +124,7 @@ function boot() {
     }
     if (creds) creds.innerHTML = t("modal.about.credits");
 
-    // Instructions table
+    // Instructions table (Mnemonic / Name / Description / Op Code)
     const head = $("instructions-thead-row");
     const body = $("instructions-tbody");
     const intro = $("instructions-intro");
@@ -132,6 +132,7 @@ function boot() {
     if (head) {
       head.innerHTML = [
         t("modal.instructions.th.mnemonic"),
+        t("modal.instructions.th.name"),
         t("modal.instructions.th.desc"),
         t("modal.instructions.th.code"),
       ].map((s) => `<th>${s}</th>`).join("");
@@ -140,10 +141,38 @@ function boot() {
       const list = readArray("modal.instructions.instructions");
       body.innerHTML = "";
       if (Array.isArray(list)) {
-        for (const [mnemonic, desc, code] of list) {
+        for (const row of list) {
+          const [mnemonic, name, desc, code] = row;
           const tr = document.createElement("tr");
-          tr.innerHTML = `<td><code>${mnemonic}</code></td><td>${desc}</td><td><code>${code}</code></td>`;
+          const codeCell = code ? `<td><code>${code}</code></td>` : "";
+          tr.innerHTML = `<td><code>${mnemonic}</code></td><td>${name || ""}</td><td>${desc}</td>${codeCell}`;
           body.appendChild(tr);
+        }
+      }
+    }
+
+    // Addressing variants sub-table
+    const aHead = $("addressing-thead-row");
+    const aBody = $("addressing-tbody");
+    const aIntro = $("instructions-addressing-intro");
+    if (aIntro) aIntro.innerHTML = t("modal.instructions.addressingIntro");
+    if (aHead) {
+      aHead.innerHTML = [
+        t("modal.instructions.th.mnemonic"),
+        t("modal.instructions.th.name"),
+        t("modal.instructions.th.desc"),
+        t("modal.instructions.th.code"),
+      ].map((s) => `<th>${s}</th>`).join("");
+    }
+    if (aBody) {
+      const list = readArray("modal.instructions.addressing");
+      aBody.innerHTML = "";
+      if (Array.isArray(list)) {
+        for (const row of list) {
+          const [mnemonic, name, desc, code] = row;
+          const tr = document.createElement("tr");
+          tr.innerHTML = `<td><code>${mnemonic}</code></td><td>${name}</td><td>${desc}</td><td><code>${code}</code></td>`;
+          aBody.appendChild(tr);
         }
       }
     }
@@ -174,6 +203,7 @@ function boot() {
       `<kbd>${t("shortcutFormat.f5")}</kbd> ${t("footer.keys.run")}`,
       `· <kbd>${t("shortcutFormat.f6")}</kbd> ${t("footer.keys.pause")}`,
       `· <kbd>${t("shortcutFormat.f9")}</kbd> ${t("footer.keys.step")}`,
+      `· <kbd>${t("shortcutFormat.f10")}</kbd> ${t("footer.keys.phase") || t("panels.cpu.stepPhase").toLowerCase()}`,
       `· <kbd>${t("shortcutFormat.f8")}</kbd> ${t("footer.keys.back")}`,
       `· <kbd>${t("shortcutFormat.ctrlS")}</kbd> ${t("footer.keys.save")}`,
     ].join(" ");
@@ -367,6 +397,26 @@ function boot() {
     }
   }
 
+  function stepPhase() {
+    if (cpu.state.halted) return;
+    if (executor.isRunning()) pauseProgram();
+    try {
+      const cont = executor.stepPhase();
+      refreshView();
+      const src = currentAddressesBySourceLine.get(
+        cpu.state.halted ? cpu.state.haltedAt : cpu.state.pc - 1,
+      );
+      if (src != null) editor.highlightLine(src);
+      if (!cont) {
+        logger.onProgramHalted(cpu);
+        sound.halt();
+      }
+    } catch (e) {
+      logger.onError(e.message);
+      pauseProgram();
+    }
+  }
+
   function stepBack() {
     if (executor.isRunning()) pauseProgram();
     if (executor.stepBack()) refreshView();
@@ -468,6 +518,7 @@ function boot() {
   $("btn-load").addEventListener("click", loadProgram);
   $("btn-run").addEventListener("click", runProgram);
   $("btn-step").addEventListener("click", singleStep);
+  $("btn-step-phase")?.addEventListener("click", stepPhase);
   $("btn-pause").addEventListener("click", () => {
     if (executor.isRunning()) pauseProgram(); else runProgram();
   });
@@ -546,6 +597,7 @@ function boot() {
   document.addEventListener("keydown", (e) => {
     if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     if (e.key === "F9") { e.preventDefault(); singleStep(); }
+    else if (e.key === "F10") { e.preventDefault(); stepPhase(); }
     else if (e.key === "F5" && e.shiftKey) { e.preventDefault(); runUntilHalt(); }
     else if (e.key === "F5") { e.preventDefault(); runProgram(); }
     else if (e.key === "F6") { e.preventDefault(); executor.isRunning() ? pauseProgram() : runProgram(); }

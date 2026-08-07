@@ -117,6 +117,17 @@ describe("Application smoke test", () => {
     expect(document.querySelector(".app-header .logo")).toBeTruthy();
   });
 
+  it("wires the Phase step button next to the Step button", () => {
+    const stepBtn = document.getElementById("btn-step");
+    const phaseBtn = document.getElementById("btn-step-phase");
+    expect(stepBtn).toBeTruthy();
+    expect(phaseBtn).toBeTruthy();
+    // They sit in the same .control-buttons strip
+    const strip = document.querySelector(".control-buttons");
+    expect(strip.contains(stepBtn)).toBe(true);
+    expect(strip.contains(phaseBtn)).toBe(true);
+  });
+
   it("shows mnemonic badges after loading the adding program", async () => {
     const sel = document.getElementById("files");
     sel.value = "1";

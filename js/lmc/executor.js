@@ -282,32 +282,102 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
     }
   }
 
+  // Cycle-phase tracking for step-by-phase stepping.
+  //  0 = no cycle in flight → next click does Fetch
+  //  1 = Fetch done          → next click does Decode
+  //  2 = Decode done        → next click does Execute (cycle completes)
+  let cyclePhase = 0;
+  let pendingDecoded = null;
+
+  function setPhaseFromCycle() {
+    cyclePhase = 0;
+    pendingDecoded = null;
+  }
+
+  function emitTick(extra = {}) {
+    setTimeout(() => cpu.clearChanged(), 80);
+    if (events) {
+      events.emit("tick", {
+        cycle: cpu.state.cycle,
+        phase: cpu.state.phase,
+        mnemonic: pendingDecoded?.mnemonic ?? null,
+        pc: cpu.state.pc - (cpu.state.phase === "fetch" ? 1 : 0),
+        acc: cpu.state.acc,
+        ...extra,
+      });
+      if (cpu.state.halted) events.emit("halt", { pc: cpu.state.haltedAt });
+    }
+  }
+
+  /** Advance one FULL FDE cycle. */
   function step() {
     if (cpu.state.halted) return false;
     performFetch();
     const prevPc = cpu.state.pc - 1;
     const decoded = performDecode(prevPc);
-
-    // Record snapshot AFTER decode so history shows what was about to execute.
     record(prevPc, decoded);
-
     performExecute(decoded);
     cpu.state.cycle += 1;
     if (stats) stats.tickCycle();
-    setTimeout(() => cpu.clearChanged(), 80);
+    setPhaseFromCycle();
+    emitTick({ mnemonic: decoded.mnemonic });
+    return !cpu.state.halted;
+  }
 
+  /**
+   * Advance ONE FDE phase at a time. Three consecutive calls complete one
+   * instruction cycle: Fetch → Decode → Execute.
+   * Each call updates `cpu.state.phase`, which drives the visual FDE
+   * indicator in the UI.
+   */
+  function stepPhase() {
+    if (cpu.state.halted) return false;
+
+    if (cyclePhase === 0) {
+      // Start a new cycle: Fetch.
+      const prevPc = cpu.state.pc;
+      performFetch();
+      cyclePhase = 1;
+      pendingDecoded = null;
+      // Record snapshot after Fetch for step-back fidelity.
+      record(prevPc, { mnemonic: null });
+    } else if (cyclePhase === 1) {
+      // Move to Decode.
+      const prevPc = cpu.state.pc - 1;
+      pendingDecoded = performDecode(prevPc);
+      // Replace the previous snapshot with one tagged with the mnemonic so
+      // history step-back shows the decoded instruction.
+      record(prevPc, pendingDecoded);
+      cyclePhase = 2;
+    } else {
+      // Execute completes the cycle.
+      if (pendingDecoded) {
+        performExecute(pendingDecoded);
+        cpu.state.cycle += 1;
+        if (stats) stats.tickCycle();
+      }
+      cyclePhase = 0;
+      pendingDecoded = null;
+    }
+
+    setTimeout(() => cpu.clearChanged(), 80);
     if (events) {
       events.emit("tick", {
         cycle: cpu.state.cycle,
         phase: cpu.state.phase,
-        mnemonic: decoded.mnemonic,
-        pc: prevPc,
+        mnemonic: pendingDecoded?.mnemonic ?? null,
+        pc: cpu.state.pc - (cpu.state.phase === "fetch" ? 1 : 0),
         acc: cpu.state.acc,
       });
       if (cpu.state.halted) events.emit("halt", { pc: cpu.state.haltedAt });
     }
 
     return !cpu.state.halted;
+  }
+
+  /** Return which phase the next stepPhase() will perform. */
+  function nextStepPhase() {
+    return ["fetch", "decode", "execute"][cyclePhase] ?? "fetch";
   }
 
   function stepBack() {
@@ -326,6 +396,25 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
     running = false;
     if (timer != null) { clearTimeout(timer); timer = null; }
     if (stats) stats.reset();
+    setPhaseFromCycle();
+  }
+
+  function stepBackPhase() {
+    // Pop TWO snapshots if mid-cycle, ONE if at a cycle boundary.
+    const back = cyclePhase === 0 ? 1 : 2;
+    let popped = false;
+    for (let i = 0; i < back && history.length > 0; i++) {
+      const snap = history.pop();
+      restore(snap);
+      popped = true;
+    }
+    if (popped) {
+      // Recompute cyclePhase from current cpu.state.phase
+      if (cpu.state.phase === "fetch") cyclePhase = 0;
+      else if (cpu.state.phase === "decode") cyclePhase = 1;
+      else cyclePhase = 2;
+    }
+    return popped;
   }
 
   function setIndirectAddresses(set) {
@@ -335,6 +424,7 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
   function run({ speed, breakpoints = [], onTick, getSpeed: getSpeedArg } = {}) {
     if (running) return;
     running = true;
+    setPhaseFromCycle(); // ensure next manual step starts a fresh Fetch
     if (stats) stats.startRun();
     if (events) events.emit("run-start", null);
 
@@ -379,7 +469,10 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
 
   return {
     step,
+    stepPhase,
     stepBack,
+    stepBackPhase,
+    nextStepPhase,
     run,
     stop,
     reset,
