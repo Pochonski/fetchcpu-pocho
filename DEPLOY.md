@@ -56,4 +56,24 @@ curl -sS https://pocho-lmc.vercel.app/robots.txt
 curl -sS https://pocho-lmc.vercel.app/sitemap.xml | head -c 200
 ```
 
-All four pass on the current build.
+## Known issue: GitHub autodeploys land as Preview-only on this project
+
+When a push to `main` triggers an autodeploy via the GitHub integration, the
+resulting deployments are stuck at `UNKNOWN` (Preview environment) and the
+alias does **not** auto-update. Public URLs from these deploys return HTTP
+302 to a Vercel SSO wall.
+
+Two fixes — pick one:
+
+**A.** Project → Settings → **Security** → turn off **Vercel Authentication**
+   for production deployments. After that, autodeploys become `● Ready`
+   and the alias updates automatically on every push to `main`.
+
+**B.** Keep deployment protection on. After each push, run
+   `bash scripts/promote.sh` locally — it picks the latest successful
+   build and aliases `pocho-lmc.vercel.app` to it. This workflow is what
+   the docs above describe.
+
+The CI workflow in `.github/workflows/promote.yml` makes option **B**
+zero-touch on CI; it needs a `VERCEL_TOKEN` secret in the GitHub repo
+settings to authenticate against the Vercel API.
