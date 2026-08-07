@@ -1,0 +1,27 @@
+name: Promote to production
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  promote:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Promote latest deployment
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ]; then
+            echo "::warning::VERCEL_TOKEN secret not configured — skipping auto-promote."
+            exit 0
+          fi
+          npm install --no-save --no-audit --prefer-offline vercel@latest > /dev/null 2>&1 || true
+          if ! command -v vercel > /dev/null; then
+            echo "::error::vercel CLI not available"
+            exit 1
+          fi
+          echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y 2>&1 | head -5 || true
+          vercel alias set "$(vercel ls lmc-simulator --no-color --limit 10 | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' | head -1)" pocho-lmc.vercel.app
+          echo "::notice::Promoted pocho-lmc.vercel.app to the latest deployment."
