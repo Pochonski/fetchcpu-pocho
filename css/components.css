@@ -1743,6 +1743,17 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   font-size: 1.125rem;
   font-weight: 700;
 }
+.modal-logo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: var(--space-3);
+}
+.modal-logo {
+  width: 64px;
+  height: 64px;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
 .modal-close {
   position: absolute;
   top: var(--space-3);

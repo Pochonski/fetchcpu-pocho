@@ -61,22 +61,8 @@ body {
   width: 28px;
   height: 28px;
   border-radius: var(--radius-sm);
-  background: var(--brand-grad);
-  position: relative;
-  box-shadow: var(--shadow-sm);
   flex: 0 0 auto;
-}
-.app-header .logo::after {
-  content: "L";
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: var(--font-mono);
-  font-weight: 700;
-  color: white;
-  font-size: 0.875rem;
+  box-shadow: var(--shadow-sm);
 }
 
 .app-header .title-text {
@@ -209,6 +195,12 @@ body {
   font-size: 0.75rem;
   letter-spacing: 0.02em;
   box-shadow: var(--shadow-sm);
+}
+.brand-badge-icon {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  flex: 0 0 auto;
 }
 
 /* ----- Mobile menu (hidden by default; shown by JS on small screens) ----- */

@@ -40,12 +40,16 @@
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="stylesheet" href="css/components.css" />
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="assets/favicon.svg" />
+    <link rel="mask-icon" href="assets/favicon.svg" color="#5b9eff" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="FetchCPU-Pocho" />
   </head>
   <body>
-    <header class="app-header">
-      <h1>
-        <span class="logo" aria-hidden="true"></span>
-        <span class="title-text">
+      <header class="app-header">
+        <h1>
+          <img class="logo" src="assets/favicon.svg" alt="" width="28" height="28" />
+          <span class="title-text">
           <span class="title-eyebrow" data-i18n="app.eyebrow">Von Neumann CPU</span>
           <span data-i18n="app.name">FetchCPU-Pocho</span>
         </span>
@@ -340,7 +344,10 @@
     </main>
 
     <footer class="app-footer">
-      <span class="brand-badge" data-i18n="app.tagline">An interactive Fetch/Decode/Execute simulator</span>
+      <span class="brand-badge">
+        <img class="brand-badge-icon" src="assets/favicon.svg" alt="" width="16" height="16" />
+        <span data-i18n="app.tagline">An interactive Fetch/Decode/Execute simulator</span>
+      </span>
       ·
       <span data-i18n-html="footer.text"></span>
     </footer>
@@ -366,6 +373,9 @@
     <div class="modal" id="aboutPopup" hidden role="dialog" aria-labelledby="about-title" aria-modal="true">
       <div class="modal-content">
         <button class="modal-close" data-close="aboutPopup" data-i18n-attr="aria-label:modal.close" aria-label="Close">×</button>
+        <div class="modal-logo-wrap">
+          <img class="modal-logo" src="assets/favicon.svg" alt="" width="64" height="64" />
+        </div>
         <h3 id="about-title" data-i18n="modal.about.title">About FetchCPU-Pocho</h3>
         <p id="about-p1" data-i18n-html="modal.about.paragraphs"></p>
         <p id="about-p2" data-i18n-html="modal.about.paragraph2"></p>
