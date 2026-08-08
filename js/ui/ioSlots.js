@@ -2,8 +2,18 @@
 // INP mnemonics of the loaded program. Each top-level INP gets its own slot.
 // If INP lives inside a loop the slot is marked with an "∞" badge and an
 // "Add value" button is shown so the user can stage values per iteration.
+//
+// Range enforcement: the LMC word is 3 digits in nine's complement, so
+// valid input values are -499..+500. Values outside that range are flagged
+// with the .io-slot-input--invalid class and reported by isValid(). The
+// main app refuses to run/step while any slot is invalid.
 
 const DEFAULT_MAX = 50;
+const RANGE_MIN = -499;
+const RANGE_MAX = 500;
+// -499 has 4 chars ("-499"); +500 has 4 chars ("500" with implicit sign).
+// We allow 5 chars to be safe with browser quirks on paste.
+const MAX_LEN = 5;
 
 function el(tag, attrs = {}, children = []) {
   const node = document.createElement(tag);
@@ -24,6 +34,10 @@ function el(tag, attrs = {}, children = []) {
   return node;
 }
 
+function inRange(n) {
+  return Number.isFinite(n) && n >= RANGE_MIN && n <= RANGE_MAX;
+}
+
 function parsePasted(text) {
   return text
     .split(/[\s,;]+/)
@@ -40,18 +54,34 @@ export function createInputSlots(container, options = {}) {
   let isLoop = false;
   let count = 0;
 
+  function setValidity(node) {
+    const raw = node.value.trim();
+    if (raw === "") {
+      node.classList.remove("io-slot-input--invalid");
+      node.removeAttribute("aria-invalid");
+      return;
+    }
+    const n = Number(raw);
+    const ok = inRange(n);
+    node.classList.toggle("io-slot-input--invalid", !ok);
+    if (ok) node.removeAttribute("aria-invalid");
+    else node.setAttribute("aria-invalid", "true");
+  }
+
   function buildSlot(index) {
     const wrap = el("div", { class: "io-slot" + (isLoop ? " io-slot--loop" : "") });
     const label = el("span", { class: "io-slot-label" }, [`#${index + 1}`]);
     const input = el("input", {
       type: "number",
       step: "1",
-      min: "-499",
-      max: "500",
+      min: String(RANGE_MIN),
+      max: String(RANGE_MAX),
+      maxlength: String(MAX_LEN),
       inputmode: "numeric",
       "aria-label": `Input value #${index + 1}`,
       class: "io-slot-input",
-      oninput: () => emitChange(),
+      title: `${RANGE_MIN} to ${RANGE_MAX}`,
+      oninput: () => { setValidity(input); emitChange(); },
     });
     if (isLoop) {
       const badge = el("span", {
@@ -73,6 +103,7 @@ export function createInputSlots(container, options = {}) {
     for (let i = 0; i < count; i++) {
       const slot = buildSlot(i);
       container.appendChild(slot.wrap);
+      setValidity(slot.input);
     }
   }
 
@@ -98,6 +129,7 @@ export function createInputSlots(container, options = {}) {
       const v = trimmed[i];
       if (v === undefined || v === null || Number.isNaN(v)) return;
       node.value = String(v);
+      setValidity(node);
     });
     emitChange();
   }
@@ -114,11 +146,35 @@ export function createInputSlots(container, options = {}) {
     return out;
   }
 
+  // Returns true only when every non-empty slot holds a value inside
+  // [-499, 500]. Empty slots are fine (they are skipped by readInput).
+  function isValid() {
+    const slots = container.querySelectorAll(".io-slot-input");
+    for (const node of slots) {
+      const raw = node.value.trim();
+      if (raw === "") continue;
+      if (!inRange(Number(raw))) return false;
+    }
+    return true;
+  }
+
+  // First invalid slot — used to focus + announce the error. Null if all OK.
+  function firstInvalid() {
+    const slots = container.querySelectorAll(".io-slot-input");
+    for (const node of slots) {
+      const raw = node.value.trim();
+      if (raw === "") continue;
+      if (!inRange(Number(raw))) return node;
+    }
+    return null;
+  }
+
   function addSlot() {
     if (count >= max) return;
     count += 1;
     const slot = buildSlot(count - 1);
     container.appendChild(slot.wrap);
+    setValidity(slot.input);
     slot.input.focus();
   }
 
@@ -143,5 +199,9 @@ export function createInputSlots(container, options = {}) {
     addSlot,
     isLoop: () => isLoop,
     count: () => count,
+    isValid,
+    firstInvalid,
+    rangeMin: () => RANGE_MIN,
+    rangeMax: () => RANGE_MAX,
   };
 }

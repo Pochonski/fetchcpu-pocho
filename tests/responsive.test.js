@@ -252,6 +252,26 @@ describe("SVG icon system", () => {
     expect(compsCss).toMatch(/btn-restart:active\s+\.icon|btn-restart:focus-visible\s+\.icon/);
     expect(compsCss).toMatch(/icon-spin/);
   });
+
+  it("step icon is a clean triangle + bar (not overlapping bars)", () => {
+    let doc;
+    doc = document.implementation.createHTMLDocument("");
+    doc.documentElement.innerHTML = indexHtml;
+    const stepBtn = doc.getElementById("btn-step");
+    const svg = stepBtn.querySelector("svg.icon");
+    expect(svg).toBeTruthy();
+    const path = svg.querySelector("path").getAttribute("d");
+    // The new design uses exactly two sub-paths separated by a single "z":
+    // one triangle and one bar.
+    const subPaths = path.split("z").filter(Boolean);
+    expect(subPaths.length).toBe(2);
+    // The triangle starts at (5, *) and uses absolute + relative line commands.
+    expect(path).toMatch(/M5\s+\d+l\d+\s+\d+/);
+    // The bar uses absolute horizontal commands (h) so it sits cleanly
+    // to the right of the triangle — not overlapped.
+    expect(path).toMatch(/h\d+/);
+    expect(path).not.toMatch(/V5H\d+v14h-\d+V5/); // old overlapping-bar pattern
+  });
 });
 
 describe("mobile menu module", () => {

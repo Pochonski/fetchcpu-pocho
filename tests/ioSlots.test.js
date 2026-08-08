@@ -140,4 +140,86 @@ describe("input slots", () => {
     expect(container.querySelectorAll(".io-slot").length).toBe(0);
     expect(slots.isLoop()).toBe(false);
   });
+
+  it("flags slots whose value is outside the 3-digit LMC range", () => {
+    slots.setCount(3, false);
+    const inputs = container.querySelectorAll(".io-slot-input");
+    inputs[0].value = "500";    // in range (max)
+    inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+    inputs[1].value = "501";    // out of range
+    inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+    inputs[2].value = "-499";   // in range (min)
+    inputs[2].dispatchEvent(new Event("input", { bubbles: true }));
+
+    expect(inputs[0].classList.contains("io-slot-input--invalid")).toBe(false);
+    expect(inputs[1].classList.contains("io-slot-input--invalid")).toBe(true);
+    expect(inputs[2].classList.contains("io-slot-input--invalid")).toBe(false);
+  });
+
+  it("flags values above 500 and below -499", () => {
+    slots.setCount(2, false);
+    const inputs = container.querySelectorAll(".io-slot-input");
+    for (const v of ["501", "1000", "9999", "-500", "-999"]) {
+      inputs[0].value = v;
+      inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+      expect(inputs[0].classList.contains("io-slot-input--invalid")).toBe(true);
+    }
+  });
+
+  it("treats empty slots as valid (they are skipped by readInput)", () => {
+    slots.setCount(2, false);
+    const inputs = container.querySelectorAll(".io-slot-input");
+    inputs[0].value = "10";
+    inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+    inputs[1].value = "";
+    inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+    expect(slots.isValid()).toBe(true);
+  });
+
+  it("isValid() returns false when any non-empty slot is out of range", () => {
+    slots.setCount(2, false);
+    const inputs = container.querySelectorAll(".io-slot-input");
+    inputs[0].value = "10";
+    inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+    inputs[1].value = "1234";
+    inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+    expect(slots.isValid()).toBe(false);
+  });
+
+  it("isValid() returns true when every non-empty slot is in range", () => {
+    slots.setCount(3, false);
+    const inputs = container.querySelectorAll(".io-slot-input");
+    inputs[0].value = "-499";
+    inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+    inputs[1].value = "0";
+    inputs[1].dispatchEvent(new Event("input", { bubbles: true }));
+    inputs[2].value = "500";
+    inputs[2].dispatchEvent(new Event("input", { bubbles: true }));
+    expect(slots.isValid()).toBe(true);
+  });
+
+  it("firstInvalid() returns the first out-of-range slot, or null", () => {
+    slots.setCount(2, false);
+    const inputs = container.querySelectorAll(".io-slot-input");
+    inputs[0].value = "999";
+    inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+    expect(slots.firstInvalid()).toBe(inputs[0]);
+    inputs[0].value = "10";
+    inputs[0].dispatchEvent(new Event("input", { bubbles: true }));
+    expect(slots.firstInvalid()).toBeNull();
+  });
+
+  it("rangeMin/rangeMax return the LMC limits", () => {
+    expect(slots.rangeMin()).toBe(-499);
+    expect(slots.rangeMax()).toBe(500);
+  });
+
+  it("setValues flags out-of-range values too", () => {
+    slots.setCount(2, false);
+    slots.setValues([1000, 5]);
+    const inputs = container.querySelectorAll(".io-slot-input");
+    expect(inputs[0].classList.contains("io-slot-input--invalid")).toBe(true);
+    expect(inputs[1].classList.contains("io-slot-input--invalid")).toBe(false);
+    expect(slots.isValid()).toBe(false);
+  });
 });

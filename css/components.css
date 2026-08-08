@@ -170,7 +170,11 @@
 
 /* Play / step icons get a touch more weight so they read at small sizes. */
 .icon-play,
-.icon-step { width: 1.0625rem; height: 1.0625rem; }
+.icon-step { width: 1.125rem; height: 1.125rem; }
+
+/* Pause (two bars) needs slightly tighter letter-spacing for visual balance
+   inside the 1.125rem square. */
+.icon-pause { letter-spacing: 1px; }
 
 .btn .badge-count {
   font-family: var(--font-mono);
@@ -976,6 +980,17 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border-color: var(--accent);
   box-shadow: 0 0 0 2px var(--accent-soft);
 }
+.io-slot-input--invalid {
+  border-color: var(--error, #d64545);
+  background: color-mix(in srgb, var(--error, #d64545) 8%, var(--bg));
+  color: var(--error, #d64545);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--error, #d64545) 20%, transparent);
+}
+.io-slot-input--invalid:focus {
+  outline: none;
+  border-color: var(--error, #d64545);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--error, #d64545) 30%, transparent);
+}
 .io-slot--loop .io-slot-loop-badge {
   font-size: 0.875rem;
   color: var(--accent);
@@ -1406,24 +1421,206 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   font-family: var(--font-mono);
   font-size: 0.75rem;
   color: var(--fg);
-  max-height: 18rem;
+  max-height: 24rem;
   overflow: auto;
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
-.live-feed .log-entry {
-  padding: 2px var(--space-2);
+
+/* Shared row styling — both the legacy plain-text rows and the new rich
+   cycle rows live inside the live-feed container. */
+.live-feed .log-entry,
+.live-feed .log-entry-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 3px var(--space-2);
   border-radius: var(--radius-xs);
+  border-left: 3px solid transparent;
+  background: var(--bg-input);
+  min-height: 1.5rem;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  position: relative;
+  transition: background var(--duration-fast);
+}
+.live-feed .log-entry-wrap:hover,
+.live-feed .log-entry:hover { background: var(--bg-hover); }
+
+/* Plain text row (lifecycle events like "Loaded program", "Halted", errors) */
+.live-feed .log-entry {
+  font-weight: 500;
+  padding-left: var(--space-3);
+}
+
+.live-feed .log-entry-error { color: var(--danger); border-left-color: var(--danger); }
+.live-feed .log-entry-halt   { color: var(--success); border-left-color: var(--success); font-weight: 700; }
+
+/* ----- Rich cycle row ----- */
+.live-feed .log-entry-wrap {
+  padding: 4px var(--space-3) 4px 0;
+  border-left-color: var(--border);
+}
+.live-feed .log-entry-wrap.log-entry-fetch   { border-left-color: var(--phase-fetch); }
+.live-feed .log-entry-wrap.log-entry-decode  { border-left-color: var(--phase-decode); }
+.live-feed .log-entry-wrap.log-entry-execute { border-left-color: var(--phase-execute); }
+
+/* Cycle counter (left side) */
+.lf-cycle {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--fg-dim);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  min-width: 3.5rem;
+  padding: 0 var(--space-2);
+}
+
+/* Phase badge (F / D / E) */
+.lf-phase {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: var(--radius-xs);
+  font-weight: 800;
+  font-size: 0.625rem;
+  color: white;
+  letter-spacing: 0;
+}
+.lf-phase-fetch   { background: var(--phase-fetch); }
+.lf-phase-decode  { background: var(--phase-decode); }
+.lf-phase-execute { background: var(--phase-execute); }
+
+/* Mnemonic badge */
+.lf-mnem {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.25rem;
+  padding: 0 6px;
+  height: 1.25rem;
+  border-radius: var(--radius-xs);
+  background: var(--bg-elevated);
+  color: var(--fg);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--border-strong);
+}
+.lf-mnem-io      { color: var(--info); border-color: var(--info); background: rgba(102, 217, 239, 0.10); }
+.lf-mnem-hlt     { color: var(--danger); border-color: var(--danger); background: rgba(255, 107, 107, 0.12); }
+.lf-mnem-branch  { color: var(--warning); border-color: var(--warning); background: rgba(255, 184, 77, 0.10); }
+.lf-mnem-dat     { color: #c084fc; border-color: #c084fc; background: rgba(192, 132, 252, 0.10); }
+.lf-mnem-code    { color: var(--accent); border-color: var(--accent); background: rgba(91, 158, 255, 0.10); }
+
+/* Register diff column */
+.lf-diffs {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+.lf-reg {
+  font-variant-numeric: tabular-nums;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+.lf-reg b {
+  font-weight: 700;
+  color: var(--accent);
+}
+.lf-reg s {
+  color: var(--fg-dim);
+  text-decoration: line-through;
+  margin-right: 2px;
+}
+.lf-reg-changed b { color: var(--accent); }
+.lf-reg-unchanged {
+  color: var(--fg-muted);
+  opacity: 0.6;
+  display: none; /* hide unchanged regs to focus on changes */
+}
+.lf-reg-unchanged:first-of-type,
+.lf-reg-unchanged:last-of-type { display: none; }
+
+/* Flag indicators (Z / N / P) */
+.lf-flags {
+  flex: 0 0 auto;
+  display: inline-flex;
+  gap: 3px;
+  margin-left: auto;
+  padding-right: var(--space-1);
+}
+.lf-flag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 0.9375rem;
+  height: 0.9375rem;
+  border-radius: 50%;
+  font-size: 0.5625rem;
+  font-weight: 800;
+  color: var(--fg-dim);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  opacity: 0.45;
+}
+.lf-flag-on {
+  opacity: 1;
+  color: var(--bg);
+  background: var(--accent);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+/* Optional elapsed-time pill */
+.lf-time {
+  flex: 0 0 auto;
+  color: var(--fg-dim);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.6875rem;
+  padding-left: var(--space-1);
+}
+
+/* Human-readable note (e.g. "INP — Read 3 from stdin → ACC") */
+.lf-note {
+  flex: 1 1 100%;
+  margin-top: 2px;
+  margin-left: 5.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  color: var(--fg-muted);
+  font-style: italic;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  border-left: 3px solid transparent;
 }
-.live-feed .log-entry:hover { background: var(--bg-hover); }
-.live-feed .log-entry-error { color: var(--danger); border-left-color: var(--danger); }
-.live-feed .log-entry-fetch  { border-left-color: var(--phase-fetch); }
-.live-feed .log-entry-decode { border-left-color: var(--phase-decode); }
-.live-feed .log-entry-execute{ border-left-color: var(--phase-execute); }
-.live-feed .log-entry-halt   { color: var(--success); border-left-color: var(--success); font-weight: 600; }
+
+/* Allow the rich row to flow on two lines when needed (cycle / phase /
+   mnemonic / diffs / flags on row 1, note on row 2). */
+.live-feed .log-entry-wrap {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 480px) {
+  /* On very small phones the note is hidden to save vertical space;
+     everything stays in a single line. */
+  .lf-note { display: none; }
+  .lf-cycle { min-width: 2.75rem; }
+  .lf-reg { font-size: 0.6875rem; }
+  .lf-flags { gap: 2px; }
+}
 
 .log-actions {
   display: flex;

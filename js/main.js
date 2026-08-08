@@ -372,8 +372,31 @@ function boot() {
     historyView.render();
   }
 
+  // Refuse to run/step while any slot holds a value outside the 3-digit
+  // LMC range. Focuses the first invalid slot and pushes a friendly log
+  // entry so the user knows why nothing happened.
+  function guardInputRange() {
+    if (inputSlots.isValid()) return true;
+    const bad = inputSlots.firstInvalid();
+    if (bad) {
+      bad.focus();
+      const raw = bad.value.trim();
+      const msg = t("panels.cpu.inputOutOfRange", {
+        value: raw,
+        min: inputSlots.rangeMin(),
+        max: inputSlots.rangeMax(),
+      });
+      logger.onError(msg);
+    } else {
+      logger.onError(t("panels.cpu.inputBlockedRange"));
+    }
+    refreshView();
+    return false;
+  }
+
   function runProgram() {
     if (cpu.state.halted) loadProgram();
+    if (!guardInputRange()) return;
     if (!executor.isRunning()) {
       executor.run({
         getSpeed: () => Number($("clock").value),
@@ -390,6 +413,7 @@ function boot() {
 
   function runUntilHalt() {
     if (cpu.state.halted) loadProgram();
+    if (!guardInputRange()) return;
     executor.run({
       // Fast-forward: cap at 20 ms so the UI can still render between cycles.
       getSpeed: () => Math.min(Number($("clock").value) || 50, 20),
@@ -427,6 +451,7 @@ function boot() {
   function singleStep() {
     if (cpu.state.halted) return;
     if (executor.isRunning()) pauseProgram();
+    if (!guardInputRange()) return;
     try {
       const cont = executor.step();
       refreshView();
@@ -728,6 +753,7 @@ function boot() {
 
   events.on("tick", (info) => {
     if (info && info.note) setExplanationText(info.note);
+    logger.onCycle(cpu, info);
     refreshView();
   });
   events.on("halt", () => {
