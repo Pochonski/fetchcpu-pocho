@@ -77,37 +77,29 @@ export function createRAMView(ram, cpu) {
       td.className = "ram-cell";
       td.dataset.addr = addr;
       td.innerHTML = `
-        <div class="cell-inner">
-          <span class="cell-addr"></span>
+        <span class="cell-addr"></span>
+        <div class="cell-stack">
           <span class="cell-tag"></span>
+          <span class="cell-value"></span>
           <span class="cell-label"></span>
         </div>
+        <input class="cell-input" type="text" value="000" maxlength="3" inputmode="numeric" aria-label="Edit cell ${addr}" />
       `;
-      const input = makeEditor(addr);
-      td.appendChild(input);
+      const input = td.querySelector(".cell-input");
+      input.addEventListener("focus", () => { tdFocus(addr); });
+      input.addEventListener("blur", () => { tdBlur(addr); });
+      input.addEventListener("input", () => {
+        const v = clampInput(input.value);
+        ram.write(addr, v);
+        sync();
+      });
+      td.dataset.editing = "false";
       tr.appendChild(td);
       rowCells.push(td);
     }
     root.appendChild(tr);
     rows.push(tr);
     cells.push(...rowCells);
-  }
-
-  function makeEditor(addr) {
-    const wrap = document.createElement("label");
-    wrap.className = "cell-editor";
-    wrap.setAttribute("aria-label", `Edit cell ${addr}`);
-    wrap.innerHTML = `<input type="text" value="000" maxlength="3" inputmode="numeric" />`;
-    const inp = wrap.querySelector("input");
-    inp.addEventListener("focus", () => { tdFocus(addr); });
-    inp.addEventListener("blur", () => { tdBlur(addr); });
-    inp.addEventListener("input", () => {
-      const v = clampInput(inp.value);
-      ram.write(addr, v);
-      inp.value = formatValue(v);
-      sync();
-    });
-    return wrap;
   }
 
   function tdFocus(addr) {
@@ -117,6 +109,7 @@ export function createRAMView(ram, cpu) {
   function tdBlur(addr) {
     const td = cells[addr];
     if (td) td.dataset.editing = "false";
+    sync();
   }
 
   function headerCell(text, isRow = false) {
@@ -171,6 +164,7 @@ export function createRAMView(ram, cpu) {
       const td = cells[i];
       const inp = td.querySelector("input");
       const tag = td.querySelector(".cell-tag");
+      const valueEl = td.querySelector(".cell-value");
       const addrEl = td.querySelector(".cell-addr");
       const labelEl = td.querySelector(".cell-label");
       const value = ram.read(i);
@@ -178,7 +172,13 @@ export function createRAMView(ram, cpu) {
       const isData = dataByAddr.has(i) || immediateByAddr.has(i);
       const wasModified = lastModified === i && (Date.now() - modifiedFlash) < 300;
 
-      if (!td.hasAttribute("data-editing")) inp.value = formatValue(value);
+      const formatted = formatValue(value);
+      // Always update both the read-only display and the (hidden) input so
+      // editing picks up the latest RAM value.
+      valueEl.textContent = formatted;
+      if (!td.hasAttribute("data-editing") || td.dataset.editing === "false") {
+        inp.value = formatted;
+      }
       addrEl.textContent = String(i).padStart(2, "0");
       const dis = disassemble(value);
       // If the loader says this is a DAT cell, prefer that tag (regardless of value).
