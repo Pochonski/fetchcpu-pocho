@@ -792,7 +792,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   min-width: 0;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: center;
   padding: var(--space-2) var(--space-1);
   background: var(--bg-elevated);
   border: 1px solid var(--border);
@@ -803,8 +803,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
     border-color var(--duration-fast),
     background var(--duration-fast),
     transform var(--duration-fast);
-  overflow: hidden;
-  min-height: 3.5rem;
+  /* Visible so the PC / MAR badges can overhang the cell border. */
+  overflow: visible;
+  min-height: 4.25rem;
 }
 .ram-cell:hover {
   border-color: var(--border-strong);
@@ -826,25 +827,37 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding-top: 0.85rem;
+  gap: 3px;
+  padding-top: 0.9rem;
   padding-bottom: 2px;
-  min-height: 100%;
   pointer-events: none;
+  width: 100%;
 }
 .cell-tag {
   display: inline-block;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 2px 6px;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
   border-radius: var(--radius-xs);
   background: var(--bg-input);
   color: var(--fg-dim);
   text-align: center;
-  line-height: 1;
+  line-height: 1.25;
+  min-height: 1rem;
 }
+.cell-tag[data-tag="inp"],
+.cell-tag[data-tag="out"]       { background: rgba(102, 217, 239, 0.18); color: var(--info); }
+.cell-tag[data-tag="lda"],
+.cell-tag[data-tag="sta"],
+.cell-tag[data-tag="add"],
+.cell-tag[data-tag="sub"]       { background: rgba(74, 222, 128, 0.16); color: var(--success); }
+.cell-tag[data-tag="brp"],
+.cell-tag[data-tag="brz"],
+.cell-tag[data-tag="bra"]       { background: rgba(255, 184, 77, 0.18); color: var(--warning); }
+.cell-tag[data-tag="hlt"]       { background: rgba(255, 107, 107, 0.20); color: var(--danger); }
+.cell-tag[data-tag="dat"]       { background: rgba(192, 132, 252, 0.18); color: #c084fc; }
 .cell-value {
   display: block;
   font-family: var(--font-mono);
@@ -853,19 +866,19 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   color: var(--fg);
   letter-spacing: 0.02em;
   text-align: center;
-  line-height: 1.1;
-  margin-top: 2px;
+  line-height: 1.15;
 }
 .cell-label {
   display: block;
   text-align: center;
-  font-size: 0.625rem;
+  font-size: 0.6875rem;
   color: var(--fg-muted);
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
+  line-height: 1.15;
 }
 .cell-input {
   position: absolute;
@@ -954,6 +967,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border-color: var(--mar-marker);
   background: rgba(250, 204, 21, 0.18);
   box-shadow: 0 0 0 2px var(--mar-marker);
+  z-index: 2;
 }
 .ram-cell[data-mar="true"]::after {
   content: "MAR";
