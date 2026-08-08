@@ -48,6 +48,38 @@
   ],
   "redirects": [
     { "source": "/lmc", "destination": "/", "permanent": true },
-    { "source": "/LMC", "destination": "/", "permanent": true }
+    { "source": "/LMC", "destination": "/", "permanent": true },
+    {
+      "source": "/",
+      "destination": "https://fetchcpu-pocho.vercel.app/",
+      "statusCode": 301,
+      "has": [
+        { "type": "host", "value": "pocho-lmc.vercel.app" }
+      ]
+    },
+    {
+      "source": "/:path(.*)",
+      "destination": "https://fetchcpu-pocho.vercel.app/:path*",
+      "statusCode": 301,
+      "has": [
+        { "type": "host", "value": "pocho-lmc.vercel.app" }
+      ]
+    },
+    {
+      "source": "/",
+      "destination": "https://fetchcpu-pocho.vercel.app/",
+      "statusCode": 301,
+      "has": [
+        { "type": "host", "value": "lmc-simulator.vercel.app" }
+      ]
+    },
+    {
+      "source": "/:path(.*)",
+      "destination": "https://fetchcpu-pocho.vercel.app/:path*",
+      "statusCode": 301,
+      "has": [
+        { "type": "host", "value": "lmc-simulator.vercel.app" }
+      ]
+    }
   ]
 }
