@@ -191,6 +191,67 @@ describe("responsive component rules", () => {
   it("provides smooth momentum scrolling on iOS overflow surfaces", () => {
     expect(compsCss).toMatch(/-webkit-overflow-scrolling:\s*touch/);
   });
+
+  it("disables the iOS long-press context menu on header UI", () => {
+    expect(compsCss).toMatch(/-webkit-touch-callout:\s*none/);
+    expect(compsCss).toMatch(/user-select:\s*none/);
+  });
+
+  it("uses dynamic viewport height for full-screen modals (iOS Safari)", () => {
+    expect(compsCss).toMatch(/height:\s*100dvh/);
+  });
+});
+
+describe("iOS Safari polish", () => {
+  it("prevents overscroll bounce / pull-to-refresh on the body", () => {
+    expect(themesCss).toMatch(/overscroll-behavior-y:\s*contain/);
+  });
+
+  it("mobile menu sits above the iOS Safari bottom toolbar", () => {
+    // The mobile menu's bottom padding should reserve ~3.25rem extra on
+    // top of the safe-area inset so it clears the Aa/share/bookmarks bar
+    // (visible on iPhone 13 and similar).
+    const matches =
+      /var\(--safe-bottom\)\s*\+\s*3\.25rem/.test(layoutCss) ||
+      /3\.25rem\s*\+\s*var\(--safe-bottom\)/.test(layoutCss);
+    expect(matches).toBe(true);
+  });
+});
+
+describe("SVG icon system", () => {
+  it("the play strip has three icon-only buttons with SVG icons", () => {
+    let doc;
+    doc = document.implementation.createHTMLDocument("");
+    doc.documentElement.innerHTML = indexHtml;
+    for (const id of ["btn-pause", "btn-step", "btn-restart"]) {
+      const btn = doc.getElementById(id);
+      expect(btn).toBeTruthy();
+      const svg = btn.querySelector("svg.icon");
+      expect(svg).toBeTruthy();
+      // Has a single <path> child for the visible glyph.
+      expect(svg.querySelector("path")).toBeTruthy();
+    }
+  });
+
+  it("header icon buttons (theme/sound/share) use SVG icons", () => {
+    let doc;
+    doc = document.implementation.createHTMLDocument("");
+    doc.documentElement.innerHTML = indexHtml;
+    for (const id of ["theme-toggle", "sound-toggle", "share-btn"]) {
+      const btn = doc.getElementById(id);
+      const svg = btn.querySelector("svg.icon");
+      expect(svg).toBeTruthy();
+    }
+  });
+
+  it("CSS defines a consistent .icon rule that uses currentColor", () => {
+    expect(compsCss).toMatch(/\.icon\s*\{[^}]*currentColor/);
+  });
+
+  it("Restart button spins its icon on :active / :focus-visible", () => {
+    expect(compsCss).toMatch(/btn-restart:active\s+\.icon|btn-restart:focus-visible\s+\.icon/);
+    expect(compsCss).toMatch(/icon-spin/);
+  });
 });
 
 describe("mobile menu module", () => {

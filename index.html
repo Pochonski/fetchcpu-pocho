@@ -55,20 +55,20 @@
           <button class="lang-btn" data-lang="en" type="button" aria-pressed="true">EN</button>
           <button class="lang-btn" data-lang="es" type="button" aria-pressed="false">ES</button>
         </div>
-        <button class="icon-btn" id="theme-toggle" aria-label="Toggle theme" data-i18n-attr="title:app.theme" title="Toggle theme">
-          <span aria-hidden="true">☀</span>
+<button class="icon-btn" id="theme-toggle" aria-label="Toggle theme" data-i18n-attr="title:app.theme" title="Toggle theme">
+          <svg class="icon icon-theme" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 7a5 5 0 1 0 0 10 5 5 0 0 0 0-10zm0-5l-2 4h4l-2-4zm0 14l-2 4h4l-2-4zm9-7l-4-2v4l4-2zM3 12l-4-2v4l4-2zm13.95 7.95l-2.83-2.83 2.83-2.83 2.83 2.83-2.83 2.83zM7.05 4.05L4.22 6.88l2.83 2.83 2.83-2.83L7.05 4.05z" fill="currentColor"/></svg>
         </button>
         <button class="icon-btn" id="sound-toggle" aria-label="Sound effects" data-i18n-attr="title:app.sound" title="Sound">
-          <span aria-hidden="true">♪</span>
+          <svg class="icon icon-sound" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z" fill="currentColor"/></svg>
         </button>
-<button class="icon-btn" id="share-btn" aria-label="Copy share URL" data-i18n-attr="title:app.share" title="Copy share link">
-          <span aria-hidden="true">↗</span>
+        <button class="icon-btn" id="share-btn" aria-label="Copy share URL" data-i18n-attr="title:app.share" title="Copy share link">
+          <svg class="icon icon-share" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1.5-8 6-12.5 11-13z" fill="currentColor"/></svg>
         </button>
         <button class="link-btn" id="tutorial-btn" data-i18n="app.tutorial" title="Walkthrough">Tutorial</button>
         <button class="link-btn" id="help-link" data-i18n="app.instructionSet">Instruction Set</button>
         <button class="link-btn" id="about-link" data-i18n="app.about">About</button>
         <button class="icon-btn menu-toggle" id="menu-toggle" type="button" aria-label="Open menu" aria-controls="mobile-menu" aria-expanded="false" data-i18n-attr="aria-label:app.menu" title="Menu">
-          <span aria-hidden="true">⋯</span>
+          <svg class="icon icon-menu" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></svg>
         </button>
       </div>
     </header>
@@ -139,20 +139,23 @@
         <div class="controls-row controls-row-buttons">
           <div class="control-buttons">
             <button class="btn btn-secondary icon-only" id="btn-pause" data-i18n-attr="title:panels.cpu.pauseRun;aria-label:panels.cpu.pauseRun" aria-label="Run/Pause" title="Run (F5)">
-              <span aria-hidden="true">▶</span>
+              <svg class="icon icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
             </button>
             <button class="btn btn-primary icon-only" id="btn-step" data-i18n-attr="title:panels.cpu.step;aria-label:panels.cpu.step" aria-label="Step one FDE cycle" title="Step (F9)">
-              <span aria-hidden="true">▸</span>
+              <svg class="icon icon-step" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 5l9 7-9 7V5zm2 14h2V5H7v14zm6-14h2v14h-2V5z" fill="currentColor"/></svg>
+            </button>
+            <button class="btn btn-ghost icon-only" id="btn-restart" data-i18n-attr="title:panels.cpu.restart;aria-label:panels.cpu.restart" aria-label="Restart" title="Restart (F4)">
+              <svg class="icon icon-restart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5V2L7 7l5 5V8a6 6 0 1 1-6 6H4a8 8 0 1 0 8-9z" fill="currentColor"/></svg>
             </button>
           </div>
           <div class="speed-control">
             <label for="clock" data-i18n="panels.cpu.clock">Clock</label>
             <button class="btn btn-ghost icon-only clock-step" id="btn-clock-down" data-i18n-attr="title:panels.cpu.slower;aria-label:panels.cpu.slower" aria-label="Slower" title="Slow down">
-              <span aria-hidden="true">−</span>
+              <svg class="icon icon-minus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 11h14v2H5z" fill="currentColor"/></svg>
             </button>
             <input type="range" id="clock" min="50" max="3000" value="500" step="25" aria-valuemin="50" aria-valuemax="3000" />
             <button class="btn btn-ghost icon-only clock-step" id="btn-clock-up" data-i18n-attr="title:panels.cpu.faster;aria-label:panels.cpu.faster" aria-label="Faster" title="Speed up">
-              <span aria-hidden="true">+</span>
+              <svg class="icon icon-plus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor"/></svg>
             </button>
             <output id="clock-value" for="clock">120 ms</output>
           </div>
@@ -160,8 +163,10 @@
 
         <div class="controls-row controls-row-io">
           <div class="io-panel">
-            <label for="input" data-i18n="panels.cpu.inputLabel">Input · stdin</label>
-            <textarea id="input" class="io-textarea" rows="2" data-i18n-placeholder="panels.cpu.inputPlaceholder" placeholder="One numeric value per line"></textarea>
+            <label data-i18n="panels.cpu.inputLabel">Input · stdin</label>
+            <div class="io-slots" id="input-list" role="group" aria-label="Input values"></div>
+            <input type="hidden" id="input" />
+            <button class="btn btn-ghost btn-sm io-add-slot" id="btn-add-input" type="button" data-i18n="panels.cpu.inputAddValue" hidden>+ Add value</button>
           </div>
           <div class="io-panel">
             <label for="output" data-i18n="panels.cpu.outputLabel">Output · stdout</label>

@@ -124,6 +124,7 @@ The breakpoint scale is declared in `css/tokens.css` (`--bp-xs/sm/md/tablet/lg/x
 | `F5` | Run / resume |
 | `Shift` + `F5` | Run to halt (uses min interval for speed) |
 | `F6` | Run / Pause toggle |
+| `F4` | Restart — reload the program in the editor from scratch |
 | `F8` | Step backward |
 | `F9` | Step forward |
 | `F10` | Step one phase (Fetch → Decode → Execute) |
@@ -138,7 +139,7 @@ On the editor gutter, click any line number to toggle a breakpoint.
 ## Quick example walkthrough
 
 1. Open `http://127.0.0.1:8000/`.
-2. The example picker defaults to **"Adding 2 inputs"** (input `3` and `4`, expected output `7`).
+2. The example picker defaults to **"Adding 2 inputs"** — the program reads two values and prints their sum. The **Input** panel reshapes itself automatically and shows **two slots** labeled `#1` and `#2`, pre-populated with `3` and `4`.
 3. Press **Try example** — the program is assembled into RAM and starts running at 500 ms per cycle (slow enough to follow).
 4. Hit `F9` a few times to step manually. Watch:
    - the **CIR** register showing the current instruction mnemonic,
@@ -147,7 +148,15 @@ On the editor gutter, click any line number to toggle a breakpoint.
    - **ACC** updating on `ADD` / `LDA`,
    - the **bus** flashing on each memory access,
    - the **access log** showing `READ 03 = 042` or `WRITE 06 = 003` style entries.
-5. Toggle the language with **EN / ES** in the header — every label, button, log message, and modal updates instantly.
+5. The **Input** slots update live: as `INP` runs, the slot that was just consumed becomes "empty" so you can see exactly which values the program still has queued.
+6. Toggle the language with **EN / ES** in the header — every label, button, log message, modal and slot hint updates instantly.
+
+### Input slots: how they work
+
+- When you **load a program**, the Input panel renders one slot per top-level `INP` (e.g. a program with two `INP`s shows `#1` and `#2`).
+- If the program has an `INP` inside a **loop**, the panel shows **one slot with an `∞` badge** and a **+ Add value** button so you can stage one value per iteration.
+- **Pasting** a list of numbers into the panel distributes them across slots and silently discards overflow.
+- Anything you write in the slots is mirrored to the share/export `.fcpu` format, so the new UI is fully compatible with the old text-based input box.
 
 ---
 

@@ -95,6 +95,98 @@ describe("translateDom", () => {
   });
 });
 
+describe("Language switch (EN/ES) — no English leakage", () => {
+  beforeEach(async () => {
+    // Reset language persistence so this describe doesn't poison later ones.
+    try { localStorage.removeItem("fetchcpu-language"); } catch { /* ignore */ }
+
+    if (!globalThis.localStorage) {
+      const store = new Map();
+      Object.defineProperty(globalThis, "localStorage", {
+        value: {
+          getItem: (k) => store.get(k) ?? null,
+          setItem: (k, v) => store.set(k, v),
+          removeItem: (k) => store.delete(k),
+          clear: () => store.clear(),
+        },
+      });
+    }
+    document.documentElement.innerHTML = read("index.html").match(/<body>([\s\S]*?)<\/body>/,)[1];
+    const main = await import("../js/main.js?v=es-leak");
+    main.resetBoot();
+    main.boot();
+    document.querySelector(".lang-btn[data-lang='es']").click();
+  });
+
+  it("the explanation idle text is translated to Spanish", () => {
+    // The explanation-controls text is set by setExplanationText() during
+    // loadProgram() (called on boot) and then re-rendered by translateDom()
+    // on language switch. Both should yield the Spanish string.
+    const text = document.getElementById("explanation-controls").textContent;
+    expect(text).toMatch(/Pulsa Paso o Ejecutar/i);
+    expect(text).not.toMatch(/Press Step or Run/i);
+  });
+
+  it("the editor panel title is in Spanish", () => {
+    expect(document.getElementById("editor-title").textContent).toMatch(/Programa/i);
+    expect(document.getElementById("btn-load").textContent).toMatch(/Cargar/i);
+    expect(document.getElementById("btn-run").textContent).toMatch(/Ejecutar/i);
+  });
+
+  it("the RAM stats strip uses Spanish labels", () => {
+    const stats = document.getElementById("ram-stats");
+    expect(stats).toBeTruthy();
+    // Trigger a render by loading an example.
+    document.querySelector("#btn-try-example").click();
+    const text = stats.textContent;
+    expect(text).toMatch(/usadas/);
+    expect(text).toMatch(/instrucciones/);
+    expect(text).toMatch(/datos/);
+    expect(text).not.toMatch(/\bused\b/i);
+    expect(text).not.toMatch(/\binstructions\b/i);
+  });
+
+  it("the History tab uses 'ciclo' (not 'cycle')", () => {
+    // Load an example so history gets entries.
+    document.querySelector("#btn-try-example").click();
+    document.querySelector("#tab-history").click();
+    const list = document.getElementById("history-list");
+    expect(list.textContent).toMatch(/ciclo/i);
+    expect(list.textContent).not.toMatch(/\bcycle\b/i);
+  });
+
+  it("parser error messages come out in Spanish", () => {
+    const ta = document.getElementById("codeListing");
+    ta.value = "FOO\n";
+    ta.dispatchEvent(new Event("input"));
+    document.querySelector("#btn-load").click();
+    const log = document.getElementById("log");
+    expect(log.textContent).toMatch(/Mnemónico desconocido/i);
+    expect(log.textContent).not.toMatch(/Unknown mnemonic/i);
+  });
+
+  it("the disasm view shows 'DETENIDO' (not 'HALTED') after HLT", () => {
+    document.querySelector("#btn-try-example").click();
+    // Poll until HLT fires.
+    let halted = false;
+    for (let i = 0; i < 80; i++) {
+      const t = document.getElementById("disasm-next").textContent;
+      if (/DETENIDO|HALTED/.test(t)) { halted = true; break; }
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "F9" }));
+    }
+    expect(halted).toBe(true);
+    const text = document.getElementById("disasm-next").textContent;
+    expect(text).toMatch(/DETENIDO/);
+    expect(text).not.toMatch(/HALTED/);
+  });
+
+  it("the footer keys use Spanish labels", () => {
+    const footer = document.querySelector(".app-footer");
+    expect(footer.textContent).toMatch(/ejecutar/);
+    expect(footer.textContent).not.toMatch(/\brun\b/i);
+  });
+});
+
 describe("Language switch (EN/ES)", () => {
   let errors;
   beforeEach(async () => {
@@ -115,6 +207,17 @@ describe("Language switch (EN/ES)", () => {
     // Force a fresh boot by importing with cache buster.
     const main = await import("../js/main.js?v=2");
     try { main.resetBoot(); main.boot(); } catch (e) { errors.push(e.message); }
+  });
+
+  // Always start these tests with English as the active language. Other
+  // describes may have flipped to Spanish; reset before each test.
+  beforeEach(async () => {
+    try { localStorage.removeItem("fetchcpu-language"); } catch { /* ignore */ }
+    const { setLanguage } = await import("../js/ui/i18n/index.js?v=reset-en");
+    setLanguage("en");
+    document.querySelectorAll(".lang-btn").forEach((b) => {
+      b.setAttribute("aria-pressed", b.dataset.lang === "en" ? "true" : "false");
+    });
   });
 
   it("starts with English as the default language", () => {

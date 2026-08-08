@@ -30,6 +30,8 @@
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--fg-muted);
+  -webkit-user-select: none;
+  user-select: none;
 }
 .panel-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
@@ -114,8 +116,61 @@
   width: 2.25rem;
   height: 2.25rem;
   justify-content: center;
+  align-items: center;
 }
 .btn.icon-only span { line-height: 1; font-size: 0.875rem; }
+
+/* SVG icon system — every icon is a 24×24 vector that picks up its colour
+   from currentColor. Sizing is responsive and icons inherit the button's
+   hover / active / focus state automatically. */
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  display: block;
+  fill: currentColor;
+  pointer-events: none;
+}
+.btn.icon-only .icon { width: 1.0625rem; height: 1.0625rem; }
+.icon-btn .icon { width: 1rem; height: 1rem; }
+
+/* Spin animation for the restart icon when pressed — small touch of
+   feedback so the user sees the action register. */
+@keyframes icon-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+.btn-ghost#btn-restart:active .icon,
+.btn-ghost#btn-restart:focus-visible .icon {
+  animation: icon-spin 320ms var(--easing-out);
+}
+
+/* Active state highlight for the restart button on touch devices. */
+@media (hover: none) {
+  .btn-ghost#btn-restart:active {
+    background: var(--bg-hover);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+/* SVG icon system — every icon is a 24×24 vector that picks up its colour
+   from currentColor. Sizing is responsive (smaller on mobile) and the
+   icons inherit the button's hover/active state automatically. */
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  display: block;
+  fill: currentColor;
+  pointer-events: none;
+}
+.btn.icon-only .icon { width: 1rem; height: 1rem; }
+.icon-btn .icon { width: 1rem; height: 1rem; }
+
+/* Play / step icons get a touch more weight so they read at small sizes. */
+.icon-play,
+.icon-step { width: 1.0625rem; height: 1.0625rem; }
 
 .btn .badge-count {
   font-family: var(--font-mono);
@@ -143,6 +198,10 @@
   cursor: pointer;
   transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
   -webkit-tap-highlight-color: transparent;
+  /* Disable iOS long-press context menu on header UI controls. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 .icon-btn {
   padding: var(--space-2);
@@ -563,6 +622,8 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border: 1px solid var(--border);
   color: var(--fg-muted);
   transition: all var(--duration-normal) var(--easing-out);
+  -webkit-user-select: none;
+  user-select: none;
 }
 @media (max-width: 480px) {
   .fde-flow {
@@ -754,7 +815,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 }
 
 /* Controls strip (play/step + clock) */
-.control-buttons { display: flex; gap: var(--space-2); }
+.control-buttons { display: flex; gap: var(--space-2); align-items: center; }
 .speed-control {
   display: flex;
   align-items: center;
@@ -863,6 +924,66 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 }
 .io-textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
 .io-textarea[readonly] { background: var(--bg-elevated); cursor: default; }
+
+/* ----- Input slots (one <input type="number"> per top-level INP) ----- */
+.io-slots {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-height: 2.25rem;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+.io-slots:focus-within {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.io-slot {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+}
+.io-slot-label {
+  font-size: 0.75rem;
+  color: var(--fg-muted);
+  min-width: 3ch;
+  text-align: right;
+}
+.io-slot-input {
+  flex: 0 0 auto;
+  width: 6ch;
+  padding: 2px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  text-align: right;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.io-slot-input::-webkit-outer-spin-button,
+.io-slot-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.io-slot-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.io-slot--loop .io-slot-loop-badge {
+  font-size: 0.875rem;
+  color: var(--accent);
+  font-weight: 700;
+  letter-spacing: 0;
+  margin-left: auto;
+}
+.io-add-slot { margin-top: var(--space-2); }
 
 /* ===================== RAM ===================== */
 .legend {
@@ -1401,13 +1522,18 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   .modal-content {
     max-width: none;
     width: 100%;
-    height: 100%;
+    /* 100dvh = dynamic viewport height (resizes when iOS Safari's URL bar
+       collapses). -webkit-fill-available is the iOS 15 fallback. min-height
+       is the legacy fallback for older Safari. */
+    height: 100vh;
+    height: 100dvh;
+    height: -webkit-fill-available;
     max-height: none;
     border-radius: 0;
     padding:
       calc(var(--space-5) + var(--safe-top))
       calc(var(--space-4) + var(--safe-right))
-      calc(var(--space-5) + var(--safe-bottom))
+      calc(var(--space-5) + var(--safe-bottom) + 3.25rem)
       calc(var(--space-4) + var(--safe-left));
   }
   .modal-content.modal-wide { width: 100%; }

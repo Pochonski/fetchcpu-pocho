@@ -7,6 +7,7 @@ import { createExecutor } from "./cpu/executor.js";
 import { createEvents } from "./cpu/events.js";
 import { createStats } from "./cpu/stats.js";
 import { createIO } from "./ui/io.js";
+import { createInputSlots } from "./ui/ioSlots.js";
 import { createRAMView } from "./ui/ramView.js";
 import { createCPUView } from "./ui/cpuView.js";
 import { createEditorView } from "./ui/editor.js";
@@ -48,6 +49,20 @@ function boot() {
   const ram = createRAM();
   const io = createIO($("input"), $("output"));
   const executor = createExecutor(cpu, ram, io, events, stats);
+
+  // Render the input as discrete slots matching the program's INP count.
+  const inputSlots = createInputSlots($("input-list"), {
+    t,
+    addButton: $("btn-add-input"),
+    onChange: (values) => {
+      io.setInputValues(values);
+      // Mirror to the hidden input so share/export/serialize still work.
+      const hidden = $("input");
+      if (hidden) hidden.value = io.getInputText();
+      localStorage.setItem(INPUT_KEY, hidden ? hidden.value : "");
+    },
+  });
+  $("btn-add-input")?.addEventListener("click", () => inputSlots.addSlot());
 
   const cpuView = createCPUView(cpu, events);
   const ramView = createRAMView(ram, cpu);
@@ -208,6 +223,7 @@ function boot() {
       `· <kbd>${t("shortcutFormat.f9")}</kbd> ${t("footer.keys.step")}`,
       `· <kbd>${t("shortcutFormat.f10")}</kbd> ${t("footer.keys.phase") || t("panels.cpu.stepPhase").toLowerCase()}`,
       `· <kbd>${t("shortcutFormat.f8")}</kbd> ${t("footer.keys.back")}`,
+      `· <kbd>${t("shortcutFormat.f4")}</kbd> ${t("footer.keys.restart")}`,
       `· <kbd>${t("shortcutFormat.ctrlS")}</kbd> ${t("footer.keys.save")}`,
     ].join(" ");
   }
@@ -254,12 +270,21 @@ function boot() {
     const source = $("codeListing").value;
     const result = parse(source);
     if (!result.ok) {
-      for (const err of result.errors) logger.onError(t("log.parseError", [err.line, err.message]));
+      for (const err of result.errors) {
+        const msg = err.key ? t(err.key, err.args) : err.message;
+        logger.onError(t("log.parseError", [err.line, msg]));
+      }
       refreshView();
       return;
     }
 
     const { instructions, labels } = result.program;
+
+    // Re-shape the input panel to match the number of INPs in the program,
+    // then sync the current IO queue into the slots (truncated to count).
+    const inpShape = countInps(instructions);
+    inputSlots.setCount(inpShape.count, inpShape.isLoop);
+    inputSlots.setValues(io.getInputValues());
 
     const dataCells = [];
     const allocator = 99;
@@ -386,8 +411,15 @@ function boot() {
   function setPauseIcon(isRunning) {
     const btn = $("btn-pause");
     if (!btn) return;
-    const icon = btn.querySelector("span");
-    if (icon) icon.textContent = isRunning ? "⏸" : "▶";
+    const icon = btn.querySelector(".icon");
+    if (icon) {
+      // Swap the SVG path between Play (triangle) and Pause (two bars).
+      icon.innerHTML = isRunning
+        ? '<path d="M6 5h4v14H6V5zm8 0h4v14h-4V5z" fill="currentColor"/>'
+        : '<path d="M8 5v14l11-7z" fill="currentColor"/>';
+      icon.classList.toggle("icon-pause", isRunning);
+      icon.classList.toggle("icon-play", !isRunning);
+    }
     btn.setAttribute("data-running", isRunning ? "true" : "false");
     btn.setAttribute("aria-label", isRunning ? t("app.pauseLabel") : t("app.runLabel"));
   }
@@ -442,6 +474,37 @@ function boot() {
     return null;
   }
 
+  // Count INP mnemonics and detect whether any live inside a backward
+  // branch (loop). Returns { count, isLoop } used to size the input slots.
+  function countInps(instructions) {
+    const branchAddrs = [];
+    for (const instr of instructions) {
+      if (
+        instr.mnemonic === "BRA" ||
+        instr.mnemonic === "BRP" ||
+        instr.mnemonic === "BRZ"
+      ) {
+        const target = Number(instr.operand?.value);
+        if (Number.isFinite(target)) branchAddrs.push({ addr: instr.address, target });
+      }
+    }
+    const inLoop = new Set();
+    for (const { addr, target } of branchAddrs) {
+      if (target < addr) {
+        for (let i = target; i <= addr; i++) inLoop.add(i);
+      }
+    }
+    let linear = 0;
+    let loopHasInp = false;
+    for (const instr of instructions) {
+      if (instr.mnemonic !== "INP") continue;
+      if (inLoop.has(instr.address)) loopHasInp = true;
+      else linear += 1;
+    }
+    if (loopHasInp) return { count: Math.max(1, linear), isLoop: true };
+    return { count: Math.max(1, linear), isLoop: false };
+  }
+
   function selectExample() {
     const v = $("files").value;
     const program = PROGRAMS.find((p) => p.value === v);
@@ -450,9 +513,16 @@ function boot() {
     editor.state.breakpoints.clear();
     editor.rerender();
     if (program.input != null) {
-      $("input").value = program.input;
-      localStorage.setItem(INPUT_KEY, program.input);
+      const text = program.input;
+      $("input").value = text;
+      io.setInputText(text);
+      localStorage.setItem(INPUT_KEY, text);
+    } else {
+      $("input").value = "";
+      io.setInputText("");
+      localStorage.setItem(INPUT_KEY, "");
     }
+    // Slots get populated by loadProgram() based on the parsed INP count.
     updateBlurb();
   }
 
@@ -469,6 +539,15 @@ function boot() {
     logger.clear();
     cpuView.resetAccessLog();
     refreshView();
+  }
+
+  // Restart: stop execution and reload the program currently in the editor
+  // from scratch — RAM, CPU, IO, stats and log are all reset, then the
+  // editor source is parsed and assembled again. Equivalent to clicking
+  // Load, but with a single button next to Run and Step.
+  function restartProgram() {
+    pauseProgram();
+    loadProgram();
   }
   function resetStats() {
     stats.reset();
@@ -492,9 +571,12 @@ function boot() {
       const text = String(reader.result ?? "");
       const { source, input } = parseFile(text);
       editor.setProgram(source);
+      io.setInputText(input);
       $("input").value = input;
       localStorage.setItem(STORAGE_KEY, source);
       localStorage.setItem(INPUT_KEY, input);
+      // Slots will be sized and populated by loadProgram() below.
+      loadProgram();
       refreshView();
     };
     reader.readAsText(file);
@@ -515,11 +597,18 @@ function boot() {
   let shareFlashTimer = null;
   function flashShare(ok) {
     const btn = $("share-btn");
-    btn.querySelector("span").textContent = ok ? "✓" : "✕";
+    const icon = btn.querySelector(".icon");
+    if (icon) {
+      icon.innerHTML = ok
+        ? '<path d="M9 16.2L4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4L9 16.2z" fill="currentColor"/>'
+        : '<path d="M19 6.4L17.6 5 12 10.6 6.4 5 5 6.4 10.6 12 5 17.6 6.4 19 12 13.4 17.6 19 19 17.6 13.4 12z" fill="currentColor"/>';
+    }
     btn.setAttribute("title", ok ? t("app.shareCopied") : t("app.shareFailed"));
     clearTimeout(shareFlashTimer);
     shareFlashTimer = setTimeout(() => {
-      btn.querySelector("span").textContent = "↗";
+      if (icon) {
+        icon.innerHTML = '<path d="M14 9V5l7 7-7 7v-4.1c-5 0-8.5 1.6-11 5.1.5-8 6-12.5 11-13z" fill="currentColor"/>';
+      }
       btn.setAttribute("title", t("app.share"));
     }, 1500);
   }
@@ -535,6 +624,7 @@ function boot() {
   $("btn-pause").addEventListener("click", () => {
     if (executor.isRunning()) pauseProgram(); else runProgram();
   });
+  $("btn-restart")?.addEventListener("click", restartProgram);
   $("btn-rewind")?.addEventListener("click", stepBack);
   $("btn-fast-forward")?.addEventListener("click", runUntilHalt);
   $("btn-select-program").addEventListener("click", selectExample);
@@ -588,7 +678,12 @@ function boot() {
   $("sound-toggle").addEventListener("click", (e) => {
     const enabled = !sound.isEnabled();
     sound.enable(enabled);
-    e.currentTarget.querySelector("span").textContent = enabled ? "♪" : "✕";
+    const icon = e.currentTarget.querySelector(".icon");
+    if (icon) {
+      icon.innerHTML = enabled
+        ? '<path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54z" fill="currentColor"/>'
+        : '<path d="M16.5 12a4.5 4.5 0 0 0-2.5-4.03v8.05A4.5 4.5 0 0 0 16.5 12zM14 3.23v2.06a7 7 0 0 1 0 13.42v2.06a9 9 0 0 0 0-17.54zM3 9v6h4l5 5V4L7 9H3z" fill="currentColor" opacity="0.5"/><path d="M3 3l18 18-1.5 1.5L1.5 4.5 3 3z" fill="currentColor"/>';
+    }
     e.currentTarget.dataset.enabled = enabled;
   });
 
@@ -611,6 +706,7 @@ function boot() {
     if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
     if (e.key === "F9") { e.preventDefault(); singleStep(); }
     else if (e.key === "F10") { e.preventDefault(); stepPhase(); }
+    else if (e.key === "F4") { e.preventDefault(); restartProgram(); }
     else if (e.key === "F5" && e.shiftKey) { e.preventDefault(); runUntilHalt(); }
     else if (e.key === "F5") { e.preventDefault(); runProgram(); }
     else if (e.key === "F6") { e.preventDefault(); executor.isRunning() ? pauseProgram() : runProgram(); }
@@ -665,6 +761,7 @@ function boot() {
   if (shared) {
     editor.setProgram(shared.source);
     $("input").value = shared.input || "";
+    io.setInputText(shared.input || "");
     localStorage.setItem(STORAGE_KEY, shared.source);
     localStorage.setItem(INPUT_KEY, shared.input || "");
   } else {
@@ -672,7 +769,10 @@ function boot() {
     const savedInput = localStorage.getItem(INPUT_KEY);
     if (savedSource && savedSource.trim().length > 0) editor.setProgram(savedSource);
     else selectExample();
-    if (savedInput != null) $("input").value = savedInput;
+    if (savedInput != null) {
+      $("input").value = savedInput;
+      io.setInputText(savedInput);
+    }
   }
 
   // Assemble the source that just landed in the editor so RAM matches it.
@@ -682,9 +782,6 @@ function boot() {
 
   $("codeListing").addEventListener("input", () => {
     localStorage.setItem(STORAGE_KEY, $("codeListing").value);
-  });
-  $("input").addEventListener("input", () => {
-    localStorage.setItem(INPUT_KEY, $("input").value);
   });
 
   $("clock-value").textContent = formatClock(Number($("clock").value));

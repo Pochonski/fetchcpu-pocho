@@ -9,6 +9,8 @@
 // A horizontal "memory map" above the cells visualises used / instruction /
 // data cells at a glance.
 
+import { t, registerOnChange } from "./i18n/index.js";
+
 const MNEMONIC_BY_OPCODE = {
   901: "INP",
   902: "OUT",
@@ -221,12 +223,16 @@ export function createRAMView(ram, cpu) {
     }
     if (statsEl) {
       statsEl.innerHTML = `
-        <span><strong>${used}</strong>/100 used</span>
-        <span class="dot dot-code"></span><strong>${codeCount}</strong> instructions
-        <span class="dot dot-data"></span><strong>${dataCount}</strong> data
+        <span><strong>${used}</strong>/100 ${t("panels.ram.used")}</span>
+        <span class="dot dot-code"></span><strong>${codeCount}</strong> ${t("panels.ram.instructions")}
+        <span class="dot dot-data"></span><strong>${dataCount}</strong> ${t("panels.ram.dataWord")}
       `;
     }
   }
+
+  // Re-render the stats (and any localised labels) when the language
+  // changes so users on ES don't see English fragments lingering.
+  registerOnChange(() => sync());
 
   return { sync, setProgramMetadata };
 }

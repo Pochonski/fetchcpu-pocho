@@ -1,4 +1,4 @@
-// IO handling: input is a queue of values parsed from the input textarea;
+// IO handling: input is a queue of values parsed from the input slots;
 // output is a list of values written to the output textarea.
 
 export class EndOfInputError extends Error {
@@ -39,9 +39,8 @@ export function createIO(inputEl, outputEl) {
     renderOutput();
   }
 
-  function parseInput() {
-    const text = inputEl.value;
-    inputQueue = text
+  function parseText(text) {
+    return text
       .split(/\r?\n/)
       .map((s) => s.trim())
       .filter((s) => s.length > 0)
@@ -52,6 +51,10 @@ export function createIO(inputEl, outputEl) {
         }
         return n;
       });
+  }
+
+  function parseInput() {
+    inputQueue = parseText(inputEl.value || "");
     inputIdx = 0;
   }
 
@@ -64,7 +67,36 @@ export function createIO(inputEl, outputEl) {
     inputIdx = idx;
   }
 
-  // Re-parse input whenever the user edits it. De-bounced lightly.
+  function setInputValues(values) {
+    inputQueue = values.slice();
+    inputIdx = 0;
+    if (inputEl && "value" in inputEl) {
+      inputEl.value = inputQueue.join("\n");
+    }
+    for (const l of listeners) l();
+  }
+
+  function getInputValues() {
+    return inputQueue.slice();
+  }
+
+  function setInputText(text) {
+    inputQueue = parseText(text || "");
+    inputIdx = 0;
+    if (inputEl && "value" in inputEl) {
+      inputEl.value = inputQueue.join("\n");
+    }
+    for (const l of listeners) l();
+  }
+
+  function getInputText() {
+    return inputQueue.join("\n");
+  }
+
+  // Re-parse input whenever the user edits the underlying element.
+  // (The slot UI calls setInputValues/setInputText directly; this listener
+  // remains as a safety net for any other path that mutates inputEl.value.)
+  if (inputEl && typeof inputEl.addEventListener === "function") {
     inputEl.addEventListener("input", () => {
       try {
         parseInput();
@@ -73,6 +105,7 @@ export function createIO(inputEl, outputEl) {
         // ignore while typing
       }
     });
+  }
 
   return {
     readInput,
@@ -82,6 +115,10 @@ export function createIO(inputEl, outputEl) {
     inputIndex: () => inputIdx,
     setOutput,
     setInputIndex,
+    setInputValues,
+    getInputValues,
+    setInputText,
+    getInputText,
     onChange: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
   };
 }

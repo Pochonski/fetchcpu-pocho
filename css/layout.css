@@ -52,6 +52,8 @@ body {
   letter-spacing: -0.01em;
   flex: 1 1 auto;
   min-width: 0;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 .app-header .logo {
@@ -221,13 +223,21 @@ body {
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-top: 1px solid var(--border-strong);
   box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.25);
+  /* Add extra bottom padding so the menu sits above the iOS Safari
+     bottom toolbar (Aa / share / bookmarks bar — ~50 pt on iPhone). Without
+     this the menu's last items get hidden behind Safari's persistent
+     chrome on iPhone 13 and similar devices. */
   padding:
     var(--space-3)
     calc(var(--space-4) + var(--safe-right))
-    calc(var(--space-3) + var(--safe-bottom))
+    calc(var(--space-4) + var(--safe-bottom) + 3.25rem)
     calc(var(--space-4) + var(--safe-left));
   transform: translateY(100%);
   transition: transform var(--duration-normal) var(--easing-out);
+  /* Prevent pull-to-refresh / overscroll bounce from leaking into the
+     background when the menu is open. */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 .mobile-menu:not([hidden]) {
   display: block;
@@ -258,6 +268,12 @@ body {
   border-radius: var(--radius-md);
   text-align: left;
   transition: background var(--duration-fast), border-color var(--duration-fast);
+  /* Disable iOS long-press context menu (Copy / Look Up / Share) on the
+     menu items so users only see the bottom sheet itself. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
 }
 .mobile-menu-item:hover,
 .mobile-menu-item:focus-visible {

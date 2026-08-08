@@ -42,6 +42,8 @@ export const en = {
     cpu: {
       title: "CPU · State",
       reset: "Reset",
+      restart: "Restart",
+      restartLabel: "Restart from the beginning",
       now: "NOW",
       next: "NEXT",
       busWrite: "CPU writes to RAM",
@@ -54,6 +56,8 @@ export const en = {
       faster: "Faster",
       inputLabel: "Input · stdin",
       inputPlaceholder: "One numeric value per line",
+      inputAddValue: "+ Add value",
+      inputLoopHint: "Loop input — one value per iteration",
       outputLabel: "Output · stdout",
       flagZ: "Zero",
       flagN: "Negative",
@@ -66,6 +70,9 @@ export const en = {
     ram: {
       title: "RAM · 100 mailboxes",
       legend: { pc: "PC", mar: "MAR", code: "Code", data: "Data" },
+      used: "used",
+      instructions: "instructions",
+      dataWord: "data",
     },
     log: {
       title: "Activity",
@@ -121,7 +128,14 @@ export const en = {
     },
   },
 
-  history: {},
+  history: {
+    cycle: "cycle",
+    clickToView: "Click to view",
+  },
+
+  disasm: {
+    halted: "HALTED",
+  },
 
   explanation: {
     didLabel: "Did",
@@ -138,6 +152,19 @@ export const en = {
     brzSkip:  "BRZ {addr} — ACC ≠ 0 ({acc}), continue",
     bra:      "BRA {addr} — Jump to RAM[{addr}]",
     hlt:      "HLT 000 — Stop execution",
+  },
+
+  parser: {
+    labelMissingInstruction:  'Label "{0}" is missing an instruction',
+    unknownMnemonic:          'Unknown mnemonic "{0}"',
+    duplicateLabel:           'Duplicate label "{0}"',
+    programTooLarge:          'Program is too large: {0} instructions exceed RAM size {1}',
+    datNotNumeric:            'DAT value must be numeric (got "{0}")',
+    mnemonicNoOperand:        '"{0}" does not take an operand',
+    mnemonicRequiresOperand:  '"{0}" requires an operand',
+    immediateNotNumeric:      'Immediate operand must be numeric (got "{0}")',
+    invalidDatValue:          'Invalid DAT value "{0}" on line {1}',
+    unresolvedLabel:          'Unresolved label "{0}"',
   },
 
 
@@ -201,10 +228,12 @@ export const en = {
       phase: "step phase",
       back: "step back",
       save: "save log",
+      restart: "restart",
     },
   },
 
   shortcutFormat: {
+    f4: "F4",
     f5: "F5",
     f6: "F6",
     f9: "F9",
@@ -213,8 +242,8 @@ export const en = {
     ctrlS: "Ctrl+S",
   },
 
-  // Example programs. Keys are referenced from programs/examples.js.
   examples: {
+    fallbackLabel: "Example {0}",
     "1":  { label: "Adding 2 inputs",        blurb: "Classic starter — read two numbers from input and print their sum.", expected: "7" },
     "2":  { label: "Max of 2 inputs",        blurb: "Compare two numbers with SUB + BRP and print the larger one.", expected: "12" },
     "3":  { label: "Count down timer",       blurb: "Loop that outputs the input value and counts down to zero.", expected: "5, 4, 3, 2, 1, 0" },
@@ -269,6 +298,8 @@ export const es = {
     cpu: {
       title: "CPU · Estado",
       reset: "Reiniciar",
+      restart: "Reiniciar",
+      restartLabel: "Reiniciar desde el principio",
       now: "AHORA",
       next: "SIGUIENTE",
       busWrite: "CPU escribe a RAM",
@@ -281,6 +312,8 @@ export const es = {
       faster: "Más rápido",
       inputLabel: "Entrada · stdin",
       inputPlaceholder: "Un valor numérico por línea",
+      inputAddValue: "+ Añadir valor",
+      inputLoopHint: "Entrada en loop — un valor por iteración",
       outputLabel: "Salida · stdout",
       flagZ: "Cero",
       flagN: "Negativo",
@@ -293,6 +326,9 @@ export const es = {
     ram: {
       title: "RAM · 100 casillas",
       legend: { pc: "PC", mar: "MAR", code: "Código", data: "Datos" },
+      used: "usadas",
+      instructions: "instrucciones",
+      dataWord: "datos",
     },
     log: {
       title: "Actividad",
@@ -348,7 +384,14 @@ export const es = {
     },
   },
 
-  history: {},
+  history: {
+    cycle: "ciclo",
+    clickToView: "Click para ver",
+  },
+
+  disasm: {
+    halted: "DETENIDO",
+  },
 
   explanation: {
     didLabel: "Hizo",
@@ -365,6 +408,19 @@ export const es = {
     brzSkip:  "BRZ {addr} — ACC ≠ 0 ({acc}), continúa",
     bra:      "BRA {addr} — Salta a RAM[{addr}]",
     hlt:      "HLT 000 — Detener ejecución",
+  },
+
+  parser: {
+    labelMissingInstruction:  'La etiqueta "{0}" no tiene una instrucción asociada',
+    unknownMnemonic:          'Mnemónico desconocido "{0}"',
+    duplicateLabel:           'Etiqueta duplicada "{0}"',
+    programTooLarge:          "El programa es demasiado grande: {0} instrucciones superan el tamaño de RAM ({1})",
+    datNotNumeric:            'El valor de DAT debe ser numérico (se recibió "{0}")',
+    mnemonicNoOperand:        '"{0}" no acepta operandos',
+    mnemonicRequiresOperand:  '"{0}" requiere un operando',
+    immediateNotNumeric:      'El operando inmediato debe ser numérico (se recibió "{0}")',
+    invalidDatValue:          'Valor de DAT inválido "{0}" en la línea {1}',
+    unresolvedLabel:          'Etiqueta sin resolver "{0}"',
   },
 
 
@@ -428,10 +484,12 @@ export const es = {
       phase: "paso fase",
       back: "atrás",
       save: "guardar log",
+      restart: "reiniciar",
     },
   },
 
   shortcutFormat: {
+    f4: "F4",
     f5: "F5",
     f6: "F6",
     f9: "F9",
@@ -441,6 +499,7 @@ export const es = {
   },
 
   examples: {
+    fallbackLabel: "Ejemplo {0}",
     "1":  { label: "Sumar 2 entradas",       blurb: "Clásico — lee dos números de la entrada e imprime su suma.", expected: "7" },
     "2":  { label: "Máximo de 2 entradas",   blurb: "Compara dos números con SUB + BRP e imprime el mayor.", expected: "12" },
     "3":  { label: "Cuenta regresiva",       blurb: "Bucle que muestra el valor de entrada y cuenta hasta cero.", expected: "5, 4, 3, 2, 1, 0" },

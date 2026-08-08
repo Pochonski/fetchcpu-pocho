@@ -24,9 +24,14 @@ export function initTheme(toggleEl) {
 }
 
 function paintToggle(el, mode) {
-  const icon = el.querySelector("span");
+  const icon = el.querySelector(".icon");
   if (!icon) return;
-  icon.textContent = mode === "dark" ? "☀" : "☾";
+  // Sun (light mode offer) / Moon (dark mode offer).
+  icon.innerHTML = mode === "dark"
+    // Sun: 12 rays + central circle.
+    ? '<circle cx="12" cy="12" r="4" fill="currentColor"/><g stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/><line x1="4.9" y1="4.9" x2="7" y2="7"/><line x1="17" y1="17" x2="19.1" y2="19.1"/><line x1="4.9" y1="19.1" x2="7" y2="17"/><line x1="17" y1="7" x2="19.1" y2="4.9"/></g>'
+    // Moon (crescent).
+    : '<path d="M21 13a9 9 0 0 1-10-10 1 1 0 0 0-1.3-1.3 10 10 0 1 0 12.6 12.6A1 1 0 0 0 21 13z" fill="currentColor"/>';
   el.setAttribute("title", mode === "dark" ? t("app.themeToLight") : t("app.themeToDark"));
   el.setAttribute("aria-label", mode === "dark" ? t("app.themeToLight") : t("app.themeToDark"));
 }

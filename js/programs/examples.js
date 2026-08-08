@@ -261,7 +261,7 @@ x     DAT
 export function getProgramMeta(p, t) {
   const meta = t(`examples.${p.value}`) || {};
   return {
-    label: meta.label || `Example ${p.value}`,
+    label: meta.label || t("examples.fallbackLabel", [p.value]),
     blurb: meta.blurb || "",
     expected: meta.expected || "—",
   };

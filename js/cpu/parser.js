@@ -10,8 +10,10 @@
 // or:
 //   {
 //     ok: false,
-//     errors: [{ line, column, message }]
+//     errors: [{ line, column, key, args, message }]
 //   }
+// `key` and `args` are i18n-friendly. `message` is kept as the English
+// fallback so unit tests and non-i18n consumers still get a usable string.
 
 import { OPCODES } from "./opcodes.js";
 import { RAM_SIZE } from "./ram.js";
@@ -22,6 +24,26 @@ function stripComment(line) {
   const idx = line.search(COMMENT_RE);
   if (idx === -1) return line;
   return line.slice(0, idx);
+}
+
+// English fallbacks for parser errors. Keys are dotted so the UI layer can
+// look them up in the dictionaries (en / es) via t(key, args).
+const EN = {
+  "parser.labelMissingInstruction": (label) => `Label "${label}" is missing an instruction`,
+  "parser.unknownMnemonic":          (tok)   => `Unknown mnemonic "${tok}"`,
+  "parser.duplicateLabel":           (label) => `Duplicate label "${label}"`,
+  "parser.programTooLarge":          (n, max) => `Program is too large: ${n} instructions exceed RAM size ${max}`,
+  "parser.datNotNumeric":            (v)     => `DAT value must be numeric (got "${v}")`,
+  "parser.mnemonicNoOperand":        (m)     => `"${m}" does not take an operand`,
+  "parser.mnemonicRequiresOperand":  (m)     => `"${m}" requires an operand`,
+  "parser.immediateNotNumeric":      (v)     => `Immediate operand must be numeric (got "${v}")`,
+  "parser.invalidDatValue":          (v, line) => `Invalid DAT value "${v}" on line ${line}`,
+  "parser.unresolvedLabel":          (ref)   => `Unresolved label "${ref}"`,
+};
+
+function error(key, args, line, column) {
+  const fn = EN[key];
+  return { line, column, key, args, message: fn ? fn(...args) : key };
 }
 
 function tokenize(rawLine) {
@@ -69,21 +91,13 @@ export function parse(source) {
     }
 
     if (cursor >= tokens.length) {
-      errors.push({
-        line: lineNumber,
-        column: raw.indexOf(label) + 1,
-        message: `Label "${label}" is missing an instruction`,
-      });
+      errors.push(error("parser.labelMissingInstruction", [label], lineNumber, raw.indexOf(label) + 1));
       return;
     }
 
     mnemonic = tokens[cursor].toUpperCase();
     if (!Object.hasOwn(OPCODES, mnemonic)) {
-      errors.push({
-        line: lineNumber,
-        column: 1,
-        message: `Unknown mnemonic "${tokens[cursor]}"`,
-      });
+      errors.push(error("parser.unknownMnemonic", [tokens[cursor]], lineNumber, 1));
       return;
     }
 
@@ -93,11 +107,7 @@ export function parse(source) {
 
     if (label) {
       if (labels.has(label)) {
-        errors.push({
-          line: lineNumber,
-          column: raw.indexOf(label) + 1,
-          message: `Duplicate label "${label}"`,
-        });
+        errors.push(error("parser.duplicateLabel", [label], lineNumber, raw.indexOf(label) + 1));
       } else {
         labels.set(label, addr);
       }
@@ -111,11 +121,7 @@ export function parse(source) {
 
   // Reject programs that exceed the RAM size.
   if (addr > RAM_SIZE) {
-    errors.push({
-      line: items[items.length - 1].sourceLine,
-      column: 1,
-      message: `Program is too large: ${addr} instructions exceed RAM size ${RAM_SIZE}`,
-    });
+    errors.push(error("parser.programTooLarge", [addr, RAM_SIZE], items[items.length - 1].sourceLine, 1));
     return { ok: false, errors };
   }
 
@@ -160,30 +166,18 @@ function operandFromText(text, mnemonic, sourceLine, labels, errors) {
     if (text == null || text.trim() === "") return { mode: "data", value: null };
     const v = text.trim();
     if (!looksNumeric(v)) {
-      errors.push({
-        line: sourceLine,
-        column: 1,
-        message: `DAT value must be numeric (got "${v}")`,
-      });
+      errors.push(error("parser.datNotNumeric", [v], sourceLine, 1));
     }
     return { mode: "data", value: v };
   }
   if (mnemonic === "HLT" || mnemonic === "INP" || mnemonic === "OUT") {
     if (text != null && text.trim() !== "") {
-      errors.push({
-        line: sourceLine,
-        column: 1,
-        message: `"${mnemonic}" does not take an operand`,
-      });
+      errors.push(error("parser.mnemonicNoOperand", [mnemonic], sourceLine, 1));
     }
     return null;
   }
   if (text == null || text.trim() === "") {
-    errors.push({
-      line: sourceLine,
-      column: 1,
-      message: `"${mnemonic}" requires an operand`,
-    });
+    errors.push(error("parser.mnemonicRequiresOperand", [mnemonic], sourceLine, 1));
     return null;
   }
   const trimmed = text.trim();
@@ -192,11 +186,7 @@ function operandFromText(text, mnemonic, sourceLine, labels, errors) {
   if (trimmed.startsWith("#")) {
     const v = trimmed.slice(1);
     if (!looksNumeric(v)) {
-      errors.push({
-        line: sourceLine,
-        column: 1,
-        message: `Immediate operand must be numeric (got "${v}")`,
-      });
+      errors.push(error("parser.immediateNotNumeric", [v], sourceLine, 1));
     }
     return { mode: "immediate", value: v, ref: null };
   }
@@ -228,7 +218,7 @@ export function encodeInstruction(instr) {
     const t = String(instr.operand.value).trim();
     const v = t === "" ? 0 : Number(t);
     if (!Number.isFinite(v)) {
-      throw new Error(`Invalid DAT value "${t}" on line ${instr.sourceLine}`);
+      throw new Error(EN["parser.invalidDatValue"](t, instr.sourceLine));
     }
     return { value: v, mode: "data" };
   }
@@ -260,7 +250,7 @@ export function resolveLabels(entries, labels) {
     if (e.code.ref != null && e.code.mode !== "data" && e.code.mode !== "control") {
       const addr = labels[e.code.ref];
       if (addr == null) {
-        throw new Error(`Unresolved label "${e.code.ref}"`);
+        throw new Error(EN["parser.unresolvedLabel"](e.code.ref));
       }
       const op = OPCODES[e.code.mnemonic];
       e.code = { value: op.code * 100 + addr, mode: "code" };

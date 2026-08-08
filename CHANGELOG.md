@@ -109,6 +109,19 @@ simulator designed for teaching the Fetch/Decode/Execute cycle.
   and run-to-halt (⇧F5) buttons are removed from the UI but their keyboard
   shortcuts remain active for power users.
 
+### Restart button + SVG icon system
+
+- **Restart button** — a third `↻` button is added to the play strip (next
+  to Run/Pause and Step). Clicking it pauses any running execution,
+  reloads the program currently in the editor from scratch, and resets the
+  CPU, RAM, IO, stats and log. A new `F4` keyboard shortcut does the same.
+- **SVG icon system** — every header / control button now uses a 24×24
+  inline SVG that picks up its colour from `currentColor`. The previous
+  unicode glyphs (`▶`, `▸`, `↗`, `☀`, `♪`, `⋯`, `+`, `−`) are replaced
+  with crisp vectors that stay sharp at any pixel density and colour
+  correctly in both themes. The play/pause button now swaps its SVG path
+  between a play triangle and two pause bars instead of mutating text.
+
 ### Full responsive overhaul (mobile / iPad / desktop)
 
 - **Mobile-first layout** — the layout grid, header and every component now

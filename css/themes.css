@@ -94,6 +94,13 @@ body {
   color: var(--fg);
   font-family: var(--font-sans);
   letter-spacing: -0.005em;
+  /* Prevent iOS Safari overscroll bounce / pull-to-refresh from showing
+     the browser UI behind our content. */
+  overscroll-behavior-y: contain;
+  /* On iOS Safari, prevent the native text selection / long-press menu
+     from appearing on decorative UI (icons, badges, panel headers). Text
+     inputs and code editor still allow selection. */
+  -webkit-touch-callout: none;
 }
 
 body::before {

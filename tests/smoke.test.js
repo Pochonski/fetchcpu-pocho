@@ -117,15 +117,18 @@ describe("Application smoke test", () => {
     expect(document.querySelector(".app-header .logo")).toBeTruthy();
   });
 
-  it("exposes exactly two control buttons in the play strip", () => {
+  it("exposes the three control buttons in the play strip", () => {
     const stepBtn = document.getElementById("btn-step");
     const runBtn = document.getElementById("btn-pause");
+    const restartBtn = document.getElementById("btn-restart");
     expect(stepBtn).toBeTruthy();
     expect(runBtn).toBeTruthy();
+    expect(restartBtn).toBeTruthy();
     const strip = document.querySelector(".control-buttons");
-    expect(strip.children.length).toBe(2);
+    expect(strip.children.length).toBe(3);
     expect(strip.contains(stepBtn)).toBe(true);
     expect(strip.contains(runBtn)).toBe(true);
+    expect(strip.contains(restartBtn)).toBe(true);
     // Removed buttons are not in the DOM.
     expect(document.getElementById("btn-rewind")).toBeNull();
     expect(document.getElementById("btn-step-phase")).toBeNull();
