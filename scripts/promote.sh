@@ -4,8 +4,8 @@
 
 set -euo pipefail
 
-PROJECT="${VERCEL_PROJECT:-lmc-simulator}"
-ALIAS="${VERCEL_ALIAS:-pocho-lmc.vercel.app}"
+PROJECT="${VERCEL_PROJECT:-fetchcpu-simulator}"
+ALIAS="${VERCEL_ALIAS:-fetchcpu-pocho.vercel.app}"
 
 echo "==> Listing recent deployments for $PROJECT..."
 mapfile -t DEPLOYS < <(vercel ls "$PROJECT" --no-color --limit 10 2>&1)
@@ -30,3 +30,4 @@ vercel alias set "$URL" "$ALIAS"
 
 echo "==> Smoke test:"
 curl -sS -o /dev/null -w "  HTTP %{http_code} (%{size_download} bytes)\n" "https://$ALIAS/"
+

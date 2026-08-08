@@ -26,10 +26,10 @@ function makeIO(inputs = []) {
 
 describe("Memory access fidelity", () => {
   it("MAR for INP/OUT/HLT stays at the instruction address, not 0", async () => {
-    const { createCPU } = await import("../js/lmc/cpu.js");
-    const { createRAM } = await import("../js/lmc/ram.js");
-    const { createExecutor } = await import("../js/lmc/executor.js");
-    const { createEvents } = await import("../js/lmc/events.js");
+    const { createCPU } = await import("../js/cpu/cpu.js");
+    const { createRAM } = await import("../js/cpu/ram.js");
+    const { createExecutor } = await import("../js/cpu/executor.js");
+    const { createEvents } = await import("../js/cpu/events.js");
 
     const cpu = createCPU();
     const ram = createRAM();
@@ -59,10 +59,10 @@ describe("Memory access fidelity", () => {
   });
 
   it("emits memory-access events for read/write/in/out", async () => {
-    const { createCPU } = await import("../js/lmc/cpu.js");
-    const { createRAM } = await import("../js/lmc/ram.js");
-    const { createExecutor } = await import("../js/lmc/executor.js");
-    const { createEvents } = await import("../js/lmc/events.js");
+    const { createCPU } = await import("../js/cpu/cpu.js");
+    const { createRAM } = await import("../js/cpu/ram.js");
+    const { createExecutor } = await import("../js/cpu/executor.js");
+    const { createEvents } = await import("../js/cpu/events.js");
 
     const cpu = createCPU();
     const ram = createRAM();
@@ -98,10 +98,10 @@ describe("Memory access fidelity", () => {
   });
 
   it("indirect LDA: emits two reads in sequence (pointer then value)", async () => {
-    const { createCPU } = await import("../js/lmc/cpu.js");
-    const { createRAM } = await import("../js/lmc/ram.js");
-    const { createExecutor } = await import("../js/lmc/executor.js");
-    const { createEvents } = await import("../js/lmc/events.js");
+    const { createCPU } = await import("../js/cpu/cpu.js");
+    const { createRAM } = await import("../js/cpu/ram.js");
+    const { createExecutor } = await import("../js/cpu/executor.js");
+    const { createEvents } = await import("../js/cpu/events.js");
 
     const cpu = createCPU();
     const ram = createRAM();

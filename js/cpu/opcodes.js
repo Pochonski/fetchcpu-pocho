@@ -1,5 +1,5 @@
-// LMC Opcodes - 3-digit numeric code mapping
-// Source: LMC ISA specification
+// FetchCPU opcodes - 3-digit numeric code mapping
+// Source: ISA specification
 
 export const OPCODES = Object.freeze({
   INP: { code: 901, size: 1, type: "io" },     // read from input to ACC

@@ -47,6 +47,7 @@
     }
   ],
   "redirects": [
+    { "source": "/lmc", "destination": "/", "permanent": true },
     { "source": "/LMC", "destination": "/", "permanent": true }
   ]
 }

@@ -60,14 +60,14 @@ describe("translateDom", () => {
   it("translates data-i18n text content", async () => {
     const { translateDom } = await import("../js/ui/i18n/index.js");
     translateDom(document.body);
-    expect(document.querySelector("[data-i18n='app.name']").textContent).toMatch(/Pocho LMC/);
+    expect(document.querySelector("[data-i18n='app.name']").textContent).toMatch(/FetchCPU-Pocho/);
   });
 
   it("translates data-i18n-html innerHTML", async () => {
     const { translateDom } = await import("../js/ui/i18n/index.js");
     translateDom(document.body);
     const el = document.querySelector("[data-i18n-html]");
-    expect(el.innerHTML).toMatch(/101Computing|Wikipedia/);
+    expect(el.innerHTML).toMatch(/Pocho|Pochonski/);
   });
 
   it("translates placeholder via data-i18n-placeholder", async () => {
@@ -170,12 +170,12 @@ describe("Language switch (EN/ES)", () => {
   });
 });
 
-describe("LMC Instruction Set modal content", () => {
+describe("Instruction Set modal content", () => {
   it("renders Mnemonic / Name / Description / Op Code columns and eleven rows", async () => {
     // Open the modal (in case it's not auto-mounted).
     document.getElementById("linkPopup").hidden = false;
     // rebuildModalContent is called on language change — call it now.
-    const main = await import("../js/main.js?v=lmc");
+    const main = await import("../js/main.js?v=fcpu");
     main.resetBoot();
     main.boot();
 
@@ -193,7 +193,7 @@ describe("LMC Instruction Set modal content", () => {
     // Confirm INP row uses the new four-column shape and the long description.
     const inpRow = Array.from(rows).find((r) => r.textContent.includes("INPUT"));
     expect(inpRow).toBeTruthy();
-    expect(inpRow.textContent).toMatch(/Retrieve user input/i);
+    expect(inpRow.textContent).toMatch(/Read user input/i);
     expect(inpRow.textContent).toMatch(/901/);
 
     // DAT row has no op code cell.

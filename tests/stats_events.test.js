@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
-import { createStats } from "../js/lmc/stats.js";
-import { createEvents } from "../js/lmc/events.js";
+import { createStats } from "../js/cpu/stats.js";
+import { createEvents } from "../js/cpu/events.js";
 
 describe("stats", () => {
   it("counts cycles and per-mnemonic instructions", () => {

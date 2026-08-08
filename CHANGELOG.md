@@ -1,13 +1,28 @@
 # Changelog
 
-All notable changes to Pocho LMC will be documented in this file. Versions
+All notable changes to FetchCPU-Pocho will be documented in this file. Versions
 follow [SemVer](https://semver.org/). Dates are in ISO 8601.
 
-## [1.0.0] — 2026-08-07
+## [1.1.0] — 2026-08-08
 
-### The first public release
+### Rebrand: Pocho LMC → FetchCPU-Pocho
 
-Pocho LMC ships as a complete, dependency-free, bilingual Little Man Computer
+The project is now branded as **FetchCPU-Pocho**, an independent teaching
+simulator for the classic Von Neumann architecture. All "Little Man Computer"
+attribution and the 101computing.net comparison have been removed.
+
+- **Renames** — `js/lmc/` → `js/cpu/`, `.lmc` → `.fcpu`, all localStorage keys,
+  URL hash prefix (`#fcpu=…`), Vercel project (`fetchcpu-simulator`) and the
+  production alias (`fetchcpu-pocho.vercel.app`).
+- **Removed** — `COMPARISON.md` (was specific to 101computing.net), the
+  Madnick/101computing credits in the About modal, and the redirect from
+  `/LMC` to `/`.
+- **Updated** — README, CONTRIBUTING, LICENSE, i18n dictionaries (EN+ES),
+  package.json, sitemap, robots.txt, all meta tags in `index.html`.
+
+### The first public release — [1.0.0] — 2026-08-07
+
+FetchCPU-Pocho ships as a complete, dependency-free, bilingual CPU
 simulator designed for teaching the Fetch/Decode/Execute cycle.
 
 ### Production-readiness pass (2026-08-08)
@@ -29,7 +44,7 @@ simulator designed for teaching the Fetch/Decode/Execute cycle.
 - **Repo** — `.env.local` (containing an expired Vercel OIDC token) was
   removed from disk.
 
-### Added
+### Added (1.0.0)
 
 - **CPU model**
   - Full FDE cycle (`executor.step()`) with detailed phase bookkeeping.
@@ -77,16 +92,13 @@ simulator designed for teaching the Fetch/Decode/Execute cycle.
   - `vite`-free Node.js static server (`scripts/serve.mjs`).
   - Vercel configuration with security headers, CSP, cache controls and
     autodeploy on push to `main`.
-  - Production URL: https://pocho-lmc.vercel.app
-  - GitHub repo: https://github.com/Pochonski/pocho-lmc
+  - Production URL: https://fetchcpu-pocho.vercel.app
+  - GitHub repo: https://github.com/Pochonski/fetchcpu-pocho
 
 - **Docs**
   - `README.md` — installation, usage, architecture, i18n guide.
   - `CONTRIBUTING.md` — workflow, style, i18n contribution notes.
-  - `COMPARISON.md` — diff vs the 101computing.net/LMC reference.
   - `LICENSE` — MIT.
-
-[1.0.0]: https://github.com/Pochonski/pocho-lmc/releases/tag/v1.0.0
 
 ## Unreleased
 
@@ -97,4 +109,37 @@ simulator designed for teaching the Fetch/Decode/Execute cycle.
   and run-to-halt (⇧F5) buttons are removed from the UI but their keyboard
   shortcuts remain active for power users.
 
+### Full responsive overhaul (mobile / iPad / desktop)
 
+- **Mobile-first layout** — the layout grid, header and every component now
+  adapt to viewport widths from 360 px (iPhone SE) to 1480 px desktop via a
+  five-step breakpoint scale declared in `css/tokens.css`
+  (`--bp-xs / --bp-sm / --bp-md / --bp-tablet / --bp-lg / --bp-xl / --bp-2xl`).
+- **Hamburger bottom-sheet menu** — the three text-only header actions
+  (Tutorial / Instruction Set / About) collapse into a `⋯` button on
+  viewports < 640 px and open a translated, ARIA-correct bottom sheet
+  implemented in `js/ui/mobileMenu.js`.
+- **Touch targets ≥ 44 px** — every `.btn` and `.icon-btn` enforces the
+  Apple HIG minimum via `@media (hover: none) { min-height: var(--tap-min) }`.
+  The press-down animation and hover-only visual feedback are disabled on
+  touch; `:active` and `:focus-visible` replace them.
+- **iOS safe areas** — `env(safe-area-inset-*)` insets the sticky header,
+  footer and modals so the simulator never sits under the notch, Dynamic
+  Island or home indicator.
+- **Per-component polish** — the CPU chip collapses to one column under
+  420 px; the FDE flow stacks vertically under 480 px; the editor gets a
+  taller 0.9375 rem caret on phones; the IO panels and Examples strip
+  stack; RAM cells drop the address badge and label under 360 px to stay
+  legible on iPhone SE; tabs scroll horizontally with snap; modals go
+  full-screen under 480 px; touch-device hover effects are suppressed.
+- **Accessibility & meta** — `viewport-fit=cover`, `interactive-widget=resizes-content`,
+  `color-scheme: light dark`, and per-scheme `theme-color` meta tags.
+  `-webkit-tap-highlight-color: transparent` on interactive elements and
+  `-webkit-overflow-scrolling: touch` on scroll surfaces.
+- **Tests** — new `tests/responsive.test.js` asserts the meta tags, the
+  presence of the breakpoint scale, the safe-area custom properties, the
+  44 px tap minimum, and the key responsive rules (`(hover: none)`,
+  `max-width: 360px`, etc.).
+
+[1.1.0]: https://github.com/Pochonski/fetchcpu-pocho/releases/tag/v1.1.0
+[1.0.0]: https://github.com/Pochonski/fetchcpu-pocho/releases/tag/v1.0.0

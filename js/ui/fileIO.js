@@ -1,4 +1,4 @@
-// Export / import .lmc program files. The .lmc format is plain text:
+// Export / import .fcpu program files. The .fcpu format is plain text:
 //   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 //   ; Lines starting with ';' are comments
 //   INP
@@ -27,7 +27,7 @@ export function parseFile(text) {
   };
 }
 
-export function downloadAs(source, input, filename = "program.lmc") {
+export function downloadAs(source, input, filename = "program.fcpu") {
   const blob = new Blob([exportFile(source, input)], { type: "text/plain" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");

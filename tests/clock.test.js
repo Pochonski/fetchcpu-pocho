@@ -36,47 +36,47 @@ describe("Clock controls", () => {
   });
 
   it("+/- buttons step the clock slider value by ±50 ms", () => {
-    const lmc = globalThis.__lmc;
-    expect(lmc).toBeTruthy();
-    lmc.setClock(500);
+    const fetchcpu = globalThis.__fetchcpu;
+    expect(fetchcpu).toBeTruthy();
+    fetchcpu.setClock(500);
     document.getElementById("btn-clock-up").click();   // speed up by 50
-    expect(lmc.getClock()).toBe(450);
+    expect(fetchcpu.getClock()).toBe(450);
     document.getElementById("btn-clock-down").click(); // slow down by 50
-    expect(lmc.getClock()).toBe(500);
+    expect(fetchcpu.getClock()).toBe(500);
   });
 
   it("clamps to the slider min/max (50–3000)", () => {
-    const lmc = globalThis.__lmc;
-    lmc.setClock(75);
+    const fetchcpu = globalThis.__fetchcpu;
+    fetchcpu.setClock(75);
     document.getElementById("btn-clock-up").click();
-    expect(lmc.getClock()).toBe(50);
+    expect(fetchcpu.getClock()).toBe(50);
     document.getElementById("btn-clock-up").click();
-    expect(lmc.getClock()).toBe(50); // already at min
+    expect(fetchcpu.getClock()).toBe(50); // already at min
 
-    lmc.setClock(2990);
+    fetchcpu.setClock(2990);
     for (let _i = 0; _i < 3; _i++) document.getElementById("btn-clock-down").click();
-    expect(lmc.getClock()).toBe(3000); // clamped at max
+    expect(fetchcpu.getClock()).toBe(3000); // clamped at max
     document.getElementById("btn-clock-down").click();
-    expect(lmc.getClock()).toBe(3000);
+    expect(fetchcpu.getClock()).toBe(3000);
   });
 
   it("the displayed clock value updates synchronously", () => {
-    const lmc = globalThis.__lmc;
-    lmc.setClock(750);
+    const fetchcpu = globalThis.__fetchcpu;
+    fetchcpu.setClock(750);
     expect(document.getElementById("clock-value").textContent).toBe("750 ms");
   });
 
   it("allows slow execution (3000 ms per cycle)", () => {
-    const lmc = globalThis.__lmc;
-    lmc.setClock(3000);
-    expect(lmc.getClock()).toBe(3000);
+    const fetchcpu = globalThis.__fetchcpu;
+    fetchcpu.setClock(3000);
+    expect(fetchcpu.getClock()).toBe(3000);
     expect(document.getElementById("clock-value").textContent).toBe("3000 ms");
   });
 
   it("re-reads clock mid-run via getSpeed callback", async () => {
-    const { createCPU } = await import("../js/lmc/cpu.js");
-    const { createRAM } = await import("../js/lmc/ram.js");
-    const { createExecutor } = await import("../js/lmc/executor.js");
+    const { createCPU } = await import("../js/cpu/cpu.js");
+    const { createRAM } = await import("../js/cpu/ram.js");
+    const { createExecutor } = await import("../js/cpu/executor.js");
 
     const cpu = createCPU();
     const ram = createRAM();

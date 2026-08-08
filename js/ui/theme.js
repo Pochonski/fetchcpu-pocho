@@ -3,7 +3,7 @@
 
 import { t, registerOnChange } from "./i18n/index.js";
 
-const KEY = "lmc-theme";
+const KEY = "fetchcpu-theme";
 
 export function initTheme(toggleEl) {
   let current = localStorage.getItem(KEY) || "dark";

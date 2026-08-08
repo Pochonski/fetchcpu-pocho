@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// Minimal static file server for the LMC simulator.
+// Minimal static file server for the FetchCPU-Pocho simulator.
 // Replaces `python3 -m http.server` so we don't depend on Python process handling.
 
 import http from "node:http";
@@ -19,7 +19,7 @@ const MIME = {
   ".json": "application/json",
   ".txt":  "text/plain; charset=utf-8",
   ".md":   "text/markdown; charset=utf-8",
-  ".lmc":  "text/plain; charset=utf-8",
+  ".fcpu":  "text/plain; charset=utf-8",
 };
 
 const server = http.createServer((req, res) => {
@@ -46,5 +46,5 @@ const server = http.createServer((req, res) => {
 
 const PORT = Number(process.env.PORT) || 8000;
 server.listen(PORT, "127.0.0.1", () => {
-  console.log(`LMC simulator: http://127.0.0.1:${PORT}/`);
+  console.log(`FetchCPU-Pocho: http://127.0.0.1:${PORT}/`);
 });

@@ -1,18 +1,48 @@
-/* Header */
+/* ============================================================
+   Layout
+   Mobile-first responsive grid + header + footer.
+   Breakpoints (defined in tokens.css):
+     --bp-xs     360px   iPhone SE
+     --bp-sm     480px   standard phones
+     --bp-md     640px   large phones
+     --bp-tablet 820px   iPad portrait
+     --bp-lg     1024px  iPad landscape / small laptops
+     --bp-xl     1280px  desktop
+     --bp-2xl    1480px  wide desktop
+   ============================================================ */
+
+/* ----- Body / page shell ----- */
+html, body {
+  min-height: 100%;
+  background: var(--bg);
+}
+
+body {
+  /* Respect iOS notch / Dynamic Island / home indicator. */
+  padding-left:  max(var(--safe-left),  0px);
+  padding-right: max(var(--safe-right), 0px);
+}
+
+/* ----- Header ----- */
 .app-header {
   position: sticky;
   top: 0;
   z-index: 10;
-  display: grid;
-  grid-template-columns: 1fr auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-4);
-  padding: var(--space-3) var(--space-6);
+  gap: var(--space-3);
+  padding:
+    calc(var(--space-3) + var(--safe-top))
+    calc(var(--space-4) + var(--safe-right))
+    var(--space-3)
+    calc(var(--space-4) + var(--safe-left));
   background: var(--glass-bg);
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--border);
 }
+
 .app-header h1 {
   display: flex;
   align-items: center;
@@ -20,7 +50,10 @@
   font-size: 1rem;
   font-weight: 700;
   letter-spacing: -0.01em;
+  flex: 1 1 auto;
+  min-width: 0;
 }
+
 .app-header .logo {
   display: inline-block;
   width: 28px;
@@ -29,6 +62,7 @@
   background: var(--brand-grad);
   position: relative;
   box-shadow: var(--shadow-sm);
+  flex: 0 0 auto;
 }
 .app-header .logo::after {
   content: "L";
@@ -42,11 +76,40 @@
   color: white;
   font-size: 0.875rem;
 }
-.app-header .title-text { display: flex; flex-direction: column; gap: 1px; line-height: 1.1; }
-.app-header .title-eyebrow { font-size: 0.625rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--fg-muted); font-weight: 600; }
-.header-actions { display: flex; align-items: center; gap: var(--space-2); }
 
-/* Layout grid */
+.app-header .title-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  line-height: 1.1;
+  min-width: 0;
+  overflow: hidden;
+}
+.app-header .title-eyebrow {
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--fg-muted);
+  font-weight: 600;
+}
+.app-header .title-text > span:last-child {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+/* Hide the hamburger by default; show it on small screens via components.css */
+.menu-toggle { display: none; }
+
+/* ----- Layout grid (mobile-first) ----- */
 .app-grid {
   display: grid;
   gap: var(--space-4);
@@ -62,7 +125,16 @@
     "log";
 }
 
-@media (min-width: 880px) {
+.editor-panel    { grid-area: editor; }
+.cpu-panel       { grid-area: cpu; }
+.ram-panel       { grid-area: ram; }
+.controls-panel  { grid-area: controls; }
+.log-panel       { grid-area: log; }
+
+/* ≥ 820px — iPad portrait & up: 2 columns.
+   RAM occupies the left column on top, with Controls + CPU stacked on
+   the right. Editor and Activity (log) share the second row. */
+@media (min-width: 820px) {
   .app-grid {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
     grid-template-areas:
@@ -72,11 +144,8 @@
   }
 }
 
-/* Desktop: RAM fills the left column on top; the Controls panel sits at
-   the top right directly above the CPU panel so the right column holds
-   Controls + CPU in the same vertical space as RAM (no empty space).
-   Editor and Activity mirror the split below. */
-@media (min-width: 1280px) {
+/* ≥ 1024px — iPad landscape / small laptops. Refine the column ratio. */
+@media (min-width: 1024px) {
   .app-grid {
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
     grid-template-areas:
@@ -86,14 +155,21 @@
   }
 }
 
-.editor-panel    { grid-area: editor; }
-.cpu-panel       { grid-area: cpu; }
-.ram-panel       { grid-area: ram; }
-.controls-panel  { grid-area: controls; }
-.log-panel       { grid-area: log; }
+/* ≥ 1280px — desktop. Same layout, slightly larger gaps and breathing room. */
+@media (min-width: 1280px) {
+  .app-grid {
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: var(--space-5);
+  }
+}
 
+/* ----- Footer ----- */
 .app-footer {
-  padding: var(--space-4) var(--space-6);
+  padding:
+    var(--space-4)
+    calc(var(--space-6) + var(--safe-right))
+    calc(var(--space-4) + var(--safe-bottom))
+    calc(var(--space-6) + var(--safe-left));
   font-size: 0.8125rem;
   color: var(--fg-muted);
   text-align: center;
@@ -105,6 +181,7 @@
   justify-content: center;
   align-items: center;
 }
+
 .app-footer kbd {
   display: inline-block;
   font-family: var(--font-mono);
@@ -117,7 +194,8 @@
   color: var(--fg);
   margin: 0 2px;
 }
-.pocho-badge {
+
+.brand-badge {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
@@ -129,4 +207,67 @@
   font-size: 0.75rem;
   letter-spacing: 0.02em;
   box-shadow: var(--shadow-sm);
+}
+
+/* ----- Mobile menu (hidden by default; shown by JS on small screens) ----- */
+.mobile-menu {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 40;
+  background: var(--bg-panel);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-top: 1px solid var(--border-strong);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.25);
+  padding:
+    var(--space-3)
+    calc(var(--space-4) + var(--safe-right))
+    calc(var(--space-3) + var(--safe-bottom))
+    calc(var(--space-4) + var(--safe-left));
+  transform: translateY(100%);
+  transition: transform var(--duration-normal) var(--easing-out);
+}
+.mobile-menu:not([hidden]) {
+  display: block;
+  transform: translateY(0);
+  animation: mobile-menu-in var(--duration-normal) var(--easing-out);
+}
+@keyframes mobile-menu-in {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+.mobile-menu-inner {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--space-3) var(--space-4);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--fg);
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: background var(--duration-fast), border-color var(--duration-fast);
+}
+.mobile-menu-item:hover,
+.mobile-menu-item:focus-visible {
+  background: var(--bg-hover);
+  border-color: var(--fg-dim);
+}
+
+/* ----- Landscape phones: don't waste vertical space ----- */
+@media (orientation: landscape) and (max-height: 500px) {
+  .app-grid { gap: var(--space-3); padding: var(--space-3); }
+  .editor-wrap { min-height: 14rem !important; }
+  .blurb-text { display: none; }
 }

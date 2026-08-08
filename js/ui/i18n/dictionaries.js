@@ -1,15 +1,15 @@
-// Translation dictionaries for the LMC Simulator.
+// Translation dictionaries for the FetchCPU-Pocho simulator.
 //
 // Keys use dot-notation (e.g. "cpu.registers.pc"). Nested objects are
 // flattened when looked up. Interpolation uses {0}, {1}, ... placeholders.
 
 export const en = {
   app: {
-    name: "Pocho LMC",
-    tagline: "A simulator built by Pocho",
-    eyebrow: "Little Man Computer",
+    name: "FetchCPU-Pocho",
+    tagline: "An interactive Fetch/Decode/Execute simulator",
+    eyebrow: "Von Neumann CPU",
     tutorial: "Tutorial",
-    lmcInstructionSet: "LMC Instruction Set",
+    instructionSet: "Instruction Set",
     about: "About",
     theme: "Toggle theme",
     themeToLight: "Switch to light theme",
@@ -20,6 +20,7 @@ export const en = {
     shareFailed: "Copy failed",
     pauseLabel: "Pause",
     runLabel: "Run",
+    menu: "Open menu",
   },
 
   panels: {
@@ -69,7 +70,7 @@ export const en = {
     log: {
       title: "Activity",
       clear: "Clear",
-      export: "Export .lmc",
+      export: "Export .fcpu",
       tabs: {
         live: "Live feed",
         history: "History",
@@ -143,38 +144,38 @@ export const en = {
   modal: {
     close: "Close",
     instructions: {
-      title: "LMC Instruction Set",
-      intro: 'Note that in the following table <em>xx</em> refers to a memory address (aka mailbox) in the RAM. The online LMC simulator has 100 different mailboxes in the RAM ranging from 00 to 99.',
+      title: "Instruction Set",
+      intro: 'In the following table <em>xx</em> refers to a memory address (a cell) in the RAM. FetchCPU-Pocho has 100 memory cells ranging from <code>00</code> to <code>99</code>.',
       th: { mnemonic: "Mnemonic", name: "Name", desc: "Description", code: "Op Code" },
       instructions: [
-        ["INP", "INPUT",         "Retrieve user input and stores it in the accumulator.", "901"],
+        ["INP", "INPUT",         "Read user input and store it in the accumulator.", "901"],
         ["OUT", "OUTPUT",        "Output the value stored in the accumulator.",          "902"],
-        ["LDA", "LOAD",          "Load the Accumulator with the contents of the memory address given.", "5xx"],
-        ["STA", "STORE",         "Store the value in the Accumulator in the memory address given.", "3xx"],
-        ["ADD", "ADD",           "Add the contents of the memory address to the Accumulator", "1xx"],
-        ["SUB", "SUBTRACT",      "Subtract the contents of the memory address from the Accumulator", "2xx"],
-        ["BRP", "BRANCH IF POSITIVE", "Branch/Jump to the address given if the Accumulator is zero or positive.", "8xx"],
-        ["BRZ", "BRANCH IF ZERO", "Branch/Jump to the address given if the Accumulator is zero.", "7xx"],
-        ["BRA", "BRANCH ALWAYS", "Branch/Jump to the address given.", "6xx"],
+        ["LDA", "LOAD",          "Load the accumulator with the contents of the memory address given.", "5xx"],
+        ["STA", "STORE",         "Store the value in the accumulator in the memory address given.", "3xx"],
+        ["ADD", "ADD",           "Add the contents of the memory address to the accumulator", "1xx"],
+        ["SUB", "SUBTRACT",      "Subtract the contents of the memory address from the accumulator", "2xx"],
+        ["BRP", "BRANCH IF POSITIVE", "Branch to the address given if the accumulator is zero or positive.", "8xx"],
+        ["BRZ", "BRANCH IF ZERO", "Branch to the address given if the accumulator is zero.", "7xx"],
+        ["BRA", "BRANCH ALWAYS", "Branch to the address given.", "6xx"],
         ["HLT", "HALT",          "Stop the code", "000"],
-        ["DAT", "DATA LOCATION", "Used to associate a label to a free memory address. An optional value can also be used to be stored at the memory address."],
+        ["DAT", "DATA LOCATION", "Associate a label with a free memory address. An optional initial value can also be stored there."],
       ],
-      addressingTitle: "Address variants (Pocho LMC extension)",
-      addressingIntro: "In addition to the standard opcodes above, Pocho LMC supports two addressing modes for any memory-touching instruction:",
+      addressingTitle: "Address variants (FetchCPU-Pocho extension)",
+      addressingIntro: "In addition to the standard opcodes above, FetchCPU-Pocho supports two addressing modes for any memory-touching instruction:",
       addressing: [
         ["LDA #n", "Immediate", "Load the literal value <code>n</code> instead of reading memory.", "5nn"],
         ["LDA @a", "Indirect",  "Read the pointer at address <code>a</code>, then read from the address it points to.", "5xx"],
       ],
     },
     about: {
-      title: "About this LMC Simulator",
+      title: "About FetchCPU-Pocho",
       paragraphs: [
-        "The Little Man Computer was created by <strong>Dr. Stuart Madnick</strong> in 1965 as a teaching aid for the basic Von Neumann architecture. LMC is generally used for educational purposes as it models a simple Von Neumann architecture computer which has all of the basic features of a modern computer.",
+        "FetchCPU-Pocho is a teaching simulator for the classic <strong>Von Neumann</strong> architecture: a tiny computer with a single accumulator, a hundred memory cells, and an instruction set small enough to learn by heart.",
       ],
-      paragraph2: "You can read more about the Little Man Computer on its <a href=\"https://en.wikipedia.org/wiki/Little_man_computer\" target=\"_blank\" rel=\"noreferrer\">Wikipedia entry</a> and about the original 101computing.net simulator <a href=\"https://www.101computing.net/lmc-simulator/\" target=\"_blank\" rel=\"noreferrer\">here</a>.",
-      paragraph3: "This is an independent, extended version built with vanilla ES modules. Three-digit values are represented in <strong>nine's complement</strong> so subtraction works correctly with values from <code>-499</code> to <code>+500</code>.",
+      paragraph2: "Every Fetch / Decode / Execute cycle is visible: the current instruction, the next one, the read/write traffic on the bus, and the values held by each register. The UI is bilingual (English / Spanish) and the entire simulator runs in the browser with no dependencies.",
+      paragraph3: "Three-digit values are represented in <strong>nine's complement</strong> so subtraction works correctly with values from <code>-499</code> to <code>+500</code>. The two extensions beyond the standard instruction set are immediate (<code>#</code>) and indirect (<code>@</code>) addressing.",
       shortcuts: "Keyboard shortcuts: {shortcuts}.",
-      credits: '© <a href="https://www.101computing.net" target="_blank" rel="noreferrer">101Computing.net</a> · <a href="https://en.wikipedia.org/wiki/Little_man_computer" target="_blank" rel="noreferrer">Wikipedia</a>.',
+      credits: 'Built by <a href="https://github.com/Pochonski" target="_blank" rel="noreferrer">Pocho</a>.',
     },
     tutorial: {
       title: "Quick tutorial",
@@ -231,11 +232,11 @@ export const en = {
 
 export const es = {
   app: {
-    name: "Pocho LMC",
-    tagline: "Un simulador hecho por Pocho",
-    eyebrow: "Little Man Computer",
+    name: "FetchCPU-Pocho",
+    tagline: "Un simulador interactivo de Fetch/Decode/Execute",
+    eyebrow: "CPU Von Neumann",
     tutorial: "Tutorial",
-    lmcInstructionSet: "Set de instrucciones LMC",
+    instructionSet: "Set de instrucciones",
     about: "Acerca de",
     theme: "Cambiar tema",
     themeToLight: "Cambiar a tema claro",
@@ -246,6 +247,7 @@ export const es = {
     shareFailed: "No se pudo copiar",
     pauseLabel: "Pausa",
     runLabel: "Ejecutar",
+    menu: "Abrir menú",
   },
 
   panels: {
@@ -295,7 +297,7 @@ export const es = {
     log: {
       title: "Actividad",
       clear: "Limpiar",
-      export: "Exportar .lmc",
+      export: "Exportar .fcpu",
       tabs: {
         live: "En vivo",
         history: "Historial",
@@ -369,8 +371,8 @@ export const es = {
   modal: {
     close: "Cerrar",
     instructions: {
-      title: "Set de instrucciones LMC",
-      intro: 'Nota: en la siguiente tabla <em>xx</em> representa una dirección de memoria (también llamada casilla) en la RAM. El simulador LMC en línea tiene 100 casillas en la RAM, del 00 al 99.',
+      title: "Set de instrucciones",
+      intro: 'En la siguiente tabla <em>xx</em> representa una dirección de memoria (una celda) en la RAM. FetchCPU-Pocho tiene 100 celdas de memoria, del <code>00</code> al <code>99</code>.',
       th: { mnemonic: "Mnemónico", name: "Nombre", desc: "Descripción", code: "Op Code" },
       instructions: [
         ["INP", "ENTRADA",       "Lee la entrada del usuario y la guarda en el acumulador.", "901"],
@@ -385,22 +387,22 @@ export const es = {
         ["HLT", "DETENER",       "Detiene el código.", "000"],
         ["DAT", "DATO",          "Asocia una etiqueta a una dirección de memoria libre. Opcionalmente acepta un valor inicial que se guarda en esa dirección."],
       ],
-      addressingTitle: "Variantes de direccionamiento (extensión Pocho LMC)",
-      addressingIntro: "Además de los opcodes estándar, Pocho LMC admite dos modos de direccionamiento para cualquier instrucción que toque memoria:",
+      addressingTitle: "Variantes de direccionamiento (extensión FetchCPU-Pocho)",
+      addressingIntro: "Además de los opcodes estándar, FetchCPU-Pocho admite dos modos de direccionamiento para cualquier instrucción que toque memoria:",
       addressing: [
         ["LDA #n", "Inmediato", "Carga el valor literal <code>n</code> en vez de leer memoria.", "5nn"],
         ["LDA @a", "Indirecto", "Lee el puntero en la dirección <code>a</code>, luego lee desde la dirección a la que apunta.", "5xx"],
       ],
     },
     about: {
-      title: "Acerca de este simulador LMC",
+      title: "Acerca de FetchCPU-Pocho",
       paragraphs: [
-        "La Little Man Computer fue creada por <strong>Dr. Stuart Madnick</strong> en 1965 como apoyo didáctico para la arquitectura Von Neumann. El LMC se usa generalmente con fines educativos porque modela una computadora sencilla con todas las características básicas de una moderna.",
+        "FetchCPU-Pocho es un simulador didáctico de la arquitectura clásica <strong>Von Neumann</strong>: una computadora mínima con un único acumulador, cien celdas de memoria y un set de instrucciones lo bastante pequeño como para aprenderse de memoria.",
       ],
-      paragraph2: "Puedes leer más sobre la Little Man Computer en su <a href=\"https://es.wikipedia.org/wiki/Little_man_computer\" target=\"_blank\" rel=\"noreferrer\">entrada de Wikipedia</a> y sobre el simulador original de 101computing.net <a href=\"https://www.101computing.net/lmc-simulator/\" target=\"_blank\" rel=\"noreferrer\">aquí</a>.",
-      paragraph3: "Esta es una versión independiente y extendida construida con módulos ES nativos. Los valores de tres dígitos se representan en <strong>complemento a 9</strong> para que la resta funcione correctamente con valores entre <code>-499</code> y <code>+500</code>.",
+      paragraph2: "Cada ciclo Fetch / Decode / Execute es visible: la instrucción actual, la siguiente, el tráfico de lectura/escritura en el bus y los valores de cada registro. La interfaz es bilingüe (español / inglés) y el simulador completo corre en el navegador sin dependencias externas.",
+      paragraph3: "Los valores de tres dígitos se representan en <strong>complemento a 9</strong> para que la resta funcione correctamente entre <code>-499</code> y <code>+500</code>. Las dos extensiones sobre el set estándar son el direccionamiento inmediato (<code>#</code>) y el indirecto (<code>@</code>).",
       shortcuts: "Atajos de teclado: {shortcuts}.",
-      credits: '© <a href="https://www.101computing.net" target="_blank" rel="noreferrer">101Computing.net</a> · <a href="https://es.wikipedia.org/wiki/Little_man_computer" target="_blank" rel="noreferrer">Wikipedia</a>.',
+      credits: 'Hecho por <a href="https://github.com/Pochonski" target="_blank" rel="noreferrer">Pocho</a>.',
     },
     tutorial: {
       title: "Tutorial rápido",

@@ -1,15 +1,15 @@
 {
-  "name": "pocho-lmc",
-  "version": "1.0.0",
+  "name": "fetchcpu-pocho",
+  "version": "1.1.0",
   "type": "module",
-  "description": "Pocho LMC — an interactive Little Man Computer simulator with FDE cycle visualization",
-  "homepage": "https://pocho-lmc.vercel.app",
+  "description": "FetchCPU-Pocho — an interactive CPU simulator with Fetch/Decode/Execute cycle visualization",
+  "homepage": "https://fetchcpu-pocho.vercel.app",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Pochonski/pocho-lmc.git"
+    "url": "git+https://github.com/Pochonski/fetchcpu-pocho.git"
   },
   "bugs": {
-    "url": "https://github.com/Pochonski/pocho-lmc/issues"
+    "url": "https://github.com/Pochonski/fetchcpu-pocho/issues"
   },
   "scripts": {
     "test": "vitest run",
@@ -20,15 +20,16 @@
     "start": "npm run serve"
   },
   "keywords": [
-    "lmc",
+    "fetchcpu",
+    "fde",
+    "fetch-decode-execute",
     "simulator",
     "education",
     "cpu",
     "assembly",
     "von-neumann",
     "fde-cycle",
-    "pocho",
-    "little-man-computer"
+    "pocho"
   ],
   "engines": {
     "node": ">=20"

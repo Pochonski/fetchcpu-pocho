@@ -11,7 +11,7 @@
 
 import { en, es, SUPPORTED_LANGUAGES, DEFAULT_LANGUAGE } from "./dictionaries.js";
 
-const STORAGE_KEY = "lmc-language";
+const STORAGE_KEY = "fetchcpu-language";
 
 const dictionaries = { en, es };
 let current = readPersisted();

@@ -104,7 +104,7 @@ export function createLogger(liveFeedEl, logEl) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `lmc-log-${Date.now()}.txt`;
+    a.download = `fetchcpu-log-${Date.now()}.txt`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

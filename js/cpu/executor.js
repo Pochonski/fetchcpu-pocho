@@ -1,7 +1,7 @@
-// LMC Executor - performs the Fetch / Decode / Execute cycle.
+// FetchCPU Executor - performs the Fetch / Decode / Execute cycle.
 //
 // Emits events and updates a stats counter along the way. The numeric word
-// stored in RAM uses the standard LMC encoding:
+// stored in RAM uses the standard ISA encoding:
 //   INP=901, OUT=902, HLT=000, LDA=5xx, STA=3xx, ADD=1xx, SUB=2xx,
 //   BRP=8xx, BRZ=7xx, BRA=6xx (xx = memory address 00..99).
 //

@@ -1,13 +1,13 @@
-# Contributing to Pocho LMC
+# Contributing to FetchCPU-Pocho
 
-Thanks for the interest! Pocho LMC is a small, dependency-free teaching
-simulator for the Little Man Computer architecture.
+Thanks for the interest! FetchCPU-Pocho is a small, dependency-free teaching
+simulator for the classic Von Neumann architecture.
 
 ## Local setup
 
 ```bash
 git clone <your-fork-url>
-cd pocho-lmc
+cd fetchcpu-pocho
 npm install
 npm start                 # http://localhost:8000
 npm test                  # 65+ tests
@@ -36,7 +36,7 @@ npm run lint
 - Plain ES modules, no bundler, no transpilation.
 - Vanilla DOM — no React, no Vue, no jQuery.
 - Public modules live under `js/`, view layer under `js/ui/`, CPU model under
-  `js/lmc/`, examples under `js/programs/`.
+  `js/cpu/`, examples under `js/programs/`.
 - 2-space indentation, single quotes, no trailing commas in object literals,
   semicolons avoided inside arrow function bodies when one expression.
 
