@@ -83,7 +83,10 @@ export function createLogger(liveFeedEl, logEl) {
     logEl.textContent = "";
     const savedLogFile = logFileEnabled;
     logFileEnabled = false;
-    for (const r of rawLines) {
+    // Snapshot the array so callbacks that re-push to rawLines don't extend
+    // the iteration (which would otherwise loop forever).
+    const snapshot = rawLines.slice();
+    for (const r of snapshot) {
       if (r.kind === "cycle") onCycle(r.cpu, r.info);
       else if (r.kind === "loaded") onProgramLoaded(r.count);
       else if (r.kind === "halted") onProgramHalted({ state: { haltedAt: r.haltedAt } });
