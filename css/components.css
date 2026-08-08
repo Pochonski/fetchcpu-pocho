@@ -916,6 +916,23 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   transform: translateY(-1px);
   z-index: 3;
 }
+/* PC / MAR highlight raises tag and value contrast so text stays legible. */
+.ram-cell[data-pc="true"] .cell-tag,
+.ram-cell[data-mar="true"] .cell-tag {
+  background: var(--bg-elevated);
+  border: 1px solid currentColor;
+  color: var(--fg);
+}
+.ram-cell[data-pc="true"] .cell-value,
+.ram-cell[data-mar="true"] .cell-value {
+  color: var(--fg);
+  font-weight: 800;
+}
+.ram-cell[data-pc="true"] .cell-label,
+.ram-cell[data-mar="true"] .cell-label {
+  color: var(--fg);
+  font-weight: 700;
+}
 .ram-cell[data-pc="true"]::before {
   content: "PC";
   position: absolute;
