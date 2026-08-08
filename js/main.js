@@ -618,7 +618,14 @@ function boot() {
   });
 
   events.on("tick", () => refreshView());
-  events.on("halt", () => { sound.halt(); refreshView(); });
+  events.on("halt", () => {
+    sound.halt();
+    setPauseIcon(false);
+    refreshView();
+  });
+  events.on("run-stop", () => {
+    setPauseIcon(false);
+  });
   events.on("input-exhausted", () => {
     logger.onInputExhausted();
     pauseProgram();

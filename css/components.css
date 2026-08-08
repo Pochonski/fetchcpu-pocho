@@ -847,16 +847,6 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 .cell-tag[data-tag="bra"]       { background: rgba(255, 184, 77, 0.16); color: var(--warning); }
 .cell-tag[data-tag="hlt"]       { background: rgba(255, 107, 107, 0.18); color: var(--danger); }
 .cell-tag[data-tag="dat"]       { background: rgba(192, 132, 252, 0.16); color: #c084fc; }
-.cell-value {
-  display: block;
-  text-align: center;
-  font-size: 0.8125rem;
-  font-weight: 700;
-  color: var(--fg);
-  margin-top: 2px;
-  letter-spacing: 0.04em;
-  line-height: 1.1;
-}
 .cell-label {
   display: block;
   text-align: center;
@@ -921,7 +911,6 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   z-index: 4;
   font-family: var(--font-mono);
 }
-.ram-cell[data-pc="true"] .cell-value { color: var(--pc-marker); }
 
 .ram-cell[data-mar="true"] {
   border-color: var(--mar-marker);
@@ -943,10 +932,6 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   font-family: var(--font-mono);
 }
 
-.ram-cell[data-modified="true"] .cell-value {
-  color: var(--accent);
-  animation: ramFlash 0.6s var(--easing-out);
-}
 @keyframes ramFlash {
   0%   { box-shadow: 0 0 0 4px var(--accent-soft); }
   100% { box-shadow: 0 0 0 0 var(--accent-soft); }

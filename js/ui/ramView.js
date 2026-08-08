@@ -80,7 +80,6 @@ export function createRAMView(ram, cpu) {
         <div class="cell-inner">
           <span class="cell-addr"></span>
           <span class="cell-tag"></span>
-          <span class="cell-value"></span>
           <span class="cell-label"></span>
         </div>
       `;
