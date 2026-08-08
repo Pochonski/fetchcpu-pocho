@@ -55,6 +55,7 @@
   margin: 0 auto;
   grid-template-columns: 1fr;
   grid-template-areas:
+    "controls"
     "ram"
     "cpu"
     "editor"
@@ -65,30 +66,31 @@
   .app-grid {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
     grid-template-areas:
-      "ram    cpu"
-      "ram    cpu"
-      "editor log";
+      "controls controls"
+      "ram      cpu"
+      "editor   log";
   }
 }
 
-/* Desktop: RAM (cells) sits at the top, CPU on the right; the program
-   assembler and the Activity panel sit side by side below, mirroring
-   the top split. Cells stay compact so the full 10x10 grid fits
-   without horizontal scroll. */
+/* Desktop: Controls span the top, RAM (cells) and CPU share the second
+   row; the program assembler and the Activity panel sit side by side
+   below, mirroring the top split. Cells stay compact so the full 10x10
+   grid fits without horizontal scroll. */
 @media (min-width: 1280px) {
   .app-grid {
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
     grid-template-areas:
-      "ram    cpu"
-      "ram    cpu"
-      "editor log";
+      "controls controls"
+      "ram      cpu"
+      "editor   log";
   }
 }
 
-.editor-panel { grid-area: editor; }
-.cpu-panel    { grid-area: cpu; }
-.ram-panel    { grid-area: ram; }
-.log-panel    { grid-area: log; }
+.editor-panel    { grid-area: editor; }
+.cpu-panel       { grid-area: cpu; }
+.ram-panel       { grid-area: ram; }
+.controls-panel  { grid-area: controls; }
+.log-panel       { grid-area: log; }
 
 .app-footer {
   padding: var(--space-4) var(--space-6);

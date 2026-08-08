@@ -333,6 +333,7 @@ function boot() {
     });
 
     logger.onProgramLoaded(entries.length);
+    setExplanationText(t("explanation.idle"));
     refreshView();
   }
 
@@ -617,10 +618,24 @@ function boot() {
     }
   });
 
-  events.on("tick", () => refreshView());
+  // Wire the executor's translator so per-instruction notes come out localized.
+  executor.setTranslator(t);
+
+  function setExplanationText(text) {
+    const a = $("explanation-controls");
+    const b = $("explanation-cpu");
+    if (a) a.textContent = text;
+    if (b) b.textContent = text;
+  }
+
+  events.on("tick", (info) => {
+    if (info && info.note) setExplanationText(info.note);
+    refreshView();
+  });
   events.on("halt", () => {
     sound.halt();
     setPauseIcon(false);
+    setExplanationText(t("explanation.hlt"));
     refreshView();
   });
   events.on("run-stop", () => {

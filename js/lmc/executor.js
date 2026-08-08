@@ -18,6 +18,59 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
   let timer = null;
   let indirectAddresses = new Set();
 
+  // Build a localized note describing the most recently executed
+  // instruction. The t() function is injected so the executor module
+  // does not import i18n directly.
+  let tFn = (key) => key;
+  function setTranslator(fn) {
+    tFn = typeof fn === "function" ? fn : (key, args) => (args ? `${key}(${JSON.stringify(args)})` : key);
+  }
+
+  function readOperand(addr, mode) {
+    if (mode === "indirect") return ram.read(ram.read(addr));
+    return ram.read(addr);
+  }
+
+  function buildInstructionNote(decoded, prevAcc) {
+    const { mnemonic, operandValue, mode } = decoded;
+    const acc = cpu.state.acc;
+    const addr = String(operandValue).padStart(2, "0");
+    switch (mnemonic) {
+      case "INP":
+        return tFn("explanation.inp", { value: acc });
+      case "OUT":
+        return tFn("explanation.out", { value: acc });
+      case "LDA": {
+        const value = ram.read(operandValue);
+        return tFn("explanation.lda", { addr, value });
+      }
+      case "STA":
+        return tFn("explanation.sta", { addr, value: acc });
+      case "ADD": {
+        const value = readOperand(operandValue, mode);
+        return tFn("explanation.add", { addr, acc: prevAcc, value, result: acc });
+      }
+      case "SUB": {
+        const value = readOperand(operandValue, mode);
+        return tFn("explanation.sub", { addr, acc: prevAcc, value, result: acc });
+      }
+      case "BRP":
+        return prevAcc >= 0
+          ? tFn("explanation.brpTaken", { addr, acc: prevAcc })
+          : tFn("explanation.brpSkip", { addr, acc: prevAcc });
+      case "BRZ":
+        return prevAcc === 0
+          ? tFn("explanation.brzTaken", { addr, acc: prevAcc })
+          : tFn("explanation.brzSkip", { addr, acc: prevAcc });
+      case "BRA":
+        return tFn("explanation.bra", { addr });
+      case "HLT":
+        return tFn("explanation.hlt");
+      default:
+        return null;
+    }
+  }
+
   function snapshot() {
     return {
       cpu: cpu.snapshot(),
@@ -87,6 +140,7 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
   function performExecute(decoded) {
     cpu.state.phase = "execute";
     const { mnemonic, operandValue, mode } = decoded;
+    const prevAcc = cpu.state.acc;
 
     switch (mnemonic) {
       case "HLT":
@@ -238,6 +292,10 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
         throw new Error(`Unknown mnemonic ${mnemonic}`);
     }
     if (stats) stats.onInstruction(mnemonic);
+
+    // Build a human-readable note for the just-executed instruction so
+    // the UI can show "ADD 6 — ACC = ACC (4) + RAM[6] (3) = 7" type strings.
+    decoded._note = buildInstructionNote(decoded, prevAcc);
   }
 
   function emitFlag() {
@@ -297,10 +355,12 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
   function emitTick(extra = {}) {
     setTimeout(() => cpu.clearChanged(), 80);
     if (events) {
+      const note = pendingDecoded?._note ?? null;
       events.emit("tick", {
         cycle: cpu.state.cycle,
         phase: cpu.state.phase,
         mnemonic: pendingDecoded?.mnemonic ?? null,
+        note,
         pc: cpu.state.pc - (cpu.state.phase === "fetch" ? 1 : 0),
         acc: cpu.state.acc,
         ...extra,
@@ -320,7 +380,8 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
     cpu.state.cycle += 1;
     if (stats) stats.tickCycle();
     setPhaseFromCycle();
-    emitTick({ mnemonic: decoded.mnemonic });
+    pendingDecoded = decoded;
+    emitTick({ mnemonic: decoded.mnemonic, note: decoded._note ?? null });
     return !cpu.state.halted;
   }
 
@@ -490,6 +551,7 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
     isRunning: () => running,
     history: () => history.slice(),
     setIndirectAddresses,
+    setTranslator,
     getCurrentInstruction,
     getNextInstruction,
   };

@@ -23,6 +23,9 @@ export const en = {
   },
 
   panels: {
+    controls: {
+      title: "Controls · Execution",
+    },
     editor: {
       title: "Program · Assembly",
       expectedEyebrow: "Expected output",
@@ -118,6 +121,24 @@ export const en = {
   },
 
   history: {},
+
+  explanation: {
+    didLabel: "Did",
+    idle: "Press Step or Run to begin",
+    inp:      "INP 901 — Read {value} from stdin → ACC",
+    out:      "OUT 902 — Send ACC ({value}) to stdout",
+    lda:      "LDA {addr} — Load RAM[{addr}] ({value}) → ACC",
+    sta:      "STA {addr} — Store ACC ({value}) → RAM[{addr}]",
+    add:      "ADD {addr} — ACC = ACC ({acc}) + RAM[{addr}] ({value}) = {result}",
+    sub:      "SUB {addr} — ACC = ACC ({acc}) − RAM[{addr}] ({value}) = {result}",
+    brpTaken: "BRP {addr} — ACC ≥ 0 ({acc}), jump to RAM[{addr}]",
+    brpSkip:  "BRP {addr} — ACC < 0 ({acc}), continue",
+    brzTaken: "BRZ {addr} — ACC = 0, jump to RAM[{addr}]",
+    brzSkip:  "BRZ {addr} — ACC ≠ 0 ({acc}), continue",
+    bra:      "BRA {addr} — Jump to RAM[{addr}]",
+    hlt:      "HLT 000 — Stop execution",
+  },
+
 
   modal: {
     close: "Close",
@@ -228,6 +249,9 @@ export const es = {
   },
 
   panels: {
+    controls: {
+      title: "Controles · Ejecución",
+    },
     editor: {
       title: "Programa · Ensamblador",
       expectedEyebrow: "Salida esperada",
@@ -323,6 +347,24 @@ export const es = {
   },
 
   history: {},
+
+  explanation: {
+    didLabel: "Hizo",
+    idle: "Pulsa Paso o Ejecutar para empezar",
+    inp:      "INP 901 — Lee {value} de stdin → ACC",
+    out:      "OUT 902 — Envía ACC ({value}) a stdout",
+    lda:      "LDA {addr} — Carga RAM[{addr}] ({value}) → ACC",
+    sta:      "STA {addr} — Guarda ACC ({value}) en RAM[{addr}]",
+    add:      "ADD {addr} — ACC = ACC ({acc}) + RAM[{addr}] ({value}) = {result}",
+    sub:      "SUB {addr} — ACC = ACC ({acc}) − RAM[{addr}] ({value}) = {result}",
+    brpTaken: "BRP {addr} — ACC ≥ 0 ({acc}), salta a RAM[{addr}]",
+    brpSkip:  "BRP {addr} — ACC < 0 ({acc}), continúa",
+    brzTaken: "BRZ {addr} — ACC = 0, salta a RAM[{addr}]",
+    brzSkip:  "BRZ {addr} — ACC ≠ 0 ({acc}), continúa",
+    bra:      "BRA {addr} — Salta a RAM[{addr}]",
+    hlt:      "HLT 000 — Detener ejecución",
+  },
+
 
   modal: {
     close: "Cerrar",

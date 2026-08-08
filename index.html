@@ -113,6 +113,51 @@
         </div>
       </section>
 
+      <!-- ============== CONTROLS ============== -->
+      <section class="panel controls-panel" aria-labelledby="controls-title">
+        <header class="panel-header">
+          <h2 id="controls-title" data-i18n="panels.controls.title">Controls · Execution</h2>
+        </header>
+
+        <div class="controls-row controls-row-buttons">
+          <div class="control-buttons">
+            <button class="btn btn-secondary icon-only" id="btn-pause" data-i18n-attr="title:panels.cpu.pauseRun;aria-label:panels.cpu.pauseRun" aria-label="Run/Pause" title="Run (F5)">
+              <span aria-hidden="true">▶</span>
+            </button>
+            <button class="btn btn-primary icon-only" id="btn-step" data-i18n-attr="title:panels.cpu.step;aria-label:panels.cpu.step" aria-label="Step one FDE cycle" title="Step (F9)">
+              <span aria-hidden="true">▸</span>
+            </button>
+          </div>
+          <div class="speed-control">
+            <label for="clock" data-i18n="panels.cpu.clock">Clock</label>
+            <button class="btn btn-ghost icon-only clock-step" id="btn-clock-down" data-i18n-attr="title:panels.cpu.slower;aria-label:panels.cpu.slower" aria-label="Slower" title="Slow down">
+              <span aria-hidden="true">−</span>
+            </button>
+            <input type="range" id="clock" min="50" max="3000" value="500" step="25" aria-valuemin="50" aria-valuemax="3000" />
+            <button class="btn btn-ghost icon-only clock-step" id="btn-clock-up" data-i18n-attr="title:panels.cpu.faster;aria-label:panels.cpu.faster" aria-label="Faster" title="Speed up">
+              <span aria-hidden="true">+</span>
+            </button>
+            <output id="clock-value" for="clock">120 ms</output>
+          </div>
+        </div>
+
+        <div class="controls-row controls-row-io">
+          <div class="io-panel">
+            <label for="input" data-i18n="panels.cpu.inputLabel">Input · stdin</label>
+            <textarea id="input" class="io-textarea" rows="2" data-i18n-placeholder="panels.cpu.inputPlaceholder" placeholder="One numeric value per line"></textarea>
+          </div>
+          <div class="io-panel">
+            <label for="output" data-i18n="panels.cpu.outputLabel">Output · stdout</label>
+            <textarea id="output" class="io-textarea" rows="2" readonly aria-label="Program output"></textarea>
+          </div>
+        </div>
+
+        <div class="instruction-explanation">
+          <span class="explanation-label" data-i18n="explanation.didLabel">Did</span>
+          <span class="explanation-text" id="explanation-controls" data-i18n="explanation.idle">Press Step or Run to begin</span>
+        </div>
+      </section>
+
       <!-- ============== CPU ============== -->
       <section class="panel cpu-panel" aria-labelledby="cpu-title">
         <header class="panel-header">
@@ -139,6 +184,11 @@
             <span class="disasm-label" data-i18n="panels.cpu.next">NEXT</span>
             <span class="disasm-mnemonic" id="disasm-next">—</span>
           </div>
+        </div>
+
+        <div class="instruction-explanation instruction-explanation-cpu">
+          <span class="explanation-label" data-i18n="explanation.didLabel">Did</span>
+          <span class="explanation-text" id="explanation-cpu">—</span>
         </div>
 
         <div class="bus" aria-hidden="true">
@@ -206,39 +256,6 @@
                 <span class="flag" id="flag-p" data-i18n-attr="title:panels.cpu.flagP" title="Positive">P</span>
               </div>
             </div>
-          </div>
-        </div>
-
-        <div class="cpu-controls">
-          <div class="control-buttons">
-            <button class="btn btn-secondary icon-only" id="btn-pause" data-i18n-attr="title:panels.cpu.pauseRun;aria-label:panels.cpu.pauseRun" aria-label="Run/Pause" title="Run (F5)">
-              <span aria-hidden="true">▶</span>
-            </button>
-            <button class="btn btn-primary icon-only" id="btn-step" data-i18n-attr="title:panels.cpu.step;aria-label:panels.cpu.step" aria-label="Step one FDE cycle" title="Step (F9)">
-              <span aria-hidden="true">▸</span>
-            </button>
-          </div>
-          <div class="speed-control">
-            <label for="clock" data-i18n="panels.cpu.clock">Clock</label>
-            <button class="btn btn-ghost icon-only clock-step" id="btn-clock-down" data-i18n-attr="title:panels.cpu.slower;aria-label:panels.cpu.slower" aria-label="Slower" title="Slow down">
-              <span aria-hidden="true">−</span>
-            </button>
-            <input type="range" id="clock" min="50" max="3000" value="500" step="25" aria-valuemin="50" aria-valuemax="3000" />
-            <button class="btn btn-ghost icon-only clock-step" id="btn-clock-up" data-i18n-attr="title:panels.cpu.faster;aria-label:panels.cpu.faster" aria-label="Faster" title="Speed up">
-              <span aria-hidden="true">+</span>
-            </button>
-            <output id="clock-value" for="clock">120 ms</output>
-          </div>
-        </div>
-
-        <div class="io-panels">
-          <div class="io-panel">
-            <label for="input" data-i18n="panels.cpu.inputLabel">Input · stdin</label>
-            <textarea id="input" class="io-textarea" rows="4" data-i18n-placeholder="panels.cpu.inputPlaceholder" placeholder="One numeric value per line"></textarea>
-          </div>
-          <div class="io-panel">
-            <label for="output" data-i18n="panels.cpu.outputLabel">Output · stdout</label>
-            <textarea id="output" class="io-textarea" rows="4" readonly aria-label="Program output"></textarea>
           </div>
         </div>
       </section>
