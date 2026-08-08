@@ -58,6 +58,10 @@
   user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
+/* Reserve width on the main Run/Load buttons so the editor panel header
+   stays stable when switching between EN ("Run" / "Load") and ES
+   ("Ejecutar" / "Cargar"). */
+#btn-load, #btn-run { min-width: 5rem; justify-content: center; }
 .btn:active:not(:disabled) { transform: translateY(1px); }
 .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 .btn:focus-visible { box-shadow: 0 0 0 3px var(--accent-soft); }
@@ -220,7 +224,14 @@
   background: var(--bg-hover);
   border-color: var(--border);
 }
-.link-btn { padding: var(--space-2) var(--space-3); }
+.link-btn {
+  padding: var(--space-2) var(--space-3);
+  white-space: nowrap;
+  /* Reserve width so the EN/ES text difference (Instruction Set vs
+     Set de instrucciones) doesn't reflow the header row. */
+  min-width: 7.5rem;
+  justify-content: center;
+}
 
 /* Hide text buttons on phones; show a hamburger that opens the bottom sheet. */
 @media (max-width: 639px) {
@@ -392,6 +403,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   background:
     linear-gradient(90deg, var(--accent-soft), transparent 80%),
     var(--bg-elevated);
+  /* Reserve enough height for the title row + 2 lines of blurb so the
+     surrounding controls strip doesn't grow when the blurb wraps. */
+  min-height: 4.5rem;
 }
 .examples-info {
   display: flex;
@@ -423,6 +437,10 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   line-height: var(--lh-snug);
   overflow: hidden;
   text-overflow: ellipsis;
+  /* Reserve 2 lines so the strip height stays stable when the blurb
+     length differs across languages. */
+  min-height: 2.5rem;
+  text-wrap: pretty;
 }
 .examples-picker {
   display: flex;
@@ -430,6 +448,10 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   gap: var(--space-2);
   flex-wrap: wrap;
   justify-content: flex-start;
+}
+.examples-picker .btn {
+  white-space: nowrap;
+  min-width: 5.5rem;
 }
 .examples-picker select {
   flex: 1 1 10rem;
@@ -605,6 +627,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   transition: all var(--duration-normal) var(--easing-out);
   -webkit-user-select: none;
   user-select: none;
+  /* Reserve width for the longest label ("Decodificación" / "Decodif.")
+     so the FDE row + arrows don't reflow on language switch. */
+  min-width: 7rem;
 }
 @media (max-width: 480px) {
   .fde-flow {
@@ -1414,7 +1439,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 .tab {
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  font-size: 0.8125rem;
+  font-size: var(--fs-base);
   font-weight: 600;
   color: var(--fg-muted);
   background: transparent;
@@ -1427,6 +1452,14 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   white-space: nowrap;
   -webkit-tap-highlight-color: transparent;
 }
+.tab .icon-tab {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  color: var(--fg-muted);
+  transition: color var(--duration-fast);
+}
+.tab[aria-selected="true"] .icon-tab { color: var(--accent); }
 .tab[aria-selected="true"] {
   background: var(--bg-input);
   color: var(--fg);

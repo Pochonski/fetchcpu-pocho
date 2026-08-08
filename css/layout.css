@@ -41,6 +41,9 @@ body {
   backdrop-filter: blur(var(--glass-blur));
   -webkit-backdrop-filter: blur(var(--glass-blur));
   border-bottom: 1px solid var(--border);
+  /* Reserve a stable height so the header doesn't grow when the
+     "Instruction Set" / "Set de instrucciones" label expands on ES. */
+  min-height: calc(60px + var(--safe-top));
 }
 
 .app-header h1 {
@@ -94,6 +97,7 @@ body {
   gap: var(--space-2);
   flex-wrap: wrap;
   justify-content: flex-end;
+  min-height: 32px;
 }
 
 /* Hide the hamburger by default; show it on small screens via components.css */
@@ -170,6 +174,9 @@ body {
   gap: var(--space-2);
   justify-content: center;
   align-items: center;
+  /* Reserve height so the footer doesn't reflow when the tagline wraps
+     differently in EN vs ES. */
+  min-height: 3rem;
 }
 
 .app-footer kbd {

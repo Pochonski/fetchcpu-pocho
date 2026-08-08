@@ -312,10 +312,23 @@
           </div>
         </header>
         <div class="tabs" role="tablist">
-          <button class="tab" id="tab-live" role="tab" aria-selected="true" aria-controls="panel-live" data-i18n="panels.log.tabs.live">Live feed</button>
-          <button class="tab" id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history" data-i18n="panels.log.tabs.history">History <span class="tab-count" id="tab-history-count">0</span></button>
-          <button class="tab" id="tab-stats" role="tab" aria-selected="false" aria-controls="panel-stats" data-i18n="panels.log.tabs.stats">Stats</button>
-          <button class="tab" id="tab-log" role="tab" aria-selected="false" aria-controls="panel-log" data-i18n="panels.log.tabs.log">Log file</button>
+          <button class="tab" id="tab-live" role="tab" aria-selected="true" aria-controls="panel-live">
+            <svg class="icon icon-tab" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M13 2L4 14h7v8l9-12h-7V2z" fill="currentColor"/></svg>
+            <span data-i18n="panels.log.tabs.live">Live feed</span>
+          </button>
+          <button class="tab" id="tab-history" role="tab" aria-selected="false" aria-controls="panel-history">
+            <svg class="icon icon-tab" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 8v5l4 2" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M3 12a9 9 0 1 0 9-9" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+            <span data-i18n="panels.log.tabs.history">History</span>
+            <span class="tab-count" id="tab-history-count">0</span>
+          </button>
+          <button class="tab" id="tab-stats" role="tab" aria-selected="false" aria-controls="panel-stats">
+            <svg class="icon icon-tab" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="3" y="13" width="4" height="8" rx="1" fill="currentColor"/><rect x="10" y="9" width="4" height="12" rx="1" fill="currentColor"/><rect x="17" y="5" width="4" height="16" rx="1" fill="currentColor"/></svg>
+            <span data-i18n="panels.log.tabs.stats">Stats</span>
+          </button>
+          <button class="tab" id="tab-log" role="tab" aria-selected="false" aria-controls="panel-log">
+            <svg class="icon icon-tab" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 2h9l5 5v15H6V2z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M15 2v6h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 13h6M9 17h6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span data-i18n="panels.log.tabs.log">Log file</span>
+          </button>
         </div>
 
         <div class="tab-panel" id="panel-live" role="tabpanel" aria-labelledby="tab-live">
