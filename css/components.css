@@ -763,21 +763,21 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   width: 100%;
   font-family: var(--font-mono);
   border-collapse: separate;
-  border-spacing: 3px;
-  padding: var(--space-3);
+  border-spacing: 2px;
+  padding: var(--space-2);
 }
-.ram-row { display: flex; gap: 3px; }
+.ram-row { display: flex; gap: 2px; }
 .ram-row-head { margin-bottom: var(--space-1); }
 .ram-header {
-  flex: 0 0 1.5rem;
-  height: 1.5rem;
+  flex: 0 0 1.25rem;
+  height: 1.25rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.625rem;
+  font-size: 0.5625rem;
   font-weight: 700;
   color: var(--fg-dim);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   font-family: var(--font-mono);
   text-transform: uppercase;
 }
@@ -793,10 +793,10 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: var(--space-2) var(--space-1);
+  padding: var(--space-1) 2px;
   background: var(--bg-elevated);
   border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-xs);
   position: relative;
   cursor: default;
   transition:
@@ -805,7 +805,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
     transform var(--duration-fast);
   /* Visible so the PC / MAR badges can overhang the cell border. */
   overflow: visible;
-  min-height: 4.25rem;
+  min-height: 3.5rem;
 }
 .ram-cell:hover {
   border-color: var(--border-strong);
@@ -814,11 +814,11 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 }
 .cell-addr {
   position: absolute;
-  top: 3px;
-  left: 5px;
-  font-size: 0.5625rem;
+  top: 2px;
+  left: 3px;
+  font-size: 0.5rem;
   color: var(--fg-dim);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.02em;
   font-weight: 600;
   z-index: 1;
 }
@@ -827,58 +827,59 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding-top: 0.9rem;
-  padding-bottom: 2px;
+  gap: 2px;
+  padding-top: 0.75rem;
+  padding-bottom: 1px;
   pointer-events: none;
   width: 100%;
 }
 .cell-tag {
   display: inline-block;
-  font-size: 0.6875rem;
+  font-size: 0.5625rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  padding: 1px 6px;
+  letter-spacing: 0.02em;
+  padding: 0px 4px;
   border-radius: var(--radius-xs);
   background: var(--bg-input);
   color: var(--fg-dim);
   text-align: center;
-  line-height: 1.25;
-  min-height: 1rem;
+  line-height: 1.2;
+  min-height: 0.75rem;
 }
 .cell-tag[data-tag="inp"],
-.cell-tag[data-tag="out"]       { background: rgba(102, 217, 239, 0.18); color: var(--info); }
+.cell-tag[data-tag="out"]       { background: rgba(102, 217, 239, 0.20); color: var(--info); }
 .cell-tag[data-tag="lda"],
 .cell-tag[data-tag="sta"],
 .cell-tag[data-tag="add"],
-.cell-tag[data-tag="sub"]       { background: rgba(74, 222, 128, 0.16); color: var(--success); }
+.cell-tag[data-tag="sub"]       { background: rgba(74, 222, 128, 0.18); color: var(--success); }
 .cell-tag[data-tag="brp"],
 .cell-tag[data-tag="brz"],
-.cell-tag[data-tag="bra"]       { background: rgba(255, 184, 77, 0.18); color: var(--warning); }
-.cell-tag[data-tag="hlt"]       { background: rgba(255, 107, 107, 0.20); color: var(--danger); }
-.cell-tag[data-tag="dat"]       { background: rgba(192, 132, 252, 0.18); color: #c084fc; }
+.cell-tag[data-tag="bra"]       { background: rgba(255, 184, 77, 0.20); color: var(--warning); }
+.cell-tag[data-tag="hlt"]       { background: rgba(255, 107, 107, 0.22); color: var(--danger); }
+.cell-tag[data-tag="dat"]       { background: rgba(192, 132, 252, 0.20); color: #c084fc; }
 .cell-value {
   display: block;
   font-family: var(--font-mono);
-  font-size: 0.95rem;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: var(--fg);
   letter-spacing: 0.02em;
   text-align: center;
-  line-height: 1.15;
+  line-height: 1.1;
 }
 .cell-label {
   display: block;
   text-align: center;
-  font-size: 0.6875rem;
+  font-size: 0.5625rem;
   color: var(--fg-muted);
   letter-spacing: 0.02em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: 500;
-  line-height: 1.15;
+  line-height: 1.1;
+  max-width: 100%;
 }
 .cell-input {
   position: absolute;
@@ -949,16 +950,16 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 .ram-cell[data-pc="true"]::before {
   content: "PC";
   position: absolute;
-  top: -10px;
+  top: -9px;
   left: 50%;
   transform: translateX(-50%);
   background: var(--pc-marker);
   color: white;
-  font-size: 0.5625rem;
+  font-size: 0.5rem;
   font-weight: 700;
-  padding: 2px 6px;
+  padding: 1px 5px;
   border-radius: var(--radius-xs);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   z-index: 4;
   font-family: var(--font-mono);
 }
@@ -972,15 +973,15 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 .ram-cell[data-mar="true"]::after {
   content: "MAR";
   position: absolute;
-  bottom: -10px;
-  right: 4px;
+  bottom: -9px;
+  right: 3px;
   background: var(--mar-marker);
   color: #1a1300;
-  font-size: 0.5625rem;
+  font-size: 0.5rem;
   font-weight: 700;
-  padding: 2px 5px;
+  padding: 1px 5px;
   border-radius: var(--radius-xs);
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   font-family: var(--font-mono);
 }
 

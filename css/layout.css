@@ -67,22 +67,21 @@
     grid-template-areas:
       "ram    cpu"
       "ram    cpu"
-      "editor editor"
-      "log    log";
+      "editor log";
   }
 }
 
 /* Desktop: RAM (cells) sits at the top, CPU on the right; the program
-   assembler (Editor) is full-width below so source code has room;
-   the Activity panel (Live/History/Stats/Log) anchors the bottom. */
+   assembler and the Activity panel sit side by side below, mirroring
+   the top split. Cells stay compact so the full 10x10 grid fits
+   without horizontal scroll. */
 @media (min-width: 1280px) {
   .app-grid {
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
     grid-template-areas:
       "ram    cpu"
       "ram    cpu"
-      "editor editor"
-      "log    log";
+      "editor log";
   }
 }
 
