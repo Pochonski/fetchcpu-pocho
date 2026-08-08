@@ -55,8 +55,8 @@
   margin: 0 auto;
   grid-template-columns: 1fr;
   grid-template-areas:
-    "controls"
     "ram"
+    "controls"
     "cpu"
     "editor"
     "log";
@@ -66,21 +66,21 @@
   .app-grid {
     grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr);
     grid-template-areas:
-      "controls controls"
+      "ram      controls"
       "ram      cpu"
       "editor   log";
   }
 }
 
-/* Desktop: Controls span the top, RAM (cells) and CPU share the second
-   row; the program assembler and the Activity panel sit side by side
-   below, mirroring the top split. Cells stay compact so the full 10x10
-   grid fits without horizontal scroll. */
+/* Desktop: RAM fills the left column on top; the Controls panel sits at
+   the top right directly above the CPU panel so the right column holds
+   Controls + CPU in the same vertical space as RAM (no empty space).
+   Editor and Activity mirror the split below. */
 @media (min-width: 1280px) {
   .app-grid {
     grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
     grid-template-areas:
-      "controls controls"
+      "ram      controls"
       "ram      cpu"
       "editor   log";
   }
