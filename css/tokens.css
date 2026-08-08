@@ -5,6 +5,14 @@
   --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
   --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
 
+  /* Inter OpenType features — give the typography a distinct, technical
+     character instead of looking like every other generic Inter site.
+       ss01  → slashed zero + open six (code-editor feel)
+       cv11  → single-storey 'a' (modern, slightly technical)
+       cv02  → curved 'l' (softer than the default straight bar) */
+  --font-features-sans: "ss01", "cv11", "cv02";
+  --font-features-mono: "calt", "ss02";
+
   /* Radii */
   --radius-xs: 4px;
   --radius-sm: 6px;
@@ -64,8 +72,28 @@
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
 
-  /* Fluid type scale (clamp) — readable on phones, comfortable on desktop. */
-  --fs-display: clamp(0.9375rem, 0.85rem + 0.4vw, 1.0625rem);
-  --fs-body:    clamp(0.8125rem, 0.78rem + 0.18vw, 0.9375rem);
-  --fs-mono:    clamp(0.75rem,  0.72rem + 0.15vw, 0.8125rem);
+  /* Type scale — semantic, fluid where the design demands it.
+     Hard sizes are for tiny eyebrows / labels where a clamp would be overkill. */
+  --fs-xs:    0.625rem;                                                  /* 10px */
+  --fs-sm:    0.6875rem;                                                 /* 11px */
+  --fs-md:    0.75rem;                                                   /* 12px */
+  --fs-base:  clamp(0.8125rem, 0.78rem + 0.18vw, 0.9375rem);            /* 13–15px body */
+  --fs-lg:    clamp(0.9375rem, 0.85rem + 0.4vw,  1.0625rem);            /* 15–17px display */
+  --fs-xl:    clamp(1.125rem,  1rem    + 0.625vw, 1.375rem);            /* 18–22px modal h3 */
+  --fs-2xl:   clamp(1.5rem,    1.25rem + 1vw,    2rem);                  /* 24–32px h1 */
+
+  /* Line-height — generous on body for Inter, tighter on controls. */
+  --lh-tight:  1.15;   /* headings, button labels, badges */
+  --lh-snug:   1.3;    /* UI controls, compact lists */
+  --lh-normal: 1.5;    /* body text default */
+  --lh-loose:  1.6;    /* long-form prose, modal paragraphs */
+
+  /* Letter-spacing — Inter looks best slightly tightened at large sizes,
+     slightly opened at small uppercase sizes. */
+  --tracking-tighter: -0.02em;   /* h1, display headings */
+  --tracking-tight:   -0.01em;   /* h3 modal, body default */
+  --tracking-normal:   0em;
+  --tracking-wide:     0.02em;   /* small caps, button labels */
+  --tracking-wider:    0.06em;   /* uppercase 12px+ */
+  --tracking-widest:   0.12em;   /* uppercase 11px eyebrows */
 }

@@ -93,7 +93,10 @@ body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
-  letter-spacing: -0.005em;
+  font-feature-settings: var(--font-features-sans);
+  font-optical-sizing: auto;
+  line-height: var(--lh-normal);
+  letter-spacing: var(--tracking-tight);
   /* Prevent iOS Safari overscroll bounce / pull-to-refresh from showing
      the browser UI behind our content. */
   overscroll-behavior-y: contain;

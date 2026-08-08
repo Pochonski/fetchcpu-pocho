@@ -25,10 +25,10 @@
   .panel-header { padding: var(--space-2) var(--space-3); }
 }
 .panel-header h2 {
-  font-size: 0.6875rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-widest);
   color: var(--fg-muted);
   -webkit-user-select: none;
   user-select: none;
@@ -42,8 +42,10 @@
   gap: var(--space-2);
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
-  font-size: 0.8125rem;
+  font-size: var(--fs-base);
   font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-snug);
   border: 1px solid transparent;
   transition:
     background var(--duration-fast) var(--easing-out),
@@ -342,17 +344,18 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border: none;
   background: transparent;
   font-family: var(--font-mono);
-  font-size: 0.875rem;
-  line-height: 1.6;
+  font-feature-settings: var(--font-features-mono);
+  font-size: var(--fs-base);
+  line-height: var(--lh-loose);
   tab-size: 4;
   white-space: pre;
   overflow: auto;
-  letter-spacing: 0;
+  letter-spacing: var(--tracking-normal);
   -webkit-overflow-scrolling: touch;
 }
 @media (max-width: 480px) {
   .code-editor,
-  .editor-highlight { font-size: 0.9375rem; padding: var(--space-2) var(--space-3); }
+  .editor-highlight { font-size: var(--fs-lg); padding: var(--space-2) var(--space-3); }
   .editor-gutter { flex-basis: 2.75rem; padding: var(--space-2) var(--space-1) var(--space-2) var(--space-2); }
 }
 .code-editor {
@@ -415,9 +418,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   min-width: 0;
 }
 .blurb-text {
-  font-size: 0.75rem;
+  font-size: var(--fs-md);
   color: var(--fg-muted);
-  line-height: 1.4;
+  line-height: var(--lh-snug);
   overflow: hidden;
   text-overflow: ellipsis;
 }
@@ -487,18 +490,18 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   min-width: 0;
 }
 @media (max-width: 420px) {
-  .register input { width: 3.5rem; padding: var(--space-1) var(--space-2); font-size: 0.8125rem; }
-  .register label { font-size: 0.625rem; }
-  .diff { min-width: 2.25rem; font-size: 0.625rem; }
+  .register input { width: 3.5rem; padding: var(--space-1) var(--space-2); font-size: var(--fs-base); }
+  .register label { font-size: var(--fs-xs); }
+  .diff { min-width: 2.25rem; font-size: var(--fs-xs); }
 }
 .register[data-active="true"] {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 .register label {
-  font-size: 0.6875rem;
+  font-size: var(--fs-sm);
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--tracking-widest);
   text-transform: uppercase;
   color: var(--fg-muted);
   flex: 1;
@@ -516,16 +519,20 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border: 1px solid var(--border-strong);
   text-align: center;
   font-family: var(--font-mono);
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
   font-weight: 700;
-  font-size: 0.9375rem;
+  font-size: var(--fs-lg);
   color: var(--fg);
-  letter-spacing: 0.04em;
+  letter-spacing: var(--tracking-tight);
   transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 .register input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); outline: none; }
 .diff {
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
   color: var(--fg-dim);
   min-width: 3rem;
   text-align: left;
@@ -691,8 +698,8 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   background: var(--bg-input);
   border: 1px solid var(--border);
   font-weight: 700;
-  font-size: 0.6875rem;
-  letter-spacing: 0.08em;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--tracking-wider);
 }
 .access-tag[data-direction="in"] {
   background: var(--accent-soft);
@@ -713,6 +720,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border: 1px solid var(--border);
   color: var(--fg);
   font-weight: 700;
+  font-family: var(--font-mono);
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
 }
 .access-eq { color: var(--fg-dim); }
 .access-phase {
@@ -747,20 +757,24 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
   font-family: var(--font-mono);
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
   min-width: 0;
 }
 .disasm-label {
-  font-size: 0.625rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-widest);
   color: var(--fg-dim);
-  letter-spacing: 0.12em;
   flex: 0 0 auto;
 }
 .disasm-mnemonic {
   font-weight: 700;
   color: var(--accent);
+  font-variant-numeric: tabular-nums;
 }
-.disasm-operand { color: var(--fg-muted); margin-left: var(--space-1); }
+.disasm-operand { color: var(--fg-muted); margin-left: var(--space-1); font-variant-numeric: tabular-nums; }
 .disasm-halted { color: var(--danger); }
 
 /* Controls panel (top-level execution control section) */
@@ -821,9 +835,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   min-width: 14rem;
 }
 .speed-control label {
-  font-size: 0.625rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-widest);
   text-transform: uppercase;
   color: var(--fg-muted);
 }
@@ -832,7 +846,16 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   width: 1.75rem;
   height: 1.75rem;
   font-weight: 700;
-  font-size: 0.875rem;
+  font-size: var(--fs-base);
+}
+.speed-control output {
+  font-family: var(--font-mono);
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-sm);
+  color: var(--fg-muted);
+  min-width: 4.5rem;
+  text-align: right;
 }
 @media (hover: none) {
   /* Bring clock steppers up to the 44px tap minimum on touch devices. */
@@ -863,15 +886,15 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 .instruction-explanation-cpu { background: var(--bg-input); }
 .explanation-label {
   font-family: var(--font-sans);
-  font-size: 0.625rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-widest);
   color: var(--fg-muted);
   flex: 0 0 auto;
 }
 .explanation-text {
-  font-size: 0.8125rem;
+  font-size: var(--fs-base);
   color: var(--fg);
   font-weight: 600;
   flex: 1;
@@ -913,9 +936,10 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   background: var(--bg-input);
   border: 1px solid var(--border-strong);
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-feature-settings: var(--font-features-mono);
+  font-size: var(--fs-base);
   color: var(--fg);
-  line-height: 1.5;
+  line-height: var(--lh-normal);
   width: 100%;
   transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
@@ -947,7 +971,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   font-family: var(--font-mono);
 }
 .io-slot-label {
-  font-size: 0.75rem;
+  font-size: var(--fs-md);
   color: var(--fg-muted);
   min-width: 3ch;
   text-align: right;
@@ -961,7 +985,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-mono);
-  font-size: 0.8125rem;
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-base);
   text-align: right;
   -moz-appearance: textfield;
   appearance: textfield;
@@ -1045,10 +1071,16 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   gap: var(--space-3);
   align-items: center;
   flex-wrap: wrap;
-  font-size: 0.75rem;
+  font-size: var(--fs-md);
   color: var(--fg-muted);
 }
-.ram-stats strong { color: var(--fg); font-family: var(--font-mono); font-weight: 700; }
+.ram-stats strong {
+  color: var(--fg);
+  font-family: var(--font-mono);
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
 .ram-stats .dot {
   display: inline-block;
   width: 8px;
@@ -1348,16 +1380,19 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border-radius: var(--radius-md);
 }
 .stat-label {
-  font-size: 0.625rem;
+  font-size: var(--fs-xs);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--tracking-wider);
   color: var(--fg-muted);
 }
 .stat-value {
   font-family: var(--font-mono);
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
   font-size: 1.25rem;
   font-weight: 700;
+  letter-spacing: var(--tracking-tight);
   color: var(--fg);
   line-height: 1.1;
 }
@@ -1412,7 +1447,10 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 
 .live-feed {
   font-family: var(--font-mono);
-  font-size: 0.75rem;
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--fs-md);
+  line-height: var(--lh-snug);
   color: var(--fg);
   max-height: 24rem;
   overflow: auto;
@@ -1464,10 +1502,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 /* Cycle counter (left side) */
 .lf-cycle {
   flex: 0 0 auto;
-  font-variant-numeric: tabular-nums;
   color: var(--fg-dim);
   font-weight: 700;
-  font-size: 0.6875rem;
+  font-size: var(--fs-sm);
   min-width: 3.5rem;
   padding: 0 var(--space-2);
 }
@@ -1482,9 +1519,9 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   height: 1.25rem;
   border-radius: var(--radius-xs);
   font-weight: 800;
-  font-size: 0.625rem;
+  font-size: var(--fs-xs);
   color: white;
-  letter-spacing: 0;
+  letter-spacing: var(--tracking-normal);
 }
 .lf-phase-fetch   { background: var(--phase-fetch); }
 .lf-phase-decode  { background: var(--phase-decode); }
@@ -1503,8 +1540,8 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   background: var(--bg-elevated);
   color: var(--fg);
   font-weight: 700;
-  font-size: 0.6875rem;
-  letter-spacing: 0.02em;
+  font-size: var(--fs-sm);
+  letter-spacing: var(--tracking-wide);
   border: 1px solid var(--border-strong);
 }
 .lf-mnem-io      { color: var(--info); border-color: var(--info); background: rgba(102, 217, 239, 0.10); }
@@ -1525,8 +1562,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   min-width: 0;
 }
 .lf-reg {
-  font-variant-numeric: tabular-nums;
-  font-size: 0.75rem;
+  font-size: var(--fs-md);
   white-space: nowrap;
 }
 .lf-reg b {
@@ -1564,6 +1600,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   border-radius: 50%;
   font-size: 0.5625rem;
   font-weight: 800;
+  letter-spacing: var(--tracking-normal);
   color: var(--fg-dim);
   background: var(--bg-elevated);
   border: 1px solid var(--border-strong);
@@ -1581,8 +1618,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 .lf-time {
   flex: 0 0 auto;
   color: var(--fg-dim);
-  font-variant-numeric: tabular-nums;
-  font-size: 0.6875rem;
+  font-size: var(--fs-sm);
   padding-left: var(--space-1);
 }
 
@@ -1592,7 +1628,8 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
   margin-top: 2px;
   margin-left: 5.5rem;
   font-family: var(--font-sans);
-  font-size: 0.6875rem;
+  font-feature-settings: var(--font-features-sans);
+  font-size: var(--fs-sm);
   color: var(--fg-muted);
   font-style: italic;
   white-space: nowrap;
@@ -1740,8 +1777,11 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 }
 .modal-content h3 {
   margin-bottom: var(--space-3);
-  font-size: 1.125rem;
-  font-weight: 700;
+  font-size: var(--fs-xl);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-tight);
+  text-wrap: balance;
 }
 .modal-logo-wrap {
   display: flex;

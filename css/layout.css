@@ -47,9 +47,11 @@ body {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  font-size: 1rem;
+  font-size: var(--fs-2xl);
   font-weight: 700;
-  letter-spacing: -0.01em;
+  line-height: var(--lh-tight);
+  letter-spacing: var(--tracking-tighter);
+  text-wrap: balance;
   flex: 1 1 auto;
   min-width: 0;
   -webkit-user-select: none;
@@ -69,14 +71,14 @@ body {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  line-height: 1.1;
+  line-height: var(--lh-tight);
   min-width: 0;
   overflow: hidden;
 }
 .app-header .title-eyebrow {
-  font-size: 0.625rem;
+  font-size: var(--fs-xs);
   text-transform: uppercase;
-  letter-spacing: 0.12em;
+  letter-spacing: var(--tracking-widest);
   color: var(--fg-muted);
   font-weight: 600;
 }
@@ -158,7 +160,7 @@ body {
     calc(var(--space-6) + var(--safe-right))
     calc(var(--space-4) + var(--safe-bottom))
     calc(var(--space-6) + var(--safe-left));
-  font-size: 0.8125rem;
+  font-size: var(--fs-base);
   color: var(--fg-muted);
   text-align: center;
   max-width: var(--layout-max-width);
@@ -173,7 +175,8 @@ body {
 .app-footer kbd {
   display: inline-block;
   font-family: var(--font-mono);
-  font-size: 0.6875rem;
+  font-feature-settings: var(--font-features-mono);
+  font-size: var(--fs-sm);
   padding: 1px 6px;
   border-radius: var(--radius-xs);
   background: var(--bg-input);
@@ -192,8 +195,9 @@ body {
   background: var(--brand-grad);
   color: var(--bg);
   font-weight: 700;
-  font-size: 0.75rem;
-  letter-spacing: 0.02em;
+  font-size: var(--fs-md);
+  letter-spacing: var(--tracking-wide);
+  line-height: var(--lh-tight);
   box-shadow: var(--shadow-sm);
 }
 .brand-badge-icon {
