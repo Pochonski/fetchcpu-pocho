@@ -658,6 +658,11 @@ function boot() {
     if (savedInput != null) $("input").value = savedInput;
   }
 
+  // Assemble the source that just landed in the editor so RAM matches it.
+  // Without this, clicking Step on a fresh page reads RAM[0]=0 (HLT) and
+  // immediately halts, leaving subsequent Step clicks no-ops.
+  loadProgram();
+
   $("codeListing").addEventListener("input", () => {
     localStorage.setItem(STORAGE_KEY, $("codeListing").value);
   });
