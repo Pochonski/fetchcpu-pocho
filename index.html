@@ -93,24 +93,6 @@
             ></textarea>
           </div>
         </div>
-        <div class="program-blurb" id="program-blurb" aria-live="polite">
-          <span class="blurb-title" id="blurb-title">Adding 2 inputs</span>
-          <span class="blurb-text" id="blurb-text">Classic starter — read two numbers from input and print their sum.</span>
-          <span class="blurb-expected">
-            <span class="blurb-eyebrow" data-i18n="panels.editor.expectedEyebrow">Expected output</span>
-            <code id="blurb-expected">7</code>
-          </span>
-        </div>
-        <div class="program-loader">
-          <span class="label-eyebrow" data-i18n="panels.editor.examples">Examples</span>
-          <label for="files" class="visually-hidden" data-i18n="panels.editor.choose">Choose example program</label>
-          <select id="files" data-i18n-attr="aria-label:panels.editor.choose"></select>
-          <button class="btn btn-secondary" id="btn-select-program" data-i18n="panels.editor.loadExample">Load example</button>
-          <button class="btn btn-primary" id="btn-try-example" data-i18n="panels.editor.tryExample" title="Load the example, assemble, and run it">Try example</button>
-          <button class="btn btn-ghost" id="btn-import" data-i18n="panels.editor.import" title="Import a .lmc file">Import…</button>
-          <input type="file" id="file-input" accept=".lmc,.txt" hidden />
-          <button class="btn btn-ghost" id="btn-clear" data-i18n="panels.editor.clear" title="Empty the editor">Clear</button>
-        </div>
       </section>
 
       <!-- ============== CONTROLS ============== -->
@@ -118,6 +100,28 @@
         <header class="panel-header">
           <h2 id="controls-title" data-i18n="panels.controls.title">Controls · Execution</h2>
         </header>
+
+        <div class="examples-strip">
+          <div class="examples-info">
+            <div class="examples-headline">
+              <span class="blurb-title" id="blurb-title">Adding 2 inputs</span>
+              <span class="blurb-expected-inline">
+                <span class="blurb-eyebrow" data-i18n="panels.editor.expectedEyebrow">Expected output</span>
+                <code id="blurb-expected">7</code>
+              </span>
+            </div>
+            <span class="blurb-text" id="blurb-text">Classic starter — read two numbers from input and print their sum.</span>
+          </div>
+          <div class="examples-picker">
+            <label for="files" class="visually-hidden" data-i18n="panels.editor.choose">Choose example program</label>
+            <select id="files" data-i18n-attr="aria-label:panels.editor.choose" data-i18n="panels.editor.examples" aria-label="Choose example program">Examples</select>
+            <button class="btn btn-secondary btn-sm" id="btn-select-program" data-i18n="panels.editor.loadExample">Load example</button>
+            <button class="btn btn-primary btn-sm" id="btn-try-example" data-i18n="panels.editor.tryExample" title="Load the example, assemble, and run it">▶ Try example</button>
+            <button class="btn btn-ghost btn-sm" id="btn-import" data-i18n="panels.editor.import" title="Import a .lmc file">Import…</button>
+            <input type="file" id="file-input" accept=".lmc,.txt" hidden />
+            <button class="btn btn-ghost btn-sm" id="btn-clear" data-i18n="panels.editor.clear" title="Empty the editor">Clear</button>
+          </div>
+        </div>
 
         <div class="controls-row controls-row-buttons">
           <div class="control-buttons">
