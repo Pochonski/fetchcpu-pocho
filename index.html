@@ -114,24 +114,6 @@
           <h2 id="controls-title" data-i18n="panels.controls.title">Controls · Execution</h2>
         </header>
 
-        <div class="examples-strip">
-          <div class="examples-info">
-            <div class="examples-headline">
-              <span class="blurb-title" id="blurb-title">Adding 2 inputs</span>
-            </div>
-            <span class="blurb-text" id="blurb-text">Classic starter — read two numbers from input and print their sum.</span>
-          </div>
-          <div class="examples-picker">
-            <label for="files" class="visually-hidden" data-i18n="panels.editor.choose">Choose example program</label>
-            <select id="files" data-i18n-attr="aria-label:panels.editor.choose" data-i18n="panels.editor.examples" aria-label="Choose example program">Examples</select>
-            <button class="btn btn-secondary btn-sm" id="btn-select-program" data-i18n="panels.editor.loadExample">Load example</button>
-            <button class="btn btn-primary btn-sm" id="btn-try-example" data-i18n="panels.editor.tryExample" title="Load the example, assemble, and run it">▶ Try example</button>
-            <button class="btn btn-ghost btn-sm" id="btn-import" data-i18n="panels.editor.import" title="Import a .fcpu file">Import…</button>
-            <input type="file" id="file-input" accept=".fcpu,.txt" hidden />
-            <button class="btn btn-ghost btn-sm" id="btn-clear" data-i18n="panels.editor.clear" title="Empty the editor">Clear</button>
-          </div>
-        </div>
-
         <div class="controls-row controls-row-buttons">
           <div class="control-buttons">
             <button class="btn btn-secondary icon-only" id="btn-pause" data-i18n-attr="title:panels.cpu.pauseRun;aria-label:panels.cpu.pauseRun" aria-label="Run/Pause" title="Run (F5)">
@@ -154,6 +136,24 @@
               <svg class="icon icon-plus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor"/></svg>
             </button>
             <output id="clock-value" for="clock">120 ms</output>
+          </div>
+        </div>
+
+        <div class="examples-strip">
+          <div class="examples-info">
+            <div class="examples-headline">
+              <span class="blurb-title" id="blurb-title">Adding 2 inputs</span>
+            </div>
+            <span class="blurb-text" id="blurb-text">Classic starter — read two numbers from input and print their sum.</span>
+          </div>
+          <div class="examples-picker">
+            <label for="files" class="visually-hidden" data-i18n="panels.editor.choose">Choose example program</label>
+            <select id="files" data-i18n-attr="aria-label:panels.editor.choose" data-i18n="panels.editor.examples" aria-label="Choose example program">Examples</select>
+            <button class="btn btn-secondary btn-sm" id="btn-select-program" data-i18n="panels.editor.loadExample">Load example</button>
+            <button class="btn btn-primary btn-sm" id="btn-try-example" data-i18n="panels.editor.tryExample" title="Load the example, assemble, and run it">▶ Try example</button>
+            <button class="btn btn-ghost btn-sm" id="btn-import" data-i18n="panels.editor.import" title="Import a .fcpu file">Import…</button>
+            <input type="file" id="file-input" accept=".fcpu,.txt" hidden />
+            <button class="btn btn-ghost btn-sm" id="btn-clear" data-i18n="panels.editor.clear" title="Empty the editor">Clear</button>
           </div>
         </div>
 
