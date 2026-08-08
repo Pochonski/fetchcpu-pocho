@@ -252,7 +252,7 @@ fetchcpu-pocho/
 ├── .gitignore
 │
 ├── assets/
-│   └── favicon.svg                # "F" mark
+│   └── brand-mark.svg             # brand mark ("F" in blue rounded square)
 │
 ├── css/
 │   ├── reset.css                  # modern CSS reset
