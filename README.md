@@ -1,11 +1,13 @@
 # FetchCPU-Pocho
 
-> **An interactive CPU simulator with Fetch / Decode / Execute cycle visualization, breakpoints, signed integers, immediate & indirect addressing, statistics, history timeline, and English/Spanish UI — built by Pocho.**
+> **An interactive CPU simulator with Fetch / Decode / Execute cycle visualization, breakpoints, signed integers, immediate & indirect addressing, statistics, history timeline, and English/Spanish UI.**
 
 A modern, accessible, dependency-free teaching simulator for the classic
 **Von Neumann** architecture. Designed to make every Fetch / Decode / Execute
 cycle visible, every memory access inspectable, and every supported idiom
 exercisable without leaving the browser.
+
+🌐 **Live:** [fetchcpu-pocho.vercel.app](https://fetchcpu-pocho.vercel.app/)
 
 ---
 
@@ -57,22 +59,25 @@ npm start                # http://localhost:8000
 |---|---|
 | **FDE flow visualizer** | The `Fetch → Decode → Execute` row highlights the active phase on every cycle. |
 | **Disassembler strip** | Shows the current instruction (CIR) and the next one (PC) in mnemonics, plus operand. |
+| **Rich live feed** | Each cycle renders a structured row with cycle counter, phase badge, mnemonic (color-coded by category), register diffs (`old→new`), active flag indicator and the human-readable explanation on a second line. |
 | **Status flags** | Z / N / P indicators on the accumulator with a glow when set. |
 | **Memory access strip** | Every read/write the CPU performs is logged: direction, address, value, and phase. |
 | **Bus animation** | Two pills (`CPU reads from RAM`, `CPU writes to RAM`) flash on each access. |
 | **Register diffs** | Every register shows `← previous value` for ~300 ms after a change. |
 | **Step forward / step back** | `F9` advances one cycle; `F8` rewinds through the cycle history. |
+| **Step one phase** | `F10` advances only one FDE phase at a time (Fetch → Decode → Execute). |
+| **Restart** | `F4` reloads the program in the editor from scratch (clears RAM, CPU, IO, stats). |
 | **Breakpoints** | Click in the line-number gutter to set a breakpoint; `Run` halts when PC reaches it. |
 | **Run to halt** | `Shift+F5` runs as fast as the UI allows until the program halts. |
-| **Memory map** | A 100-cell bar summarizes used / code / data cells, with PC and MAR highlighted. |
-| **Mnemonic badges** | Each RAM cell shows its mnemonic badge (`INP`, `LDA`, `BRP`, …) with semantic color. |
+| **Memory map** | A 100-cell bar summarises used / code / data cells, with PC and MAR highlighted. |
+| **Mnemonic badges** | Each RAM cell shows its mnemonic badge (`INP`, `LDA`, `BRP`, …) with semantic colour. |
 | **Edited-value indicator** | The cell value pads 3-digit and supports negatives via nine's complement. |
 | **Halt indicator** | After a `HLT`, the halted cell keeps a visible marker. |
 
 ### UI / UX
 
 - **Modern dark & light themes** — auto-initialised from system preference if no override.
-- **Fully responsive** — mobile-first layout from iPhone SE to 1480 px desktop with 5 breakpoints and a hamburger bottom-sheet menu on phones.
+- **Fully responsive** — mobile-first layout from iPhone SE to 1480 px desktop with **7 breakpoints** (`--bp-xs / sm / md / tablet / lg / xl / 2xl`) and a hamburger bottom-sheet menu on phones.
 - **Touch-optimised** — 44 px minimum tap targets on coarse pointers (Apple HIG), `-webkit-tap-highlight-color: transparent`, hover-only states replaced by `:active`/`:focus-visible` on touch.
 - **iOS / Android safe-area aware** — `env(safe-area-inset-*)` insets the header, footer and modals so content never sits under the notch / Dynamic Island / home indicator.
 - **Glass / radial gradients** — non-flat surfaces.
@@ -80,6 +85,7 @@ npm start                # http://localhost:8000
 - **Editable RAM cells** — type in a value to override (great for demos).
 - **Code editor** — line numbers, breakpoints, syntax highlighting for mnemonics, labels, comments.
 - **Tabbed Activity panel** — Live feed · History · Stats · Log file.
+- **Input slots** — one number field per top-level `INP`, with built-in 3-digit LMC range validation. See [Input slots](#input-slots-how-they-work).
 - **Keyboard shortcuts** — see [the table below](#keyboard-shortcuts).
 
 ### Responsive breakpoints
@@ -92,7 +98,10 @@ npm start                # http://localhost:8000
 | 1024 – 1279 px| iPad landscape / small laptops | 2 columns with refined ratios                                   |
 | ≥ 1280 px    | Desktop                         | Same 2-column layout with larger gaps and breathing room        |
 
-The breakpoint scale is declared in `css/tokens.css` (`--bp-xs/sm/md/tablet/lg/xl/2xl`) and consumed throughout `css/layout.css` and `css/components.css`.
+The breakpoint scale is declared in `css/tokens.css` and consumed throughout
+`css/layout.css` and `css/components.css`. A 28-test suite
+(`tests/responsive.test.js`) guards every media query, breakpoint, safe-area
+rule and the mobile menu module.
 
 ### Developer workflow
 
@@ -147,15 +156,16 @@ On the editor gutter, click any line number to toggle a breakpoint.
    - the highlighted RAM cell moving from PC to operand,
    - **ACC** updating on `ADD` / `LDA`,
    - the **bus** flashing on each memory access,
-   - the **access log** showing `READ 03 = 042` or `WRITE 06 = 003` style entries.
+   - the **live feed** showing structured cycle rows with diffs and flag indicators.
 5. The **Input** slots update live: as `INP` runs, the slot that was just consumed becomes "empty" so you can see exactly which values the program still has queued.
 6. Toggle the language with **EN / ES** in the header — every label, button, log message, modal and slot hint updates instantly.
 
 ### Input slots: how they work
 
-- When you **load a program**, the Input panel renders one slot per top-level `INP` (e.g. a program with two `INP`s shows `#1` and `#2`).
+- When you **load a program**, the Input panel renders **one numeric slot per top-level `INP`** (e.g. a program with two `INP`s shows `#1` and `#2`).
 - If the program has an `INP` inside a **loop**, the panel shows **one slot with an `∞` badge** and a **+ Add value** button so you can stage one value per iteration.
-- **Pasting** a list of numbers into the panel distributes them across slots and silently discards overflow.
+- **Range enforcement** — every slot is bounded to the LMC's 3-digit signed range (`-499` to `+500`). Out-of-range values are highlighted in red and **Run / Step are blocked** until the value is corrected or cleared. The live feed surfaces a localised error pointing to the offending slot.
+- **Pasting** a list of numbers into the panel replaces the slots with the pasted numbers (truncated to the slot count, overflow is silently discarded).
 - Anything you write in the slots is mirrored to the share/export `.fcpu` format, so the new UI is fully compatible with the old text-based input box.
 
 ---
@@ -163,10 +173,10 @@ On the editor gutter, click any line number to toggle a breakpoint.
 ## Installation & development
 
 ```bash
-git clone <your-fork-url>
+git clone https://github.com/Pochonski/fetchcpu-pocho.git
 cd fetchcpu-pocho
 
-# No build step. No deps to run (only vitest/eslint as devDeps).
+# No build step. No deps to run (only vitest / eslint / jsdom as devDeps).
 npm install           # optional, only needed for tests / lint
 
 # Run the simulator
@@ -181,21 +191,22 @@ python3 -m http.server 8000
 | Script | Description |
 |---|---|
 | `npm start` / `npm run serve` | Start a static server on `http://127.0.0.1:8000/`. |
-| `npm test` | Run all 65 unit + integration + smoke tests with Vitest. |
+| `npm test` | Run all **173** unit + integration + smoke tests with Vitest. |
 | `npm run test:watch` | Vitest in watch mode. |
-| `npm run lint` | ESLint across `js/` and `tests/`. |
+| `npm run lint` | ESLint across `js/`. |
+| `npm run audit:i18n` | Validate that every i18n key referenced in code exists in both dictionaries (EN + ES). |
 
 ---
 
 ## Testing
 
-The project ships with **65+ tests** that exercise every public module and the most
-critical user-facing flows.
+The project ships with **173 tests** across **17 suites** that exercise every
+public module and the most critical user-facing flows.
 
 | Suite | What it covers |
 |---|---|
 | `tests/parser.test.js` | Two-pass assembler, labels, immediate, indirect, comments, edge cases. |
-| `tests/executor.test.js` | Core CPU mechanics: add, indirect load, step-back, halt. |
+| `tests/executor.test.js` | Core CPU mechanics: add, indirect load, step-back, halt, input-EOF handling. |
 | `tests/integration.test.js` | All twelve example programs end-to-end through the parser + executor. |
 | `tests/clock.test.js` | Slider behaviour, ± buttons, clamping, slow execution timing. |
 | `tests/memory_access.test.js` | MAR fidelity, event emission, indirect two-step reads, UI access log. |
@@ -203,6 +214,14 @@ critical user-facing flows.
 | `tests/stats_events.test.js` | Stats aggregation and event pub/sub. |
 | `tests/i18n.test.js` | Key resolution, interpolation, fallback, DOM translation, EN/ES switching. |
 | `tests/smoke.test.js` | jsdom-based UI smoke tests (boot, layout, breakpoints, try-example). |
+| `tests/cell_visual.test.js` | RAM cell rendering and editing. |
+| `tests/instruction_explanation.test.js` | Localised explanations per executed instruction. |
+| `tests/ioSlots.test.js` | Input slot rendering, count, paste distribution, range validation. |
+| `tests/live_feed.test.js` | Rich live-feed cycle rows, register diffs, flag indicators, phase colours. |
+| `tests/play_buttons.test.js` | Play / Step / Restart / Run-to-halt button wiring. |
+| `tests/responsive.test.js` | Viewport meta, breakpoints, safe-areas, tap targets, mobile menu. |
+| `tests/step_fresh_load.test.js` | Fresh-boot assembly + first-step behaviour. |
+| `tests/step_phase.test.js` | One-phase stepping through the FDE pipeline. |
 
 Run them all:
 
@@ -222,17 +241,22 @@ and exercise real DOM events — no browser required.
 fetchcpu-pocho/
 ├── index.html                     # Single-page UI; no build step
 ├── README.md                      # this file
+├── CHANGELOG.md                   # release notes
+├── CONTRIBUTING.md                # dev workflow
+├── DEPLOY.md                      # Vercel + GitHub setup
+├── LICENSE                        # MIT
 ├── package.json
 ├── eslint.config.js               # ESLint flat config
 ├── vitest.config.js
+├── vercel.json                    # CSP + cache + redirects (pocho-lmc.vercel.app → here)
 ├── .gitignore
 │
 ├── assets/
-│   └── favicon.svg
+│   └── favicon.svg                # "F" mark
 │
 ├── css/
 │   ├── reset.css                  # modern CSS reset
-│   ├── tokens.css                 # design tokens (spacing, radii, motion)
+│   ├── tokens.css                 # design tokens (spacing, radii, breakpoints, type scale)
 │   ├── themes.css                 # dark / light palettes, glass, brand gradient
 │   ├── layout.css                 # responsive grid, header, footer
 │   └── components.css             # panels, buttons, registers, RAM cells, modals
@@ -240,7 +264,7 @@ fetchcpu-pocho/
 ├── js/
 │   ├── main.js                    # entry point — wires DOM, events, modules
 │   │
-│   ├── cpu/                       # CPU model
+│   ├── cpu/                       # CPU model (no DOM)
 │   │   ├── opcodes.js             # opcode table
 │   │   ├── ram.js                 # 100-cell RAM with diff tracking
 │   │   ├── cpu.js                 # PC / CIR / MAR / MDR / ACC + flags
@@ -252,17 +276,20 @@ fetchcpu-pocho/
 │   ├── ui/                        # view layer (no business logic)
 │   │   ├── cpuView.js
 │   │   ├── ramView.js
-│   │   ├── editor.js
-│   │   ├── logger.js
+│   │   ├── editor.js              # code editor with gutter + breakpoints
+│   │   ├── logger.js              # rich live feed (cycle, diffs, flags)
 │   │   ├── statsView.js
 │   │   ├── historyView.js
 │   │   ├── disassemblerView.js
-│   │   ├── io.js
+│   │   ├── io.js                  # IO queue + textarea bridge
+│   │   ├── ioSlots.js             # typed <input> slots with range validation
 │   │   ├── theme.js
 │   │   ├── sound.js
 │   │   ├── tabs.js
-│   │   ├── share.js
-│   │   ├── fileIO.js
+│   │   ├── share.js               # #fcpu=base64 URL hash
+│   │   ├── fileIO.js              # .fcpu import / export
+│   │   ├── modal.js               # a11y modal: focus trap, Escape, restore
+│   │   ├── mobileMenu.js          # bottom-sheet hamburger menu
 │   │   └── i18n/
 │   │       ├── dictionaries.js   # EN + ES dictionaries
 │   │       └── index.js           # t() / setLanguage() / translateDom()
@@ -271,18 +298,11 @@ fetchcpu-pocho/
 │       └── examples.js            # 12 example programs with i18n keys
 │
 ├── scripts/
-│   └── serve.mjs                  # tiny Node.js static file server (no deps)
+│   ├── serve.mjs                  # tiny Node.js static file server (no deps)
+│   ├── promote.sh                 # alias latest Vercel deployment to fetchcpu-pocho
+│   └── audit-i18n.mjs             # verifies every referenced key exists
 │
-└── tests/
-    ├── parser.test.js
-    ├── executor.test.js
-    ├── integration.test.js
-    ├── clock.test.js
-    ├── memory_access.test.js
-    ├── share_fileio.test.js
-    ├── stats_events.test.js
-    ├── i18n.test.js
-    └── smoke.test.js
+└── tests/                         # 17 suites, 173 tests
 ```
 
 ---
@@ -292,7 +312,8 @@ fetchcpu-pocho/
 ### CPU model
 
 The simulator models a tiny Von Neumann machine: 100 memory cells and
-three-digit numeric words. Three layers keep the model honest:
+three-digit numeric words (nine's-complement signed range `-499` to `+500`).
+Three layers keep the model honest:
 
 1. **`ram.js`** — `createRAM()` returns an immutable-ish object with
    `read(addr)`, `write(addr, value)`, `snapshot()`, `getLastWritten()`. Cells are
@@ -308,6 +329,24 @@ three-digit numeric words. Three layers keep the model honest:
    `history` (used by step-backwards). `run()` wraps this in a `setTimeout`
    loop that re-reads the clock on each iteration so the user can move the
    slider at runtime.
+
+### Input slots & range enforcement
+
+`js/ui/ioSlots.js` renders the Input panel as one `<input type="number">` per
+top-level `INP` mnemonic. When the program is loaded, `countInps(instructions)`
+walks the parsed AST and:
+
+- counts every `INP` outside a backward branch (linear flow → 1 slot each),
+- detects loops via `BRA`/`BRP`/`BRZ` whose target is `<` their own address,
+  and collapses any `INP` inside a loop to a **single slot with an `∞` badge**
+  plus a **+ Add value** button (so the user can stage one value per iteration).
+
+Each slot has `min="-499" max="500" maxlength="5"` and a `setValidity()` hook
+that toggles `.io-slot-input--invalid` whenever the entered value falls
+outside the LMC's 3-digit signed range. `isValid()` and `firstInvalid()` expose
+that state; `main.js` runs `guardInputRange()` before every `Run`, `Run to
+halt` and `Step`, focusing the offending slot and pushing a localised error
+to the live feed if validation fails.
 
 ### Immediate & indirect addressing
 
@@ -357,9 +396,11 @@ The UI is fully bilingual.
 - **Dictionary** in `js/ui/i18n/dictionaries.js` with two fully-populated
   trees (`en` and `es`) — keys use dotted notation (`panels.cpu.registers.pc`).
 - **t(key, ...args)** accepts varargs or arrays for interpolation
-  (`t("log.stepDescription", cycle, phase, pc, mar, mdr, cir, acc)`).
+  (`t("log.stepDescription", cycle, phase, pc, mar, mdr, cir, acc)`). The
+  executor also exposes the same translator via `tFn(...)` so per-cycle
+  explanations get the live language.
 - **setLanguage("en"|"es")** persists the choice in localStorage and fires
-  registered change listeners.
+  registered change listeners (the live feed re-renders on every change).
 - **translateDom(root)** walks the DOM and applies translations from
   attributes:
   - `data-i18n="key"` → `textContent`
@@ -368,7 +409,23 @@ The UI is fully bilingual.
   - `data-i18n-placeholder="key"` → `placeholder` attribute
 - **Missing keys** log `console.warn("[i18n] missing key '…' for '…'")` and
   fall back to the key itself, so unfinished translations are obvious
-  during development.
+  during development. `npm run audit:i18n` enforces that every referenced
+  key exists in both dictionaries.
+
+---
+
+## Deployment
+
+Production runs on Vercel:
+
+- **Project:** `fetchcpu-simulator` (alias of the original `lmc-simulator`)
+- **Domain:** [fetchcpu-pocho.vercel.app](https://fetchcpu-pocho.vercel.app/)
+- **GitHub:** [Pochonski/fetchcpu-pocho](https://github.com/Pochonski/fetchcpu-pocho)
+
+The legacy `pocho-lmc.vercel.app` and `lmc-simulator.vercel.app` aliases are
+preserved as **301 redirects** to the canonical domain (see `vercel.json`).
+GitHub autodeploys on push to `main`. See [DEPLOY.md](./DEPLOY.md) for the
+full setup.
 
 ---
 
@@ -399,3 +456,4 @@ Want to help? Pick one:
 ## License
 
 MIT — see `LICENSE` for the full text.
+

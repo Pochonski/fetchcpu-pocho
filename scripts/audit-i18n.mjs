@@ -37,12 +37,35 @@ for (const file of filesToScan) {
   }
 }
 
-// 2. JS: t("..."), t('...'), t(`...`) calls.
+// 2. JS: t("..."), t('...'), t(`...`) and tFn("...") calls.
 for (const file of filesToScan) {
   const src = readFileSync(file, "utf8");
-  const tRe = /\bt\(\s*[`"']([^`"']+)[`"']/g;
+  const tRe = /\b(?:t|tFn)\(\s*[`"']([^`"']+)[`"']/g;
   let m;
   while ((m = tRe.exec(src)) !== null) {
+    refs.add(m[1]);
+  }
+}
+
+// 2b. JS: error("key", ...) calls — the parser emits error keys that the
+// UI later resolves via t(err.key, err.args). The string literal is the
+// only reference to that i18n key.
+for (const file of filesToScan) {
+  const src = readFileSync(file, "utf8");
+  const errRe = /\berror\(\s*[`"']([^`"']+)[`"']/g;
+  let m;
+  while ((m = errRe.exec(src)) !== null) {
+    refs.add(m[1]);
+  }
+}
+
+// 2c. JS: ["dotted.key"] or ['dotted.key'] bracket-access references,
+// including on the in-file EN/ES fallback objects (parser.js uses these).
+for (const file of filesToScan) {
+  const src = readFileSync(file, "utf8");
+  const brRe = /\[\s*[`"']([a-z][a-zA-Z0-9]*(?:\.[a-zA-Z0-9]+)+)[`"']\s*\]/g;
+  let m;
+  while ((m = brRe.exec(src)) !== null) {
     refs.add(m[1]);
   }
 }

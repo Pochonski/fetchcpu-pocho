@@ -102,6 +102,68 @@ simulator designed for teaching the Fetch/Decode/Execute cycle.
 
 ## Unreleased
 
+### Input slots: shaped to the program
+
+The Input panel is no longer a free-form textarea. After the parser runs,
+the panel renders **one `<input type="number">` per top-level `INP`** of the
+loaded program (labelled `#1`, `#2`, …). When `INP` is detected inside a
+backward branch the panel collapses to a single slot with an **`∞` badge**
+and a **+ Add value** button so the user can stage one value per iteration.
+
+- `js/ui/ioSlots.js` is a new module exporting `createInputSlots(container,
+  { t, addButton, onChange })` with `setCount`, `setValues`, `getValues`,
+  `addSlot`, `isValid`, `firstInvalid` and `rangeMin/Max` accessors.
+- `js/main.js` learns `countInps(instructions)` (detects loops via
+  backward `BRA`/`BRP`/`BRZ` branches) and resizes the slots on every
+  `loadProgram()`.
+- Share URLs, `.fcpu` files and `localStorage["fetchcpu-input"]` keep
+  using plain text under the hood — the slots UI is a typed view of the
+  same queue, so existing programs and saved state stay compatible.
+
+### 3-digit LMC range validation
+
+- Each input slot is bounded to the LMC's nine's-complement signed range
+  (`-499` to `+500`) via `min` / `max` / `maxlength` attributes plus a
+  `setValidity()` hook that toggles `.io-slot-input--invalid` (red border
+  + tinted background).
+- `guardInputRange()` in `main.js` blocks `Run`, `Run to halt` and `Step`
+  while any slot holds an out-of-range value; the first invalid slot is
+  focused and a localised error (`panels.cpu.inputOutOfRange`) is pushed
+  to the live feed.
+- Empty slots are valid (they are simply skipped by `readInput`).
+- New i18n keys (EN+ES): `panels.cpu.inputAddValue`,
+  `panels.cpu.inputLoopHint`, `panels.cpu.inputOutOfRange`,
+  `panels.cpu.inputBlockedRange`.
+
+### i18n audit improvements
+
+- `scripts/audit-i18n.mjs` now recognises `tFn(...)` calls (used by the
+  executor's per-cycle explanations) and `["dotted.key"]` bracket-access
+  references (used by the parser's EN-fallback object). After the
+  rebrand this reports **0 missing keys and 0 unreferenced keys**.
+- Two truly dead keys were removed (`panels.cpu.inputPlaceholder`,
+  `panels.cpu.restartLabel`).
+
+### Bug fix: rich live-feed diffs
+
+- The rich live feed (added in 520aa2f) silently never rendered any
+  register diffs because `regDiff` was indexing `prev` with UPPERCASE
+  names (`"PC"`, `"ACC"`) against a `prev` literal that uses lowercase
+  keys (`{pc:0, acc:0, ...}`). `regDiff` now lower-cases the lookup so
+  every cycle row shows `old → new` strikethroughs as designed.
+- The "tick" event subscriber in `main.js` was never wired to
+  `logger.onCycle(cpu, info)`, so the rich feed rendered nothing. Now
+  every FDE cycle produces a structured row with cycle counter, phase
+  badge, mnemonic (colour-coded by category), register diffs, active
+  flag and a human-readable note.
+
+### Documentation
+
+- `README.md` rewritten end-to-end: 173 tests reflected, every test suite
+  listed, project structure and architecture notes updated, Input slots
+  section now documents the range validation, Responsive section
+  references the 7 breakpoint tokens, Deployment section added.
+
 ### UI simplification
 
 - **CPU play controls** — only two buttons remain in the play strip:

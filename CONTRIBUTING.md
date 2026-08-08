@@ -10,8 +10,9 @@ git clone <your-fork-url>
 cd fetchcpu-pocho
 npm install
 npm start                 # http://localhost:8000
-npm test                  # 65+ tests
+npm test                  # 173 tests
 npm run lint
+npm run audit:i18n        # optional: validates every key is in EN + ES
 ```
 
 ## Workflow

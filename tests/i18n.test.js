@@ -50,7 +50,7 @@ describe("translateDom", () => {
     const html = `<!doctype html><html><body>
       <span data-i18n="app.name">placeholder</span>
       <span data-i18n-html="modal.about.credits">placeholder</span>
-      <span data-i18n-placeholder="panels.cpu.inputPlaceholder">old</span>
+      <span data-i18n-placeholder="panels.cpu.inputAddValue">old</span>
       <button data-i18n-attr="title:panels.cpu.faster">step</button>
       <button data-i18n-attr="title:panels.cpu.faster;aria-label:panels.cpu.faster">step</button>
     </body></html>`;
@@ -73,7 +73,7 @@ describe("translateDom", () => {
   it("translates placeholder via data-i18n-placeholder", async () => {
     const { translateDom } = await import("../js/ui/i18n/index.js");
     translateDom(document.body);
-    expect(document.querySelector("[data-i18n-placeholder]").getAttribute("placeholder")).toMatch(/numeric|valor/);
+    expect(document.querySelector("[data-i18n-placeholder]").getAttribute("placeholder")).toMatch(/Add value|Añadir valor/);
   });
 
   it("translates one attribute via data-i18n-attr", async () => {
