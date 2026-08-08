@@ -87,3 +87,14 @@ simulator designed for teaching the Fetch/Decode/Execute cycle.
   - `LICENSE` — MIT.
 
 [1.0.0]: https://github.com/Pochonski/pocho-lmc/releases/tag/v1.0.0
+
+## Unreleased
+
+### UI simplification
+
+- **CPU play controls** — only two buttons remain in the play strip:
+  Run/Pause toggle (F5) and Step (F9). The rewind (F8), step-phase (F10)
+  and run-to-halt (⇧F5) buttons are removed from the UI but their keyboard
+  shortcuts remain active for power users.
+
+

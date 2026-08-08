@@ -114,6 +114,7 @@ npm start                # http://localhost:8000
 | `F6` | Run / Pause toggle |
 | `F8` | Step backward |
 | `F9` | Step forward |
+| `F10` | Step one phase (Fetch → Decode → Execute) |
 | `Ctrl` / `Cmd` + `S` | Download log file |
 | `←` `→` (inside the Activity panel tabs) | Switch tabs |
 | Double-click the `−` / `+` clock buttons | Jump ±250 ms |

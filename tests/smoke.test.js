@@ -117,15 +117,19 @@ describe("Application smoke test", () => {
     expect(document.querySelector(".app-header .logo")).toBeTruthy();
   });
 
-  it("wires the Phase step button next to the Step button", () => {
+  it("exposes exactly two control buttons in the play strip", () => {
     const stepBtn = document.getElementById("btn-step");
-    const phaseBtn = document.getElementById("btn-step-phase");
+    const runBtn = document.getElementById("btn-pause");
     expect(stepBtn).toBeTruthy();
-    expect(phaseBtn).toBeTruthy();
-    // They sit in the same .control-buttons strip
+    expect(runBtn).toBeTruthy();
     const strip = document.querySelector(".control-buttons");
+    expect(strip.children.length).toBe(2);
     expect(strip.contains(stepBtn)).toBe(true);
-    expect(strip.contains(phaseBtn)).toBe(true);
+    expect(strip.contains(runBtn)).toBe(true);
+    // Removed buttons are not in the DOM.
+    expect(document.getElementById("btn-rewind")).toBeNull();
+    expect(document.getElementById("btn-step-phase")).toBeNull();
+    expect(document.getElementById("btn-fast-forward")).toBeNull();
   });
 
   it("shows mnemonic badges after loading the adding program", async () => {

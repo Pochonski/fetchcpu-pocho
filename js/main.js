@@ -532,8 +532,8 @@ function boot() {
   $("btn-pause").addEventListener("click", () => {
     if (executor.isRunning()) pauseProgram(); else runProgram();
   });
-  $("btn-rewind").addEventListener("click", stepBack);
-  $("btn-fast-forward").addEventListener("click", runUntilHalt);
+  $("btn-rewind")?.addEventListener("click", stepBack);
+  $("btn-fast-forward")?.addEventListener("click", runUntilHalt);
   $("btn-select-program").addEventListener("click", selectExample);
   $("btn-try-example")?.addEventListener("click", tryExample);
   $("btn-clear").addEventListener("click", clearEditor);
