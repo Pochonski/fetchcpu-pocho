@@ -58,35 +58,34 @@
     "editor"
     "cpu"
     "ram"
-    "stats"
     "log";
 }
 
 @media (min-width: 880px) {
   .app-grid {
-    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
     grid-template-areas:
       "editor cpu"
-      "ram cpu"
-      "stats stats"
-      "log  log";
+      "ram    cpu"
+      "log    log";
   }
 }
 
+/* Desktop: Editor is a narrow left column; CPU and RAM span full height
+   on the right so both registers and memory stay visible together. */
 @media (min-width: 1280px) {
   .app-grid {
-    grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr) minmax(0, 1.1fr);
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.45fr) minmax(0, 1.5fr);
     grid-template-areas:
       "editor cpu ram"
-      "stats stats ram"
-      "log  log  ram";
+      "log    cpu ram"
+      "log    cpu ram";
   }
 }
 
 .editor-panel { grid-area: editor; }
 .cpu-panel    { grid-area: cpu; }
 .ram-panel    { grid-area: ram; }
-.stats-panel  { grid-area: stats; }
 .log-panel    { grid-area: log; }
 
 .app-footer {
