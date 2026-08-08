@@ -14,6 +14,7 @@
 //   }
 
 import { OPCODES } from "./opcodes.js";
+import { RAM_SIZE } from "./ram.js";
 
 const COMMENT_RE = /[;]|(\/\/)/;
 
@@ -107,6 +108,16 @@ export function parse(source) {
   });
 
   if (errors.length > 0) return { ok: false, errors };
+
+  // Reject programs that exceed the RAM size.
+  if (addr > RAM_SIZE) {
+    errors.push({
+      line: items[items.length - 1].sourceLine,
+      column: 1,
+      message: `Program is too large: ${addr} instructions exceed RAM size ${RAM_SIZE}`,
+    });
+    return { ok: false, errors };
+  }
 
   // Second pass: resolve operands.
   const instructions = [];

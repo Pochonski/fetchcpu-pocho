@@ -439,7 +439,18 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
       if (!running) return;
       if (cpu.state.halted) { stop(); return; }
       if (breakpoints.includes(cpu.state.pc)) { stop(); return; }
-      const continueRunning = step();
+      let continueRunning;
+      try {
+        continueRunning = step();
+      } catch (e) {
+        if (e && e.name === "EndOfInputError") {
+          if (events) events.emit("input-exhausted", null);
+        } else {
+          if (events) events.emit("error", { message: e.message, error: e });
+        }
+        stop();
+        return;
+      }
       if (onTick) onTick();
       if (!continueRunning || !running) { stop(); return; }
       timer = setTimeout(tick, readSpeed());

@@ -2,13 +2,14 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { createCPU } from "../js/lmc/cpu.js";
 import { createRAM } from "../js/lmc/ram.js";
 import { createExecutor } from "../js/lmc/executor.js";
+import { EndOfInputError } from "../js/ui/io.js";
 
 function makeIO(inputs = []) {
   let i = 0;
   let out = [];
   return {
     readInput: () => {
-      if (i >= inputs.length) throw new Error("no input");
+      if (i >= inputs.length) throw new EndOfInputError();
       return inputs[i++];
     },
     writeOutput: (v) => out.push(v),
@@ -77,6 +78,51 @@ describe("executor - direct addressing", () => {
     while (ex.stepBack()) { /* walk back */ }
     expect(cpu.state.halted).toBe(false);
     expect(cpu.state.acc).toBe(0);
+  });
+});
+
+describe("executor - input EOF handling", () => {
+  it("stops cleanly when INP runs out of input during a run() loop", async () => {
+    const cpu = createCPU();
+    const ram = createRAM();
+    const io = makeIO([5]); // only one input available
+    // 0: INP, 1: STA 4, 2: INP, 3: OUT, 4: HLT
+    ram.write(0, 901);
+    ram.write(1, 304);
+    ram.write(2, 901);
+    ram.write(3, 902);
+    ram.write(4, 0);
+    let exhausted = 0;
+    let errored = 0;
+    const events = {
+      on() {},
+      emit(name) {
+        if (name === "input-exhausted") exhausted++;
+        if (name === "error") errored++;
+      },
+    };
+    const stats = {
+      onMemoryRead() {}, onMemoryWrite() {}, onBranchTaken() {},
+      onInstruction() {}, tickCycle() {}, reset() {}, startRun() {}, stopRun() {},
+    };
+    const ex = createExecutor(cpu, ram, io, events, stats);
+    await new Promise((resolve) => {
+      ex.run({
+        speed: 10,
+        breakpoints: [],
+        onTick: () => {
+          if (cpu.state.halted || !ex.isRunning()) {
+            ex.stop();
+            resolve();
+          }
+        },
+      });
+      // Safety net: resolve after 1s if loop never returns.
+      setTimeout(() => { ex.stop(); resolve(); }, 1000);
+    });
+    expect(ex.isRunning()).toBe(false);
+    expect(exhausted).toBe(1);
+    expect(errored).toBe(0);
   });
 });
 

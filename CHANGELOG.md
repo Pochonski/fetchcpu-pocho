@@ -10,6 +10,25 @@ follow [SemVer](https://semver.org/). Dates are in ISO 8601.
 Pocho LMC ships as a complete, dependency-free, bilingual Little Man Computer
 simulator designed for teaching the Fetch/Decode/Execute cycle.
 
+### Production-readiness pass (2026-08-08)
+
+- **Behaviour** — `INP` no longer leaves the executor stuck when input runs
+  out: a dedicated `EndOfInputError` is caught in the run loop and the
+  executor halts cleanly with a friendly log entry. The parser rejects
+  programs that exceed the 100-cell RAM. The audit-i18n script now
+  recognises template-literal references and dynamic property access.
+- **Accessibility** — modals close on `Escape`, trap focus, and restore
+  focus to the opener. A `prefers-reduced-motion` media query disables
+  animations for users who request it.
+- **Security** — the CSP no longer allows `unsafe-inline` for styles or
+  `connect-src` to `api.github.com`. The deprecated `escape`/`unescape`
+  pair in the share encoder was replaced with `TextEncoder`/`TextDecoder`.
+- **i18n** — `flashShare`, the theme toggle, and the pause/run button
+  now use the i18n dictionary. The `log.parseError` and `log.outOfMemory`
+  keys are now wired in. ~17 unused keys were removed.
+- **Repo** — `.env.local` (containing an expired Vercel OIDC token) was
+  removed from disk.
+
 ### Added
 
 - **CPU model**

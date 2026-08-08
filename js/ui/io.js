@@ -1,6 +1,13 @@
 // IO handling: input is a queue of values parsed from the input textarea;
 // output is a list of values written to the output textarea.
 
+export class EndOfInputError extends Error {
+  constructor() {
+    super("No more input");
+    this.name = "EndOfInputError";
+  }
+}
+
 export function createIO(inputEl, outputEl) {
   let inputQueue = [];
   let inputIdx = 0;
@@ -9,8 +16,8 @@ export function createIO(inputEl, outputEl) {
 
   function readInput() {
     if (inputIdx >= inputQueue.length) {
-      // Block indefinitely: pause execution by returning 0 — we degrade to stop().
-      throw new Error("No more input");
+      // Halt execution cleanly: the executor catches this and stops the run loop.
+      throw new EndOfInputError();
     }
     const value = inputQueue[inputIdx++];
     return value;

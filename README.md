@@ -99,6 +99,9 @@ npm start                # http://localhost:8000
 - Live regions (`aria-live="polite"`) for the live feed and the FDE phase.
 - Visible focus rings on every interactive element.
 - Color-coded states have semantic labels (Z/N/P, MAR/PC labels on the RAM table).
+- **Modals** close on `Escape`, trap focus, and restore focus to the opener.
+- **`prefers-reduced-motion`** disables animations and transitions for users
+  who request it.
 
 ---
 

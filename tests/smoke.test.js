@@ -191,5 +191,19 @@ describe("Application smoke test", () => {
 
     expect(out).toContain("7");
   });
+
+  it("modals open, close on Escape, and restore focus", async () => {
+    const helpBtn = document.getElementById("help-link");
+    const modal = document.getElementById("linkPopup");
+    expect(modal.hidden).toBe(true);
+    helpBtn.focus();
+    helpBtn.click();
+    expect(modal.hidden).toBe(false);
+    // Escape closes the modal.
+    modal.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+    expect(modal.hidden).toBe(true);
+    // Focus is restored to the opener.
+    expect(document.activeElement).toBe(helpBtn);
+  });
 });
 

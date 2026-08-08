@@ -62,4 +62,19 @@ end HLT
     resolveLabels(entries, r.program.labels);
     expect(entries[0].code.value).toBe(602); // BRA + addr 2
   });
+
+  it("rejects programs that exceed RAM size", () => {
+    // 101 NOP-style instructions (each is a DAT 0 line) overflow the 100 cells.
+    const source = Array.from({ length: 101 }, () => "DAT 0").join("\n") + "\n";
+    const r = parse(source);
+    expect(r.ok).toBe(false);
+    expect(r.errors[0].message).toMatch(/too large/i);
+  });
+
+  it("accepts programs that exactly fill RAM", () => {
+    const source = Array.from({ length: 100 }, () => "DAT 0").join("\n") + "\n";
+    const r = parse(source);
+    expect(r.ok).toBe(true);
+    expect(r.program.instructions.length).toBe(100);
+  });
 });

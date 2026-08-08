@@ -12,16 +12,19 @@ export const en = {
     lmcInstructionSet: "LMC Instruction Set",
     about: "About",
     theme: "Toggle theme",
+    themeToLight: "Switch to light theme",
+    themeToDark: "Switch to dark theme",
     sound: "Sound",
     share: "Copy share URL",
     shareCopied: "Copied!",
     shareFailed: "Copy failed",
+    pauseLabel: "Pause",
+    runLabel: "Run",
   },
 
   panels: {
     editor: {
       title: "Program · Assembly",
-      blurbEyebrow: "About this example",
       expectedEyebrow: "Expected output",
       examples: "Examples",
       load: "Load",
@@ -31,7 +34,6 @@ export const en = {
       import: "Import…",
       clear: "Clear",
       choose: "Choose example program",
-      runningUntitled: "Untitled program",
     },
     cpu: {
       title: "CPU · State",
@@ -43,7 +45,6 @@ export const en = {
       rewind: "Step backward",
       step: "Step",
       stepPhase: "Step phase",
-      phaseNext: "Next phase",
       pauseRun: "Run/Pause",
       fastForward: "Run to halt",
       clock: "Clock",
@@ -52,7 +53,6 @@ export const en = {
       inputLabel: "Input · stdin",
       inputPlaceholder: "One numeric value per line",
       outputLabel: "Output · stdout",
-      flagsLabel: "FLAGS",
       flagZ: "Zero",
       flagN: "Negative",
       flagP: "Positive",
@@ -69,7 +69,6 @@ export const en = {
       title: "Activity",
       clear: "Clear",
       export: "Export .lmc",
-      historyBtn: "History",
       tabs: {
         live: "Live feed",
         history: "History",
@@ -78,7 +77,6 @@ export const en = {
       },
       logFileToggle: "Capture to log file",
       downloadLog: "Download .txt",
-      historyTitle: "Execution history",
     },
   },
 
@@ -90,22 +88,17 @@ export const en = {
     phases: { fetch: "fetch", decode: "decode", execute: "execute", idle: "idle" },
   },
 
-  blurb: {
-    expected: "Expected output",
-  },
-
   log: {
     loaded: "Loaded program with {0} instructions.",
     halted: "Program halted at PC={0}.",
     parseError: "Line {0}: {1}",
     outOfMemory: "Out of memory cells for immediate on line {0}",
+    inputExhausted: "Stopped: input exhausted (program needs more values).",
     errorPrefix: "ERROR: {0}",
     stepDescription: "Cycle {0} | {1} | PC={2} MAR={3} MDR={4} CIR={5} ACC={6}",
   },
 
   stats: {
-    title: "Statistics",
-    reset: "Reset stats",
     cycles: "Cycles",
     instructions: "Instructions",
     branches: "Branches",
@@ -126,10 +119,7 @@ export const en = {
     },
   },
 
-  history: {
-    headers: { cycle: "cycle", pc: "PC", acc: "ACC", view: "Click to view" },
-    placeholder: "No executions yet. Run a program to populate the history.",
-  },
+  history: {},
 
   modal: {
     close: "Close",
@@ -218,10 +208,6 @@ export const en = {
     "11": { label: "Print 0..N (loop)",      blurb: "Print every integer from 0 up to N using a SUB-based guard.", expected: "0..5" },
     "12": { label: "Absolute value",         blurb: "If the input is negative, negate it using SUB; otherwise pass it through.", expected: "8" },
   },
-
-  search: {
-    placeholder: "Search examples…",
-  },
 };
 
 export const es = {
@@ -233,16 +219,19 @@ export const es = {
     lmcInstructionSet: "Set de instrucciones LMC",
     about: "Acerca de",
     theme: "Cambiar tema",
+    themeToLight: "Cambiar a tema claro",
+    themeToDark: "Cambiar a tema oscuro",
     sound: "Sonido",
     share: "Copiar enlace para compartir",
     shareCopied: "¡Copiado!",
     shareFailed: "No se pudo copiar",
+    pauseLabel: "Pausa",
+    runLabel: "Ejecutar",
   },
 
   panels: {
     editor: {
       title: "Programa · Ensamblador",
-      blurbEyebrow: "Sobre este ejemplo",
       expectedEyebrow: "Salida esperada",
       examples: "Ejemplos",
       load: "Cargar",
@@ -252,7 +241,6 @@ export const es = {
       import: "Importar…",
       clear: "Limpiar",
       choose: "Elegir programa de ejemplo",
-      runningUntitled: "Programa sin título",
     },
     cpu: {
       title: "CPU · Estado",
@@ -264,7 +252,6 @@ export const es = {
       rewind: "Paso atrás",
       step: "Paso",
       stepPhase: "Fase",
-      phaseNext: "Siguiente fase",
       pauseRun: "Ejecutar/Pausa",
       fastForward: "Ejecutar hasta HLT",
       clock: "Reloj",
@@ -273,7 +260,6 @@ export const es = {
       inputLabel: "Entrada · stdin",
       inputPlaceholder: "Un valor numérico por línea",
       outputLabel: "Salida · stdout",
-      flagsLabel: "BANDERAS",
       flagZ: "Cero",
       flagN: "Negativo",
       flagP: "Positivo",
@@ -290,7 +276,6 @@ export const es = {
       title: "Actividad",
       clear: "Limpiar",
       export: "Exportar .lmc",
-      historyBtn: "Historial",
       tabs: {
         live: "En vivo",
         history: "Historial",
@@ -299,7 +284,6 @@ export const es = {
       },
       logFileToggle: "Capturar a archivo",
       downloadLog: "Descargar .txt",
-      historyTitle: "Historial de ejecución",
     },
   },
 
@@ -311,22 +295,17 @@ export const es = {
     phases: { fetch: "búsqueda", decode: "decodif.", execute: "ejecución", idle: "inactivo" },
   },
 
-  blurb: {
-    expected: "Salida esperada",
-  },
-
   log: {
     loaded: "Programa cargado con {0} instrucciones.",
     halted: "Programa detenido en PC={0}.",
     parseError: "Línea {0}: {1}",
     outOfMemory: "Sin memoria para inmediato en la línea {0}",
+    inputExhausted: "Detenido: sin más entradas (el programa necesita más valores).",
     errorPrefix: "ERROR: {0}",
     stepDescription: "Ciclo {0} | {1} | PC={2} MAR={3} MDR={4} CIR={5} ACC={6}",
   },
 
   stats: {
-    title: "Estadísticas",
-    reset: "Reiniciar",
     cycles: "Ciclos",
     instructions: "Instrucciones",
     branches: "Saltos",
@@ -347,10 +326,7 @@ export const es = {
     },
   },
 
-  history: {
-    headers: { cycle: "ciclo", pc: "PC", acc: "ACC", view: "Click para ver" },
-    placeholder: "Sin ejecuciones. Ejecute un programa para llenar el historial.",
-  },
+  history: {},
 
   modal: {
     close: "Cerrar",
@@ -437,10 +413,6 @@ export const es = {
     "10": { label: "Sumar 1..N",             blurb: "Suma los enteros del 1 al N con un bucle descendente.", expected: "55" },
     "11": { label: "Imprimir 0..N (bucle)",  blurb: "Imprime cada entero de 0 a N usando una guarda con SUB.", expected: "0..5" },
     "12": { label: "Valor absoluto",         blurb: "Si la entrada es negativa, la niega con SUB; si no, la pasa tal cual.", expected: "8" },
-  },
-
-  search: {
-    placeholder: "Buscar ejemplos…",
   },
 };
 

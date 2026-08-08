@@ -22,6 +22,7 @@ import { decodeShare, currentShare } from "./ui/share.js";
 import { parseFile, downloadAs } from "./ui/fileIO.js";
 import { t, currentLanguage, setLanguage, translateDom, initI18n } from "./ui/i18n/index.js";
 import { en as enDict, es as esDict } from "./ui/i18n/dictionaries.js";
+import { openModal as openModalA11y, closeModal as closeModalA11y } from "./ui/modal.js";
 
 const STORAGE_KEY = "lmc-source";
 const INPUT_KEY = "lmc-input";
@@ -251,7 +252,7 @@ function boot() {
     const source = $("codeListing").value;
     const result = parse(source);
     if (!result.ok) {
-      for (const err of result.errors) logger.onError(`Line ${err.line}: ${err.message}`);
+      for (const err of result.errors) logger.onError(t("log.parseError", [err.line, err.message]));
       refreshView();
       return;
     }
@@ -270,7 +271,7 @@ function boot() {
         let dataAddr = allocator;
         while (usedAddresses.has(dataAddr) && dataAddr > 0) dataAddr -= 1;
         if (dataAddr < 0) {
-          logger.onError(`Out of memory cells for immediate on line ${instr.sourceLine}`);
+          logger.onError(t("log.outOfMemory", [instr.sourceLine]));
           return;
         }
         dataCells.push({ addr: dataAddr, value: Number(instr.operand.value) });
@@ -355,7 +356,7 @@ function boot() {
           if (sourceLine != null) editor.highlightLine(sourceLine);
         },
       });
-      $("btn-pause").querySelector("span").textContent = "⏸";
+      setPauseIcon(true);
     }
   }
 
@@ -371,12 +372,21 @@ function boot() {
         if (sourceLine != null) editor.highlightLine(sourceLine);
       },
     });
-    $("btn-pause").querySelector("span").textContent = "⏸";
+    setPauseIcon(true);
   }
 
   function pauseProgram() {
     executor.stop();
-    $("btn-pause").querySelector("span").textContent = "▶";
+    setPauseIcon(false);
+  }
+
+  function setPauseIcon(isRunning) {
+    const btn = $("btn-pause");
+    if (!btn) return;
+    const icon = btn.querySelector("span");
+    if (icon) icon.textContent = isRunning ? "⏸" : "▶";
+    btn.setAttribute("data-running", isRunning ? "true" : "false");
+    btn.setAttribute("aria-label", isRunning ? t("app.pauseLabel") : t("app.runLabel"));
   }
 
   function singleStep() {
@@ -491,8 +501,8 @@ function boot() {
     const url = currentShare($("codeListing").value, $("input").value);
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(
-        () => flashShare("Copied!", true),
-        () => flashShare("Copy failed", false),
+        () => flashShare(true),
+        () => flashShare(false),
       );
     } else {
       prompt("Share URL", url);
@@ -500,19 +510,19 @@ function boot() {
   }
 
   let shareFlashTimer = null;
-  function flashShare(message, ok) {
+  function flashShare(ok) {
     const btn = $("share-btn");
     btn.querySelector("span").textContent = ok ? "✓" : "✕";
-    btn.setAttribute("title", message);
+    btn.setAttribute("title", ok ? t("app.shareCopied") : t("app.shareFailed"));
     clearTimeout(shareFlashTimer);
     shareFlashTimer = setTimeout(() => {
       btn.querySelector("span").textContent = "↗";
-      btn.setAttribute("title", "Copy share link");
+      btn.setAttribute("title", t("app.share"));
     }, 1500);
   }
 
-  function openModal(id) { $(id).hidden = false; }
-  function closeModal(el) { el.hidden = true; }
+  function openModal(id) { openModalA11y($(id)); }
+  function closeModal(el) { closeModalA11y(el); }
 
   // ----- Wire DOM listeners -----
   $("btn-load").addEventListener("click", loadProgram);
@@ -609,6 +619,16 @@ function boot() {
 
   events.on("tick", () => refreshView());
   events.on("halt", () => { sound.halt(); refreshView(); });
+  events.on("input-exhausted", () => {
+    logger.onInputExhausted();
+    pauseProgram();
+    refreshView();
+  });
+  events.on("error", ({ message }) => {
+    logger.onError(message);
+    pauseProgram();
+    refreshView();
+  });
   events.on("memory-access", ({ direction }) => {
     const el = direction === "out" ? $("bus-memory-out") : $("bus-memory-in");
     if (!el) return;

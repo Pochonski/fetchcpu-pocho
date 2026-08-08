@@ -1,6 +1,8 @@
 // Theme manager.
 // `dark` is the default; the toggle persists the choice in localStorage.
 
+import { t, registerOnChange } from "./i18n/index.js";
+
 const KEY = "lmc-theme";
 
 export function initTheme(toggleEl) {
@@ -15,6 +17,9 @@ export function initTheme(toggleEl) {
       paintToggle(toggleEl, current);
     });
   }
+  registerOnChange(() => {
+    if (toggleEl) paintToggle(toggleEl, current);
+  });
   return () => current;
 }
 
@@ -22,5 +27,6 @@ function paintToggle(el, mode) {
   const icon = el.querySelector("span");
   if (!icon) return;
   icon.textContent = mode === "dark" ? "☀" : "☾";
-  el.setAttribute("title", mode === "dark" ? "Switch to light" : "Switch to dark");
+  el.setAttribute("title", mode === "dark" ? t("app.themeToLight") : t("app.themeToDark"));
+  el.setAttribute("aria-label", mode === "dark" ? t("app.themeToLight") : t("app.themeToDark"));
 }

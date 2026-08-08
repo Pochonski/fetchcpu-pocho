@@ -3,19 +3,32 @@
 
 const HASH_PREFIX = "lmc=";
 
+function bytesToBase64(bytes) {
+  let bin = "";
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin);
+}
+
+function base64ToBytes(b64) {
+  const bin = atob(b64);
+  const out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+
 export function encodeShare(source, input = "") {
   const payload = JSON.stringify({ s: source, i: input });
-  // Use encodeURIComponent-friendly base64 (browser-safe).
-  const b64 = btoa(unescape(encodeURIComponent(payload)));
-  return `${HASH_PREFIX}${b64}`;
+  const bytes = new TextEncoder().encode(payload);
+  return `${HASH_PREFIX}${bytesToBase64(bytes)}`;
 }
 
 export function decodeShare(hash) {
   if (!hash.startsWith(HASH_PREFIX)) return null;
   try {
     const b64 = hash.slice(HASH_PREFIX.length);
-    const payload = JSON.parse(decodeURIComponent(escape(atob(b64))));
-    return { source: payload.s ?? "", input: payload.i ?? "" };
+    const payload = new TextDecoder().decode(base64ToBytes(b64));
+    const parsed = JSON.parse(payload);
+    return { source: parsed.s ?? "", input: parsed.i ?? "" };
   } catch {
     return null;
   }

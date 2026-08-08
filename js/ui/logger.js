@@ -55,6 +55,13 @@ export function createLogger(liveFeedEl, logEl) {
     rawLines.push({ kind: "halted", haltedAt: cpu.state.haltedAt });
   }
 
+  function onInputExhausted() {
+    const msg = t("log.inputExhausted");
+    push(msg, "log-entry-error");
+    pushToLog(msg);
+    rawLines.push({ kind: "inputExhausted" });
+  }
+
   function onError(message) {
     const msg = t("log.errorPrefix", [message]);
     push(msg, "log-entry-error");
@@ -80,6 +87,7 @@ export function createLogger(liveFeedEl, logEl) {
       if (r.kind === "cycle") onCycle(r.cpu, r.info);
       else if (r.kind === "loaded") onProgramLoaded(r.count);
       else if (r.kind === "halted") onProgramHalted({ state: { haltedAt: r.haltedAt } });
+      else if (r.kind === "inputExhausted") onInputExhausted();
       else if (r.kind === "error") onError(r.message);
     }
     logFileEnabled = savedLogFile;
@@ -103,7 +111,7 @@ export function createLogger(liveFeedEl, logEl) {
   registerOnChange(() => rerenderAll());
 
   return {
-    onCycle, onProgramLoaded, onProgramHalted, onError,
+    onCycle, onProgramLoaded, onProgramHalted, onInputExhausted, onError,
     clear, setLogFile, isLogFileEnabled, download,
   };
 }

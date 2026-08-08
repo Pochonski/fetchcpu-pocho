@@ -37,7 +37,7 @@ for (const file of filesToScan) {
   }
 }
 
-// 2. JS: t("..."), t('...'), t(\`...\`) calls
+// 2. JS: t("..."), t('...'), t(`...`) calls.
 for (const file of filesToScan) {
   const src = readFileSync(file, "utf8");
   const tRe = /\bt\(\s*[`"']([^`"']+)[`"']/g;
@@ -47,23 +47,129 @@ for (const file of filesToScan) {
   }
 }
 
-const flat = (obj, prefix = "") => {
-  const out = [];
+// 3. readArray("path.to.array") — dotted paths reaching into arrays/objects
+//    used by main.js to read template-rendered tables.
+for (const file of filesToScan) {
+  const src = readFileSync(file, "utf8");
+  const aRe = /\breadArray\(\s*[`"']([^`"']+)[`"']/g;
+  let m;
+  while ((m = aRe.exec(src)) !== null) {
+    refs.add(m[1]);
+  }
+}
+
+// 4. Dynamic t(`a.${x}`).foo / t(`a.${x}`)["foo"] — projection access.
+//    The audit can't know what value `x` will take, so we register the
+//    dynamic prefix plus a wildcard suffix that the dictionary matcher
+//    resolves below.
+const dynamicAccess = []; // [{ prop, isFullAccess }]
+for (const file of filesToScan) {
+  const src = readFileSync(file, "utf8");
+  const dRe = /\bt\(\s*[`"']([^`"']+)[`"']\s*\)\s*(?:\.([a-zA-Z_$][\w$]*)|\[["']?([a-zA-Z_$][\w$]*)["']?\])/g;
+  let m;
+  while ((m = dRe.exec(src)) !== null) {
+    const base = m[1];
+    const prop = m[2] || m[3];
+    if (base.includes("${")) {
+      refs.add(`${base}__WILDCARD__`);
+      dynamicAccess.push({ base, prop });
+    }
+  }
+  // Also catch direct dynamic t(`prefix.${x}`) with no projection — match
+  // any leaf under that prefix.
+  const dRe2 = /\bt\(\s*[`"']([^`"']+\$\{[^`"']+\}[^`"']*)[`"']\s*\)/g;
+  let m2;
+  while ((m2 = dRe2.exec(src)) !== null) {
+    const base = m2[1];
+    if (dynamicAccess.some((a) => a.base === base)) continue;
+    refs.add(`${base}__WILDCARD__`);
+    dynamicAccess.push({ base, prop: null });
+  }
+}
+
+const flat = (obj, prefix = "", leaves = []) => {
   for (const [k, v] of Object.entries(obj)) {
     const key = prefix ? prefix + "." + k : k;
-    if (v && typeof v === "object" && !Array.isArray(v)) out.push(...flat(v, key));
-    else out.push(key);
+    if (v && typeof v === "object" && !Array.isArray(v)) {
+      flat(v, key, leaves);
+    } else {
+      leaves.push(key);
+    }
+  }
+  return leaves;
+};
+const flatAll = (obj, prefix = "", out = []) => {
+  for (const [k, v] of Object.entries(obj)) {
+    const key = prefix ? prefix + "." + k : k;
+    out.push(key);
+    if (v && typeof v === "object" && !Array.isArray(v)) flatAll(v, key, out);
   }
   return out;
 };
-const all = new Set([...flat(en), ...flat(es)]);
+const leaves = [...flat(en), ...flat(es)];
+const all = new Set([...flatAll(en), ...flatAll(es)]);
 
-const missing = [...refs].filter((k) => !all.has(k)).sort();
-const unused = [...all].filter((k) => !refs.has(k)).sort();
+// A "missing" reference is one that resolves to nothing. But t(`a.${x}`) is a
+// template literal where the static prefix may match a real key (e.g.
+// `access.phases.${label}` resolves to `access.phases.fetch` etc. at runtime).
+// Drop those false positives by checking whether the prefix exists.
+const SKIP_REFS = new Set(["key"]); // placeholder in docstrings
+const missing = [];
+let templateIgnored = 0;
+for (const key of refs) {
+  if (SKIP_REFS.has(key)) continue;
+  if (all.has(key)) continue;
+  // Dynamic t(`a.${x}`).foo — expand the wildcard to any leaf in the prefix
+  // subtree.
+  if (key.endsWith("__WILDCARD__")) {
+    // Find the matching dynamic-access record.
+    const base = key.slice(0, -"__WILDCARD__".length);
+    const rec = dynamicAccess.find((a) => a.base === base);
+    if (rec) {
+      // Figure out the static prefix (everything before the first ${...}).
+      const staticPrefix = base.replace(/\$\{[^}]+\}/g, "");
+      // Remove trailing dot.
+      const root = staticPrefix.replace(/\.$/, "");
+      if (rec.prop) {
+        // Add every leaf matching `${root}.<anything>.${prop}`.
+        for (const leaf of leaves) {
+          if (leaf.startsWith(root + ".") && leaf.endsWith("." + rec.prop)) {
+            refs.add(leaf);
+          }
+        }
+      } else {
+        // No projection: add every leaf under root.
+        for (const leaf of leaves) {
+          if (leaf.startsWith(root + ".")) refs.add(leaf);
+        }
+      }
+      refs.add(root);
+    }
+    continue;
+  }
+  // Walk from the first dot outward, treating the suffix as a possible
+  // template-literal expression. If any prefix exists in the dictionary, the
+  // reference is dynamic-but-valid.
+  let idx = key.indexOf(".");
+  let matched = false;
+  while (idx > 0) {
+    const prefix = key.slice(0, idx);
+    if (all.has(prefix)) {
+      templateIgnored++;
+      matched = true;
+      break;
+    }
+    idx = key.indexOf(".", idx + 1);
+  }
+  if (!matched) missing.push(key);
+}
+missing.sort();
+
+const unused = [...new Set(leaves)].filter((k) => !refs.has(k)).sort();
 
 console.log("\n### Missing references (referenced but not in dictionary)");
 if (missing.length === 0) {
-  console.log("  (none — all references resolve ✓)");
+  console.log(`  (none — all references resolve ✓ — ${templateIgnored} template-literal suffix ignored)`);
 } else {
   for (const k of missing) console.log("  -", k);
 }
