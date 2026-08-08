@@ -1,8 +1,8 @@
 import { describe, it, expect } from "vitest";
-import { parse, encodeInstruction, resolveLabels } from "../js/lmc/parser.js";
-import { createRAM } from "../js/lmc/ram.js";
-import { createCPU } from "../js/lmc/cpu.js";
-import { createExecutor } from "../js/lmc/executor.js";
+import { parse, encodeInstruction, resolveLabels } from "../js/cpu/parser.js";
+import { createRAM } from "../js/cpu/ram.js";
+import { createCPU } from "../js/cpu/cpu.js";
+import { createExecutor } from "../js/cpu/executor.js";
 import { PROGRAMS } from "../js/programs/examples.js";
 
 function runProgram(code, inputs) {

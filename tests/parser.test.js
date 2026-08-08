@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { parse, encodeInstruction, resolveLabels } from "../js/lmc/parser.js";
+import { parse, encodeInstruction, resolveLabels } from "../js/cpu/parser.js";
 
 describe("parser", () => {
   it("parses labels and mnemonics", () => {

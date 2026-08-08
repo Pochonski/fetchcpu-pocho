@@ -1,4 +1,4 @@
-// Two-pass assembler for the LMC assembly dialect used in the simulator.
+// Two-pass assembler for the assembly dialect used in the simulator.
 // Supports labels, comments (';' or '//'), immediate addressing (#5) and
 // indirect addressing (@label), and DAT declarations with optional initial values.
 //

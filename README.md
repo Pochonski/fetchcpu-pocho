@@ -1,11 +1,11 @@
-# Pocho LMC
+# FetchCPU-Pocho
 
-> **An interactive Little Man Computer (LMC) simulator with FDE cycle visualization, breakpoints, signed integers, immediate & indirect addressing, statistics, history timeline, and English/Spanish UI — built by Pocho.**
+> **An interactive CPU simulator with Fetch / Decode / Execute cycle visualization, breakpoints, signed integers, immediate & indirect addressing, statistics, history timeline, and English/Spanish UI — built by Pocho.**
 
-A modern, accessible, dependency-free teaching simulator for the Little Man Computer
-architecture (Dr. Stuart Madnick, 1965). Designed to make every Fetch / Decode / Execute
-cycle visible, every memory access inspectable, and every supported LMC idiom exercisable
-without leaving the browser.
+A modern, accessible, dependency-free teaching simulator for the classic
+**Von Neumann** architecture. Designed to make every Fetch / Decode / Execute
+cycle visible, every memory access inspectable, and every supported idiom
+exercisable without leaving the browser.
 
 ---
 
@@ -21,7 +21,6 @@ without leaving the browser.
 - [Architecture notes](#architecture-notes)
 - [Localization (English / Spanish)](#localization-english--spanish)
 - [Roadmap & ideas](#roadmap--ideas)
-- [Comparison with 101computing.net/LMC](#comparison-with-101computingnetlmc)
 - [Credits](#credits)
 - [License](#license)
 
@@ -32,7 +31,7 @@ without leaving the browser.
 The project is fully static — no backend needed.
 
 ```bash
-cd ~/Projects/lmc-simulator
+cd ~/Projects/fetchcpu-pocho
 npm start                # http://localhost:8000
 ```
 
@@ -73,20 +72,33 @@ npm start                # http://localhost:8000
 ### UI / UX
 
 - **Modern dark & light themes** — auto-initialised from system preference if no override.
-- **Responsive layout** — 1 / 2 / 3 columns depending on viewport.
+- **Fully responsive** — mobile-first layout from iPhone SE to 1480 px desktop with 5 breakpoints and a hamburger bottom-sheet menu on phones.
+- **Touch-optimised** — 44 px minimum tap targets on coarse pointers (Apple HIG), `-webkit-tap-highlight-color: transparent`, hover-only states replaced by `:active`/`:focus-visible` on touch.
+- **iOS / Android safe-area aware** — `env(safe-area-inset-*)` insets the header, footer and modals so content never sits under the notch / Dynamic Island / home indicator.
 - **Glass / radial gradients** — non-flat surfaces.
 - **Inter + JetBrains Mono** — typographic hierarchy.
 - **Editable RAM cells** — type in a value to override (great for demos).
 - **Code editor** — line numbers, breakpoints, syntax highlighting for mnemonics, labels, comments.
 - **Tabbed Activity panel** — Live feed · History · Stats · Log file.
 - **Keyboard shortcuts** — see [the table below](#keyboard-shortcuts).
-- **Mobile-friendly** — touch targets ≥ 36 px, panels stack vertically.
+
+### Responsive breakpoints
+
+| Range        | Device                          | Layout                                                          |
+|--------------|---------------------------------|-----------------------------------------------------------------|
+| 0 – 479 px   | iPhone SE / small phones        | 1 column, RAM cells drop address + label, FDE flow stacks       |
+| 480 – 819 px | Standard phones / phablets      | 1 column, IO panels single column, full-width controls          |
+| 820 – 1023 px| iPad portrait                   | 2 columns (RAM full-width left, Controls+CPU right)             |
+| 1024 – 1279 px| iPad landscape / small laptops | 2 columns with refined ratios                                   |
+| ≥ 1280 px    | Desktop                         | Same 2-column layout with larger gaps and breathing room        |
+
+The breakpoint scale is declared in `css/tokens.css` (`--bp-xs/sm/md/tablet/lg/xl/2xl`) and consumed throughout `css/layout.css` and `css/components.css`.
 
 ### Developer workflow
 
 - **Persistent state** — the source code, input, theme, and language persist in localStorage between sessions.
-- **URL hash sharing** — `↗` copies an encoded `#lmc=base64…` link so a program can be shared verbatim.
-- **Import / Export `.lmc` files** — round-trips the source plus default input values.
+- **URL hash sharing** — `↗` copies an encoded `#fcpu=base64…` link so a program can be shared verbatim.
+- **Import / Export `.fcpu` files** — round-trips the source plus default input values.
 - **Download log .txt** — full transcript of every cycle for offline study.
 - **Statistics** — cycles, instructions executed per opcode, branches taken, reads, writes, runtime.
 - **History timeline** — the most recent 50 cycles with mnemonic, PC, ACC and "click to rewind".
@@ -143,7 +155,7 @@ On the editor gutter, click any line number to toggle a breakpoint.
 
 ```bash
 git clone <your-fork-url>
-cd pocho-lmc
+cd fetchcpu-pocho
 
 # No build step. No deps to run (only vitest/eslint as devDeps).
 npm install           # optional, only needed for tests / lint
@@ -178,7 +190,7 @@ critical user-facing flows.
 | `tests/integration.test.js` | All twelve example programs end-to-end through the parser + executor. |
 | `tests/clock.test.js` | Slider behaviour, ± buttons, clamping, slow execution timing. |
 | `tests/memory_access.test.js` | MAR fidelity, event emission, indirect two-step reads, UI access log. |
-| `tests/share_fileio.test.js` | URL hash sharing round-trip and `.lmc` file import/export. |
+| `tests/share_fileio.test.js` | URL hash sharing round-trip and `.fcpu` file import/export. |
 | `tests/stats_events.test.js` | Stats aggregation and event pub/sub. |
 | `tests/i18n.test.js` | Key resolution, interpolation, fallback, DOM translation, EN/ES switching. |
 | `tests/smoke.test.js` | jsdom-based UI smoke tests (boot, layout, breakpoints, try-example). |
@@ -198,10 +210,9 @@ and exercise real DOM events — no browser required.
 ## Project structure
 
 ```
-pocho-lmc/
+fetchcpu-pocho/
 ├── index.html                     # Single-page UI; no build step
 ├── README.md                      # this file
-├── COMPARISON.md                  # detailed diff vs 101computing.net/LMC
 ├── package.json
 ├── eslint.config.js               # ESLint flat config
 ├── vitest.config.js
@@ -220,7 +231,7 @@ pocho-lmc/
 ├── js/
 │   ├── main.js                    # entry point — wires DOM, events, modules
 │   │
-│   ├── lmc/                       # CPU model
+│   ├── cpu/                       # CPU model
 │   │   ├── opcodes.js             # opcode table
 │   │   ├── ram.js                 # 100-cell RAM with diff tracking
 │   │   ├── cpu.js                 # PC / CIR / MAR / MDR / ACC + flags
@@ -271,8 +282,8 @@ pocho-lmc/
 
 ### CPU model
 
-The LMC is a tiny Von Neumann machine (100 mailboxes, three-digit numeric words).
-The simulator honours that with three layers:
+The simulator models a tiny Von Neumann machine: 100 memory cells and
+three-digit numeric words. Three layers keep the model honest:
 
 1. **`ram.js`** — `createRAM()` returns an immutable-ish object with
    `read(addr)`, `write(addr, value)`, `snapshot()`, `getLastWritten()`. Cells are
@@ -326,7 +337,7 @@ subscribes to these events:
 - Glass surfaces use `backdrop-filter: blur(...)` with a translucent panel
   color.
 - The brand gradient is defined as `--brand-grad` and used by the logo and
-  the "Pocho LMC" footer badge.
+  the "FetchCPU-Pocho" footer badge.
 
 ---
 
@@ -359,40 +370,23 @@ Want to help? Pick one:
 - [ ] Add a small **assembler listing view** (labels ↔ address) per program.
 - [ ] Add **signed positive** vs **nine's complement** toggle (educational).
 - [ ] Add **watchpoints** (RAM-cell-based, not just PC-based).
-- [ ] Add **3-bit / 6-bit variants** of LMC (memory sizes of 10 / 100 / 1000).
+- [ ] Add **3-bit / 6-bit variants** (memory sizes of 10 / 100 / 1000).
 - [ ] Add a **CSV export** of the stats panel.
 - [ ] Add **Web Audio synth** driven by register activity (a melody per
-      instruction) for a "sonic LMC".
+      instruction) for a "sonic CPU".
 - [ ] i18n for **Portuguese** 🇧🇷 / **French** 🇫🇷.
-
----
-
-## Comparison with 101computing.net/LMC
-
-See [`COMPARISON.md`](./COMPARISON.md) for the full feature-by-feature breakdown
-against the reference implementation. Short version:
-
-- The reference (101computing.net) has 8 examples, no breakpoints, no step-back,
-  no stats panel, no disassembly view, no history, no URL sharing, no theme
-  toggle, no i18n. It is a single HTML file with ~150 lines of UI and ~200
-  lines of JavaScript.
-- **Pocho LMC** is a strict **superset** of that feature set, plus an
-  end-to-end test suite, ES modules, accessibility wiring, modern CSS, and a
-  bilingual UI.
 
 ---
 
 ## Credits
 
-- **Little Man Computer** — designed by **Dr. Stuart Madnick** in 1965 as a
-  teaching aid for the Von Neumann architecture.
-- **Reference implementation** — [101computing.net/LMC](https://www.101computing.net/LMC/)
-  by 101computing.net.
-- **This simulator** — extended, modernized and re-themed by **Pocho**.
+- **Built by [Pocho](https://github.com/Pochonski)** as a teaching aid for the
+  classic Von Neumann architecture.
+- Inspired by the long tradition of small, didactic CPU simulators — kept
+  tiny on purpose so every Fetch / Decode / Execute cycle fits on one screen.
 
 ---
 
 ## License
 
 MIT — see `LICENSE` for the full text.
-

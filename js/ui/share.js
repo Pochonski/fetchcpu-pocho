@@ -1,7 +1,7 @@
 // URL hash sharing: encode/decode the program source and (optionally)
 // input into the URL hash so a link reproduces the same state.
 
-const HASH_PREFIX = "lmc=";
+const HASH_PREFIX = "fcpu=";
 
 function bytesToBase64(bytes) {
   let bin = "";

@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
-import { createCPU } from "../js/lmc/cpu.js";
-import { createRAM } from "../js/lmc/ram.js";
-import { createExecutor } from "../js/lmc/executor.js";
+import { createCPU } from "../js/cpu/cpu.js";
+import { createRAM } from "../js/cpu/ram.js";
+import { createExecutor } from "../js/cpu/executor.js";
 import { EndOfInputError } from "../js/ui/io.js";
 
 function makeIO(inputs = []) {

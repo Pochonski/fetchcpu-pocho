@@ -1,11 +1,11 @@
 // Entry point: wires up all DOM, simulator modules and event handlers.
 
-import { createRAM } from "./lmc/ram.js";
-import { createCPU } from "./lmc/cpu.js";
-import { parse, encodeInstruction, resolveLabels } from "./lmc/parser.js";
-import { createExecutor } from "./lmc/executor.js";
-import { createEvents } from "./lmc/events.js";
-import { createStats } from "./lmc/stats.js";
+import { createRAM } from "./cpu/ram.js";
+import { createCPU } from "./cpu/cpu.js";
+import { parse, encodeInstruction, resolveLabels } from "./cpu/parser.js";
+import { createExecutor } from "./cpu/executor.js";
+import { createEvents } from "./cpu/events.js";
+import { createStats } from "./cpu/stats.js";
 import { createIO } from "./ui/io.js";
 import { createRAMView } from "./ui/ramView.js";
 import { createCPUView } from "./ui/cpuView.js";
@@ -23,9 +23,10 @@ import { parseFile, downloadAs } from "./ui/fileIO.js";
 import { t, currentLanguage, setLanguage, translateDom, initI18n } from "./ui/i18n/index.js";
 import { en as enDict, es as esDict } from "./ui/i18n/dictionaries.js";
 import { openModal as openModalA11y, closeModal as closeModalA11y } from "./ui/modal.js";
+import { initMobileMenu } from "./ui/mobileMenu.js";
 
-const STORAGE_KEY = "lmc-source";
-const INPUT_KEY = "lmc-input";
+const STORAGE_KEY = "fetchcpu-source";
+const INPUT_KEY = "fetchcpu-input";
 
 const $ = (id) => document.getElementById(id);
 
@@ -36,6 +37,7 @@ function boot() {
 
   initI18n();
   initTheme($("theme-toggle"));
+  initMobileMenu();
 
   // Module-level references cached up front (avoid TDZ in nested functions).
   const sel = $("files");
@@ -481,7 +483,7 @@ function boot() {
   function exportProgram() {
     const source = $("codeListing").value;
     const input = $("input").value;
-    downloadAs(source, input, "program.lmc");
+    downloadAs(source, input, "program.fcpu");
   }
 
   function importProgramFile(file) {
@@ -689,7 +691,7 @@ function boot() {
   refreshView();
 
   // expose clock helper for tests
-  globalThis.__lmc = {
+  globalThis.__fetchcpu = {
     stepClock,
     getClock: () => Number($("clock").value),
     setClock: (v) => { $("clock").value = String(v); updateClockDisplay(v); },

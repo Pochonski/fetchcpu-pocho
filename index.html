@@ -2,30 +2,32 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Pocho LMC — Little Man Computer simulator</title>
-    <meta name="description" content="Interactive Little Man Computer (LMC) simulator with FDE cycle visualization, breakpoints, signed integers, immediate and indirect addressing, statistics, history timeline, and English/Spanish UI." />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="color-scheme" content="light dark" />
+    <title>FetchCPU-Pocho — CPU & FDE cycle simulator</title>
+    <meta name="description" content="Interactive CPU simulator with Fetch/Decode/Execute cycle visualization, breakpoints, signed integers, immediate and indirect addressing, statistics, history timeline, and English/Spanish UI." />
     <meta name="author" content="Pocho" />
-    <meta name="keywords" content="LMC, Little Man Computer, CPU simulator, Von Neumann, FDE, assembly, breakpoints, education, Stuart Madnick" />
-    <meta name="theme-color" content="#0a0d14" />
+    <meta name="keywords" content="FetchCPU, CPU simulator, Von Neumann, FDE, Fetch-Decode-Execute, assembly, breakpoints, education, teaching architecture" />
+    <meta name="theme-color" content="#0a0d14" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f5f6fb" media="(prefers-color-scheme: light)" />
     <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://pocho-lmc.vercel.app/" />
+    <link rel="canonical" href="https://fetchcpu-pocho.vercel.app/" />
 
     <!-- Open Graph -->
     <meta property="og:type" content="website" />
-    <meta property="og:site_name" content="Pocho LMC" />
-    <meta property="og:title" content="Pocho LMC — Little Man Computer simulator" />
-    <meta property="og:description" content="An interactive LMC simulator with FDE visualization, breakpoints, immediate/indirect addressing, stats, history, and bilingual UI." />
-    <meta property="og:url" content="https://pocho-lmc.vercel.app/" />
-    <meta property="og:image" content="https://pocho-lmc.vercel.app/assets/favicon.svg" />
+    <meta property="og:site_name" content="FetchCPU-Pocho" />
+    <meta property="og:title" content="FetchCPU-Pocho — CPU &amp; FDE cycle simulator" />
+    <meta property="og:description" content="An interactive CPU simulator with FDE visualization, breakpoints, immediate/indirect addressing, stats, history, and bilingual UI." />
+    <meta property="og:url" content="https://fetchcpu-pocho.vercel.app/" />
+    <meta property="og:image" content="https://fetchcpu-pocho.vercel.app/assets/favicon.svg" />
     <meta property="og:locale" content="en" />
     <meta property="og:locale:alternate" content="es" />
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Pocho LMC — Little Man Computer simulator" />
-    <meta name="twitter:description" content="A modern, dependency-free LMC simulator with English &amp; Spanish UI. Built by Pocho." />
-    <meta name="twitter:image" content="https://pocho-lmc.vercel.app/assets/favicon.svg" />
+    <meta name="twitter:title" content="FetchCPU-Pocho — CPU &amp; FDE cycle simulator" />
+    <meta name="twitter:description" content="A modern, dependency-free CPU simulator with Fetch/Decode/Execute visualization and English &amp; Spanish UI." />
+    <meta name="twitter:image" content="https://fetchcpu-pocho.vercel.app/assets/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -44,8 +46,8 @@
       <h1>
         <span class="logo" aria-hidden="true"></span>
         <span class="title-text">
-          <span class="title-eyebrow" data-i18n="app.eyebrow">Little Man Computer</span>
-          <span data-i18n="app.name">Pocho LMC</span>
+          <span class="title-eyebrow" data-i18n="app.eyebrow">Von Neumann CPU</span>
+          <span data-i18n="app.name">FetchCPU-Pocho</span>
         </span>
       </h1>
       <div class="header-actions">
@@ -59,14 +61,25 @@
         <button class="icon-btn" id="sound-toggle" aria-label="Sound effects" data-i18n-attr="title:app.sound" title="Sound">
           <span aria-hidden="true">♪</span>
         </button>
-        <button class="icon-btn" id="share-btn" aria-label="Copy share URL" data-i18n-attr="title:app.share" title="Copy share link">
+<button class="icon-btn" id="share-btn" aria-label="Copy share URL" data-i18n-attr="title:app.share" title="Copy share link">
           <span aria-hidden="true">↗</span>
         </button>
         <button class="link-btn" id="tutorial-btn" data-i18n="app.tutorial" title="Walkthrough">Tutorial</button>
-        <button class="link-btn" id="help-link" data-i18n="app.lmcInstructionSet">LMC Instruction Set</button>
+        <button class="link-btn" id="help-link" data-i18n="app.instructionSet">Instruction Set</button>
         <button class="link-btn" id="about-link" data-i18n="app.about">About</button>
+        <button class="icon-btn menu-toggle" id="menu-toggle" type="button" aria-label="Open menu" aria-controls="mobile-menu" aria-expanded="false" data-i18n-attr="aria-label:app.menu" title="Menu">
+          <span aria-hidden="true">⋯</span>
+        </button>
       </div>
     </header>
+
+    <div class="mobile-menu" id="mobile-menu" hidden role="dialog" aria-label="Site menu">
+      <div class="mobile-menu-inner">
+        <button class="mobile-menu-item" id="mobile-tutorial" data-i18n="app.tutorial">Tutorial</button>
+        <button class="mobile-menu-item" id="mobile-help" data-i18n="app.instructionSet">Instruction Set</button>
+        <button class="mobile-menu-item" id="mobile-about" data-i18n="app.about">About</button>
+      </div>
+    </div>
 
     <main class="app-grid" id="app-grid">
       <!-- ============== EDITOR ============== -->
@@ -117,8 +130,8 @@
             <select id="files" data-i18n-attr="aria-label:panels.editor.choose" data-i18n="panels.editor.examples" aria-label="Choose example program">Examples</select>
             <button class="btn btn-secondary btn-sm" id="btn-select-program" data-i18n="panels.editor.loadExample">Load example</button>
             <button class="btn btn-primary btn-sm" id="btn-try-example" data-i18n="panels.editor.tryExample" title="Load the example, assemble, and run it">▶ Try example</button>
-            <button class="btn btn-ghost btn-sm" id="btn-import" data-i18n="panels.editor.import" title="Import a .lmc file">Import…</button>
-            <input type="file" id="file-input" accept=".lmc,.txt" hidden />
+            <button class="btn btn-ghost btn-sm" id="btn-import" data-i18n="panels.editor.import" title="Import a .fcpu file">Import…</button>
+            <input type="file" id="file-input" accept=".fcpu,.txt" hidden />
             <button class="btn btn-ghost btn-sm" id="btn-clear" data-i18n="panels.editor.clear" title="Empty the editor">Clear</button>
           </div>
         </div>
@@ -290,7 +303,7 @@
           <h2 id="log-title" data-i18n="panels.log.title">Activity</h2>
           <div class="panel-actions">
             <button class="btn btn-ghost" id="btn-clear-log" data-i18n="panels.log.clear">Clear</button>
-            <button class="btn btn-secondary" id="btn-export" data-i18n="panels.log.export" title="Export program as .lmc">Export</button>
+            <button class="btn btn-secondary" id="btn-export" data-i18n="panels.log.export" title="Export program as .fcpu">Export</button>
           </div>
         </header>
         <div class="tabs" role="tablist">
@@ -326,7 +339,7 @@
     </main>
 
     <footer class="app-footer">
-      <span class="pocho-badge" data-i18n="app.tagline">A simulator built by Pocho</span>
+      <span class="brand-badge" data-i18n="app.tagline">An interactive Fetch/Decode/Execute simulator</span>
       ·
       <span data-i18n-html="footer.text"></span>
     </footer>
@@ -334,13 +347,13 @@
     <div class="modal" id="linkPopup" hidden role="dialog" aria-labelledby="popup-title" aria-modal="true">
       <div class="modal-content modal-wide">
         <button class="modal-close" data-close="linkPopup" data-i18n-attr="aria-label:modal.close" aria-label="Close">×</button>
-        <h3 id="popup-title" data-i18n="modal.instructions.title">LMC Instruction Set</h3>
+        <h3 id="popup-title" data-i18n="modal.instructions.title">Instruction Set</h3>
         <p class="modal-note" id="instructions-intro" data-i18n-html="modal.instructions.intro"></p>
         <table class="instruction-table" id="instructions-table">
           <thead><tr id="instructions-thead-row"></tr></thead>
           <tbody id="instructions-tbody"></tbody>
         </table>
-        <h4 class="modal-subsection" id="instructions-subtitle" data-i18n="modal.instructions.addressingTitle">Address variants (Pocho LMC extension)</h4>
+        <h4 class="modal-subsection" id="instructions-subtitle" data-i18n="modal.instructions.addressingTitle">Address variants (FetchCPU-Pocho extension)</h4>
         <p class="modal-note" id="instructions-addressing-intro" data-i18n-html="modal.instructions.addressingIntro"></p>
         <table class="instruction-table" id="addressing-table">
           <thead><tr id="addressing-thead-row"></tr></thead>
@@ -352,7 +365,7 @@
     <div class="modal" id="aboutPopup" hidden role="dialog" aria-labelledby="about-title" aria-modal="true">
       <div class="modal-content">
         <button class="modal-close" data-close="aboutPopup" data-i18n-attr="aria-label:modal.close" aria-label="Close">×</button>
-        <h3 id="about-title" data-i18n="modal.about.title">About this LMC Simulator</h3>
+        <h3 id="about-title" data-i18n="modal.about.title">About FetchCPU-Pocho</h3>
         <p id="about-p1" data-i18n-html="modal.about.paragraphs"></p>
         <p id="about-p2" data-i18n-html="modal.about.paragraph2"></p>
         <p id="about-p3" data-i18n-html="modal.about.paragraph3"></p>

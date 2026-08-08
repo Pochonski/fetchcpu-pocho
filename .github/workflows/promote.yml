@@ -23,5 +23,5 @@ jobs:
             exit 1
           fi
           echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y 2>&1 | head -5 || true
-          vercel alias set "$(vercel ls lmc-simulator --no-color --limit 10 | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' | head -1)" pocho-lmc.vercel.app
-          echo "::notice::Promoted pocho-lmc.vercel.app to the latest deployment."
+          vercel alias set "$(vercel ls fetchcpu-simulator --no-color --limit 10 | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' | head -1)" fetchcpu-pocho.vercel.app
+          echo "::notice::Promoted fetchcpu-pocho.vercel.app to the latest deployment."

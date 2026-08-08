@@ -43,4 +43,29 @@
   --bp-mobile: 640px;
   --bp-tablet: 980px;
   --bp-desktop: 1280px;
+
+  /* Responsive breakpoints (mobile-first). Kept as custom properties so JS
+     and CSS can reference the same source of truth. */
+  --bp-xs: 360px;       /* iPhone SE / very small phones */
+  --bp-sm: 480px;       /* standard phones */
+  --bp-md: 640px;       /* large phones / phablets */
+  --bp-tablet: 820px;   /* iPad portrait */
+  --bp-lg: 1024px;      /* iPad landscape / small laptops */
+  --bp-xl: 1280px;      /* desktop */
+  --bp-2xl: 1480px;     /* wide desktop */
+
+  /* Touch target minimum (Apple HIG). Applied via media query (hover: none). */
+  --tap-min: 2.75rem;   /* 44px */
+
+  /* iOS / Android safe-area insets. Falls back to 0 on browsers without
+     env() support so the layout still works on older desktop browsers. */
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+
+  /* Fluid type scale (clamp) — readable on phones, comfortable on desktop. */
+  --fs-display: clamp(0.9375rem, 0.85rem + 0.4vw, 1.0625rem);
+  --fs-body:    clamp(0.8125rem, 0.78rem + 0.18vw, 0.9375rem);
+  --fs-mono:    clamp(0.75rem,  0.72rem + 0.15vw, 0.8125rem);
 }

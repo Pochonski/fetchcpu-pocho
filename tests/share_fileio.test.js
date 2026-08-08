@@ -7,7 +7,7 @@ describe("URL share", () => {
     const src = "INP\nOUT\nHLT\n";
     const inp = "5\n7\n";
     const enc = encodeShare(src, inp);
-    expect(enc).toMatch(/^lmc=/);
+    expect(enc).toMatch(/^fcpu=/);
     const decoded = decodeShare(enc);
     expect(decoded).toEqual({ source: src, input: inp });
   });
