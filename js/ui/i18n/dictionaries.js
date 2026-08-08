@@ -29,7 +29,6 @@ export const en = {
     },
     editor: {
       title: "Program · Assembly",
-      expectedEyebrow: "Expected output",
       examples: "Examples",
       load: "Load",
       run: "Run",
@@ -285,7 +284,6 @@ export const es = {
     },
     editor: {
       title: "Programa · Ensamblador",
-      expectedEyebrow: "Salida esperada",
       examples: "Ejemplos",
       load: "Cargar",
       run: "Ejecutar",

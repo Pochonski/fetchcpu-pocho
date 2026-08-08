@@ -170,14 +170,12 @@ describe("Application smoke test", () => {
   it("shows the program blurb and default example on load", () => {
     expect(document.getElementById("blurb-title").textContent).toBeTruthy();
     expect(document.getElementById("blurb-text").textContent).toBeTruthy();
-    expect(document.getElementById("blurb-expected").textContent).toBeTruthy();
 
     // Switch to "Multiplying 2 inputs" and confirm blurb updates.
     const sel = document.getElementById("files");
     sel.value = "4";
     sel.dispatchEvent(new Event("change"));
     expect(document.getElementById("blurb-title").textContent).toBe("Multiplying 2 inputs");
-    expect(document.getElementById("blurb-expected").textContent).toMatch(/20/);
   });
 
   it("Try example loads, assembles and runs a program in one step", async () => {

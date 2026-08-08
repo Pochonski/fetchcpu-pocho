@@ -103,10 +103,8 @@ function boot() {
     const meta = getProgramMeta(program, t);
     const title = $("blurb-title");
     const text = $("blurb-text");
-    const expected = $("blurb-expected");
     if (title) title.textContent = meta.label;
     if (text) text.textContent = meta.blurb || "";
-    if (expected) expected.textContent = meta.expected || "—";
   }
 
   // Apply translations to static DOM and dynamic content.
