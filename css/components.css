@@ -779,12 +779,35 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 @media (max-width: 819px) {
   .controls-row-buttons { flex-direction: column; align-items: stretch; }
   .control-buttons { justify-content: center; }
+  /* Pin the play + clock strip to the bottom of the viewport on mobile so
+     Run/Pause, Step and Restart stay visible while scrolling through RAM
+     and the user can see each RAM cell highlight advance as they tap. */
+  .controls-row-buttons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 50;
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur));
+    -webkit-backdrop-filter: blur(var(--glass-blur));
+    border-top: 1px solid var(--border);
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
+    padding-bottom: calc(var(--space-3) + var(--safe-bottom));
+    flex-direction: row;
+    justify-content: center;
+    gap: var(--space-3);
+  }
+  /* Inside the fixed bar, lay out control-buttons + speed-control side by
+     side and let the clock slider stretch to fill the rest. */
+  .control-buttons { gap: var(--space-2); flex: 0 0 auto; }
+  .speed-control { flex: 1 1 auto; min-width: 0; }
 }
 @media (max-width: 480px) {
   .controls-row { padding: var(--space-2) var(--space-3); gap: var(--space-2); }
   .speed-control { flex-wrap: wrap; }
   .speed-control label { flex-basis: 100%; }
-  .speed-control input[type="range"] { flex-basis: 100%; min-width: 0; }
+  .speed-control input[type="range"] { flex: 1 1 100%; min-width: 0; }
   .speed-control output { min-width: 0; }
 }
 
