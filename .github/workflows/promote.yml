@@ -40,16 +40,13 @@ jobs:
           fi
           # Pre-authenticate so subsequent vercel calls don't re-prompt.
           echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y > /dev/null 2>&1 || true
-          # Pick the most recent Ready production deployment. The CI
-          # output above shows the literal line format; the bullet glyph
-          # and "Ready" appear in the same field. We match on "Ready"
-          # alone so a font rendering change of the bullet can't break
-          # the picker.
-          URL="$(LC_ALL=C vercel ls "$VERCEL_PROJECT" --no-color --limit 10 \
-            | LC_ALL=C grep --text -E '^ *[0-9]+[smh].*Ready' \
-            | head -1 \
-            | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' \
-            || true)"
+          # Pick the most recent Ready production deployment. The CLI
+          # changed its table format between versions 56 and 58, and the
+          # displayed text uses Unicode glyphs that don't survive some
+          # log pipelines. Parsing the JSON output avoids all of that.
+          URL="$(vercel ls "$VERCEL_PROJECT" --status READY --environment production --json --limit 1 \
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{try{const j=JSON.parse(d);process.stdout.write(j.deployments?.[0]?.url?'https://'+j.deployments[0].url:'')}catch{}})" \
+            2>/dev/null || true)"
           if [ -z "$URL" ]; then
             echo "::error::No Ready deployment found — skipping alias update."
             exit 1
