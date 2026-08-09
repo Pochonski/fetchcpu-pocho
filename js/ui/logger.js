@@ -11,6 +11,7 @@ const MAX_FEED_ENTRIES = 80;
 
 export function createLogger(liveFeedEl, logEl) {
   let logFileEnabled = true;
+  let rerendering = false; // true while re-emitting captured events for a language switch
   const lines = [];
   const rawLines = []; // parallel array of un-translated events
 
@@ -40,18 +41,17 @@ export function createLogger(liveFeedEl, logEl) {
   // ----- Rich HTML entry construction (for the on-screen live feed) -----
 
   // Compact flag indicator — a coloured dot or hollow ring per flag.
-  function flagBadge(letter) {
-    const active = cpuFlag() === letter;
+  function flagBadge(letter, activeFlag) {
+    const active = activeFlag === letter;
     const cls = `lf-flag lf-flag-${letter}${active ? " lf-flag-on" : ""}`;
     const title = { Z: "Zero", N: "Negative", P: "Positive" }[letter];
     return `<span class="${cls}" title="${title}" aria-label="${title}${active ? " (active)" : ""}">${letter}</span>`;
   }
 
-  // The currently-active flag, derived from ACC. Mirrors cpu.js / executor.js.
-  function cpuFlag() {
-    return lastAcc === 0 ? "Z" : lastAcc < 0 ? "N" : "P";
-  }
-  let lastAcc = 0;
+  // Snapshot of the last acc we observed so the flag badge has something to
+  // render if buildCycleEntry() is invoked without a fresh cpu reference
+  // (e.g. during rerenderAll). Kept in sync inside onCycle().
+  let lastFlag = "P";
 
   // Format a register change as "PC 0→3" or just "PC 3" when the previous
   // value is unknown (very first cycle).
@@ -79,7 +79,7 @@ export function createLogger(liveFeedEl, logEl) {
 
   function buildCycleEntry(cpu, info) {
     const { phase, mnemonic, note } = info;
-    lastAcc = cpu.state.acc;
+    lastFlag = cpu.getFlag();
 
     // Compute mnemonic colour class
     const mnemClass = mnemonicClass(mnemonic);
@@ -114,7 +114,7 @@ export function createLogger(liveFeedEl, logEl) {
       }
     }
 
-    const flags = ["Z", "N", "P"].map(flagBadge).join("");
+    const flags = ["Z", "N", "P"].map((l) => flagBadge(l, lastFlag)).join("");
     const tStr = timeMs();
     const tHtml = tStr ? `<span class="lf-time">${tStr}s</span>` : "";
 
@@ -166,6 +166,7 @@ export function createLogger(liveFeedEl, logEl) {
     // input exhausted). Falls back to div.textContent so search/select
     // works.
     lines.push(line);
+    if (rerendering) return;
     const div = document.createElement("div");
     div.className = `log-entry ${klass || ""}`.trim();
     div.textContent = line;
@@ -178,7 +179,7 @@ export function createLogger(liveFeedEl, logEl) {
     const textLine = describePhaseText(phase, cpu) + (mnemonic ? `  [${mnemonic}${note ? " " + note : ""}]` : "");
     lines.push(textLine);
     pushToLog(textLine);
-    rawLines.push({ kind: "cycle", cpu, info });
+    if (!rerendering) rawLines.push({ kind: "cycle", cpu, info });
 
     const html = buildCycleEntry(cpu, info);
     const wrap = document.createElement("div");
@@ -192,34 +193,37 @@ export function createLogger(liveFeedEl, logEl) {
     // Reset per-cycle tracking so the first cycle of a fresh load shows
     // every register (no spurious "diff from the previous run").
     prev = { pc: 0, acc: 0, cir: 0, mar: 0, mdr: 0 };
-    lastAcc = 0;
-    startedAt = performance.now();
+    lastFlag = "P";
+    // Only stamp startedAt on the FIRST load (or after clear()); rerendering
+    // for a language switch must preserve the wall-clock origin so timestamps
+    // stay anchored to the actual run start.
+    if (!rerendering || startedAt == null) startedAt = performance.now();
 
     const msg = t("log.loaded", [cycle]);
     pushText(msg, "");
     pushToLog(msg);
-    rawLines.push({ kind: "loaded", count: cycle });
+    if (!rerendering) rawLines.push({ kind: "loaded", count: cycle });
   }
 
   function onProgramHalted(cpu) {
     const msg = t("log.halted", [String(cpu.state.haltedAt).padStart(2, "0")]);
     pushText(msg, "log-entry-halt");
     pushToLog(msg);
-    rawLines.push({ kind: "halted", haltedAt: cpu.state.haltedAt });
+    if (!rerendering) rawLines.push({ kind: "halted", haltedAt: cpu.state.haltedAt });
   }
 
   function onInputExhausted() {
     const msg = t("log.inputExhausted");
     pushText(msg, "log-entry-error");
     pushToLog(msg);
-    rawLines.push({ kind: "inputExhausted" });
+    if (!rerendering) rawLines.push({ kind: "inputExhausted" });
   }
 
   function onError(message) {
     const msg = t("log.errorPrefix", [message]);
     pushText(msg, "log-entry-error");
     pushToLog(msg);
-    rawLines.push({ kind: "error", message });
+    if (!rerendering) rawLines.push({ kind: "error", message });
   }
 
   function clear() {
@@ -228,25 +232,30 @@ export function createLogger(liveFeedEl, logEl) {
     liveFeedEl.innerHTML = "";
     logEl.textContent = "";
     prev = { pc: 0, acc: 0, cir: 0, mar: 0, mdr: 0 };
-    lastAcc = 0;
+    lastFlag = "P";
     startedAt = null;
   }
 
   function rerenderAll() {
-    lines.length = 0;
-    liveFeedEl.innerHTML = "";
-    logEl.textContent = "";
     const savedLogFile = logFileEnabled;
     logFileEnabled = false;
-    const snapshot = rawLines.slice();
-    for (const r of snapshot) {
-      if (r.kind === "cycle") onCycle(r.cpu, r.info);
-      else if (r.kind === "loaded") onProgramLoaded(r.count);
-      else if (r.kind === "halted") onProgramHalted({ state: { haltedAt: r.haltedAt } });
-      else if (r.kind === "inputExhausted") onInputExhausted();
-      else if (r.kind === "error") onError(r.message);
+    rerendering = true;
+    try {
+      lines.length = 0;
+      liveFeedEl.innerHTML = "";
+      logEl.textContent = "";
+      const snapshot = rawLines.slice();
+      for (const r of snapshot) {
+        if (r.kind === "cycle") onCycle(r.cpu, r.info);
+        else if (r.kind === "loaded") onProgramLoaded(r.count);
+        else if (r.kind === "halted") onProgramHalted({ state: { haltedAt: r.haltedAt } });
+        else if (r.kind === "inputExhausted") onInputExhausted();
+        else if (r.kind === "error") onError(r.message);
+      }
+    } finally {
+      rerendering = false;
+      logFileEnabled = savedLogFile;
     }
-    logFileEnabled = savedLogFile;
   }
 
   function setLogFile(on) { logFileEnabled = !!on; }

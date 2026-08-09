@@ -13,6 +13,7 @@ jobs:
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
         run: |
+          set -euo pipefail
           if [ -z "$VERCEL_TOKEN" ]; then
             echo "::warning::VERCEL_TOKEN secret not configured — skipping auto-promote."
             exit 0
@@ -23,5 +24,18 @@ jobs:
             exit 1
           fi
           echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y 2>&1 | head -5 || true
-          vercel alias set "$(vercel ls fetchcpu-simulator --no-color --limit 10 | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' | head -1)" fetchcpu-pocho.vercel.app
-          echo "::notice::Promoted fetchcpu-pocho.vercel.app to the latest deployment."
+          # Pick the most recent Ready production deployment — mirror scripts/promote.sh.
+          URL="$(vercel ls fetchcpu-simulator --no-color --limit 10 \
+            | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app.*●.*Ready' \
+            | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' \
+            | head -1 || true)"
+          if [ -z "$URL" ]; then
+            echo "::error::No Ready deployment found — skipping alias update."
+            exit 1
+          fi
+          vercel alias set "$URL" fetchcpu-pocho.vercel.app
+          if ! curl -sSf -o /dev/null -w "  HTTP %{http_code} (%{size_download} bytes)\n" "https://fetchcpu-pocho.vercel.app/"; then
+            echo "::error::Smoke test failed after alias update."
+            exit 1
+          fi
+          echo "::notice::Promoted fetchcpu-pocho.vercel.app to $URL"

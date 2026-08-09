@@ -129,8 +129,19 @@ const flatAll = (obj, prefix = "", out = []) => {
   }
   return out;
 };
-const leaves = [...flat(en), ...flat(es)];
+const enLeaves = flat(en);
+const esLeaves = flat(es);
+const leaves = [...enLeaves, ...esLeaves];
 const all = new Set([...flatAll(en), ...flatAll(es)]);
+
+// Parity check: every leaf defined in EN must also exist in ES, and vice
+// versa. Without this, the audit silently accepted a key present in only
+// one dictionary (because the union `all` set masked the gap). The audit
+// docstring — and CONTRIBUTING.md — promise EN+ES parity, so enforce it.
+const enSet = new Set(enLeaves);
+const esSet = new Set(esLeaves);
+const onlyEn = enLeaves.filter((k) => !esSet.has(k)).sort();
+const onlyEs = esLeaves.filter((k) => !enSet.has(k)).sort();
 
 // A "missing" reference is one that resolves to nothing. But t(`a.${x}`) is a
 // template literal where the static prefix may match a real key (e.g.
@@ -197,7 +208,22 @@ if (missing.length === 0) {
   for (const k of missing) console.log("  -", k);
 }
 
+console.log("\n### EN / ES parity (leaves defined in only one dictionary)");
+if (onlyEn.length === 0 && onlyEs.length === 0) {
+  console.log("  (parity ✓ — every leaf exists in both EN and ES)");
+} else {
+  if (onlyEn.length > 0) {
+    console.log(`  Only in EN (${onlyEn.length}):`);
+    for (const k of onlyEn) console.log("    -", k);
+  }
+  if (onlyEs.length > 0) {
+    console.log(`  Only in ES (${onlyEs.length}):`);
+    for (const k of onlyEs) console.log("    -", k);
+  }
+}
+
 console.log("\n### Defined but never referenced");
 console.log(`  ${unused.length} keys (kept for future use)`);
 
-process.exit(missing.length > 0 ? 1 : 0);
+const fatal = missing.length + onlyEn.length + onlyEs.length;
+process.exit(fatal > 0 ? 1 : 0);

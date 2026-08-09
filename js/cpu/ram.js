@@ -44,8 +44,14 @@ export function createRAM(initial = {}) {
       for (let i = 0; i < RAM_SIZE; i++) cells[i] = 0;
       lastWritten = -1;
     },
+    // Three-digit nine's-complement display: positive values appear as
+    // "000".."500"; negative values appear as "501".."999" (e.g. -1 → 999,
+    // -499 → 501). Out-of-range negatives wrap past 999 and surface as
+    // "<leading-nines><digits>".
     format(addr) {
-      return String(cells[normalizeAddr(addr)]).padStart(3, "0");
+      const v = cells[normalizeAddr(addr)];
+      const display = v >= 0 ? v : 1000 + v;
+      return String(display).padStart(3, "0");
     },
   };
 }

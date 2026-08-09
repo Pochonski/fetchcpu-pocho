@@ -134,4 +134,102 @@ describe("Step phase (FDE sub-step)", () => {
     expect(ex.nextStepPhase()).toBe("fetch");
     expect(cpu.state.phase).toBe("fetch");
   });
+
+  it("stepBackPhase after Fetch reverts to the post-Decode snapshot of the previous cycle", () => {
+    // Regression test for the pop-2 bug at cyclePhase === 1: stepping
+    // back from post-Fetch must restore the post-Decode snapshot of the
+    // PREVIOUS cycle (one full pop-2), not skip past it.
+    //
+    // Because every snapshot is captured BEFORE execute (so step-back
+    // always reverses the execute's effect, mirroring the documented
+    // step() contract), the ACC also reverts to its pre-INP value.
+    const cpu = createCPU();
+    const ram = createRAM();
+    const io = makeIO([7, 8, 9]);
+    const ex = createExecutor(cpu, ram, io);
+
+    ram.write(0, 901); // INP (cycle 1)
+    ram.write(1, 902); // OUT (cycle 2)
+    ram.write(2, 0);   // HLT — placeholder so cycle 2's execute doesn't halt.
+
+    // Run cycle 1 fully: Fetch → Decode → Execute.
+    ex.stepPhase(); ex.stepPhase(); ex.stepPhase();
+    expect(cpu.state.acc).toBe(7);
+    expect(ex.nextStepPhase()).toBe("fetch");
+
+    // Run only the Fetch of cycle 2 (so cyclePhase === 1, post-Fetch).
+    ex.stepPhase();
+    expect(ex.nextStepPhase()).toBe("decode");
+    expect(cpu.state.cir).toBe(902);
+    expect(cpu.state.pc).toBe(2);
+
+    // Step back: must pop exactly TWO snapshots (the post-Fetch and the
+    // post-Decode of cycle 1) so the user lands on cycle 1's post-Decode
+    // boundary — NOT on the post-Decode of an earlier cycle, and NOT
+    // stuck on the same post-Fetch state.
+    expect(ex.stepBackPhase()).toBe(true);
+    // PC and CIR are back to the post-Decode of cycle 1 (pre-execute).
+    expect(cpu.state.pc).toBe(1);
+    expect(cpu.state.cir).toBe(901);
+    // ACC is reverted to pre-INP — same contract as stepBack() from a
+    // full cycle, documented in tests/executor.test.js.
+    expect(cpu.state.acc).toBe(0);
+    // cyclePhase is restored to 2 (pre-Execute of cycle 1) so the next
+    // stepPhase() runs Execute — re-doing the INP if the user chooses.
+    expect(ex.nextStepPhase()).toBe("execute");
+    expect(cpu.state.phase).toBe("decode");
+  });
+
+  it("stepBackPhase from a complete cycle returns to pre-Execute of that cycle", () => {
+    const cpu = createCPU();
+    const ram = createRAM();
+    const io = makeIO();
+    const ex = createExecutor(cpu, ram, io);
+    ram.write(0, 902); // OUT
+    ram.write(1, 0);   // HLT — placeholder
+
+    ex.stepPhase(); ex.stepPhase(); ex.stepPhase(); // cycle 1: OUT executed.
+    expect(cpu.state.phase).toBe("execute");
+    expect(ex.nextStepPhase()).toBe("fetch");
+
+    // Step back: should restore pre-Execute (post-Decode) of cycle 1.
+    expect(ex.stepBackPhase()).toBe(true);
+    // The post-Decode snapshot now carries cyclePhase=2, so the user
+    // lands on the pre-Execute boundary and the next stepPhase() does
+    // Execute (re-running the OUT).
+    expect(ex.nextStepPhase()).toBe("execute");
+    expect(cpu.state.cir).toBe(902);
+    expect(cpu.state.pc).toBe(1);
+  });
+
+  it("stepBackPhase from post-Decode only undoes the Decode (no over-shoot)", () => {
+    // Regression test for the original pop-2 bug at cyclePhase === 2:
+    // undoing a Decode must NOT also rewind into the previous cycle.
+    const cpu = createCPU();
+    const ram = createRAM();
+    const io = makeIO([5]);
+    const ex = createExecutor(cpu, ram, io);
+    ram.write(0, 901); // INP
+    ram.write(1, 0);   // HLT — placeholder
+
+    // Run cycle 1 fully.
+    ex.stepPhase(); ex.stepPhase(); ex.stepPhase();
+    expect(cpu.state.acc).toBe(5);
+    expect(ex.nextStepPhase()).toBe("fetch");
+
+    // Cycle 2: Fetch HLT, Decode HLT.
+    ex.stepPhase(); // fetch HLT
+    ex.stepPhase(); // decode HLT
+    expect(ex.nextStepPhase()).toBe("execute");
+    expect(cpu.state.cir).toBe(0);
+
+    // Undo the Decode — should land on the post-Decode snapshot of cycle 2
+    // (pre-Execute of cycle 2), NOT on cycle 1.
+    expect(ex.stepBackPhase()).toBe(true);
+    expect(cpu.state.acc).toBe(5); // cycle 1 acc preserved.
+    expect(cpu.state.cir).toBe(0); // still the HLT we just decoded.
+    // cyclePhase is restored from the snapshot to 2, so the next
+    // stepPhase() performs Execute.
+    expect(ex.nextStepPhase()).toBe("execute");
+  });
 });

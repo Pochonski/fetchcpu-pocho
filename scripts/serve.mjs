@@ -23,10 +23,24 @@ const MIME = {
 };
 
 const server = http.createServer((req, res) => {
-  let urlPath = decodeURIComponent(req.url.split("?")[0]);
+  // Malformed percent-encoded URLs (e.g. "%FF") throw inside decodeURIComponent;
+  // surface a 400 instead of crashing the request handler.
+  let urlPath;
+  try {
+    urlPath = decodeURIComponent(req.url.split("?")[0]);
+  } catch {
+    res.writeHead(400, { "Content-Type": "text/plain" });
+    res.end("Bad request: malformed URL");
+    return;
+  }
   if (urlPath === "/") urlPath = "/index.html";
   const filePath = path.join(ROOT, urlPath);
-  if (!filePath.startsWith(ROOT)) {
+  // Real path containment: `path.relative` returns a path that starts
+  // with ".." if (and only if) the resolved path escapes ROOT. The
+  // `startsWith(ROOT)` check was vulnerable to symlink-style tricks
+  // (e.g. /root-evil).
+  const rel = path.relative(ROOT, filePath);
+  if (rel.startsWith("..") || path.isAbsolute(rel)) {
     res.writeHead(403); res.end("Forbidden"); return;
   }
   fs.readFile(filePath, (err, data) => {

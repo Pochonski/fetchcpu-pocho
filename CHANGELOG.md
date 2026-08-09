@@ -3,6 +3,107 @@
 All notable changes to FetchCPU-Pocho will be documented in this file. Versions
 follow [SemVer](https://semver.org/). Dates are in ISO 8601.
 
+## Unreleased
+
+### Architecture hardening (4-phase refactor)
+
+This release is the result of a deep architectural review of the codebase
+followed by four phases of fixes. External behavior is unchanged; the
+improvements are robustness, accessibility, and developer ergonomics.
+
+**Phase 1 — correctness**
+
+- `executor.stepBackPhase()` no longer over- or undershoots its cycle
+  boundary: snapshots now carry the `cyclePhase` they were captured at,
+  and `record()` replaces the post-Fetch snapshot with the post-Decode
+  one so step-back is symmetric with `step()`.
+- `logger` no longer resets `startedAt` on every language switch. A
+  `rerendering` flag suppresses DOM/state side effects during
+  `rerenderAll()` so the live feed's wall-clock timestamps stay
+  anchored to the actual run start.
+- `ramView.sync()` no longer calls `getLastWritten()` twice (the second
+  call consumed the slot and returned `-1`, so the modified-cell flash
+  never fired). The cell-flash animation now works as designed.
+- `scripts/promote.sh` and `.github/workflows/promote.yml` now require
+  `curl --fail` and filter for `Ready` deployments so a 500 or a
+  preview URL can't be promoted silently.
+
+**Phase 2 — debt**
+
+- Removed dead listeners (`#btn-step-phase`, `#btn-rewind`,
+  `#btn-fast-forward`, `#btn-reset-stats`) and the `resetStats` orphan.
+- Removed the duplicate `refreshView` declaration in `main.js`.
+- `audit-i18n.mjs` now actually validates EN/ES parity (every leaf
+  defined in one dictionary must exist in the other) and exits 1 on
+  mismatch — the previous version silently accepted asymmetric keys.
+- `js/cpu/opcodes.js` is now the single source of truth for opcode
+  decoding. `ramView`, `disassemblerView`, and `executor.decodeInstruction`
+  consume the shared `disassemble(word)` helper.
+- `main.js` clears `location.hash` after consuming a share URL so a
+  subsequent reload doesn't keep re-importing the shared snapshot.
+
+**Phase 3 — robustness**
+
+- Removed unused `hasOperand` from `OPCODES` and `bump()` from `stats`.
+- `ram.format()` now correctly applies nine's-complement display
+  (`-1 → "999"`, `-499 → "501"`) matching the header comment.
+- `cpu.state.flag` is now first-class: `cpu.getFlag()` and
+  `cpu.refreshFlag()` are the canonical source for Z/N/P; the executor
+  and the live feed consume them instead of recomputing inline.
+- `editor.destroy()` disconnects the `ResizeObserver` (no leak across
+  re-boots).
+- Eliminated `data-i18n-html` attributes on 9 elements that were being
+  overwritten at runtime by `rebuildModalContent()` (dead markup).
+- `onToggleBreakpoint` is now wired: toggling a breakpoint in the
+  gutter re-derives `currentBreakpointsByAddress` so Run/Step reflect
+  the latest state without forcing a full reload.
+- `loadProgram()` is now transactional: preparation (immediate
+  allocation, encoding, label resolution) runs without touching RAM; if
+  any phase fails, RAM stays in its freshly-reset state instead of
+  half-loaded.
+
+**Phase 4 — polish**
+
+- Coverage with `@vitest/coverage-v8` and a `npm run test:coverage`
+  script. Current statement coverage: ~90%.
+- ESLint now covers `js/` and `tests/`. The previous `eslint js` script
+  silently ignored the test directory.
+- localStorage keys are now namespaced: `fetchcpu.source` and
+  `fetchcpu.input` (was `fetchcpu-source` and `fetchcpu-input`).
+- HSTS header no longer requests `preload` (kept `includeSubDomains`).
+  Conservative for a `*.vercel.app` wildcard.
+- Fixed a real bug revealed by the new tests: `decodeShare()` did not
+  tolerate the leading `#` that `window.location.hash` carries, so
+  every shared link was broken in production. Now tolerant of both.
+- `css/components.css` split into 10 per-concern files under
+  `css/components/`. The entry file is a thin facade of `@import`s so
+  `index.html` keeps loading one URL.
+- `theme.js` defaults to `prefers-color-scheme` when no localStorage
+  override exists.
+- `ramView.clampInput()` no longer zeroes the cell when the field is
+  empty (intent: editing shouldn't destroy data).
+- `io.js`, `mobileMenu.js`, and `cpuView` expose `destroy()` so every
+  listener can be detached cleanly in long-lived hosts.
+- `modal.js` dropped the unused `openStack` history.
+- `tabs.js` now supports `Home` / `End` per the ARIA tab pattern.
+- `cpuView` cancels pending `setTimeout`s on `destroy()` to avoid stale
+  flash events.
+- `scripts/serve.mjs` now `try/catch`es `decodeURIComponent` and uses
+  `path.relative` for real path containment (defends against
+  percent-encoded symlink tricks).
+- Removed obsolete `/lmc` and `/LMC` redirects from `vercel.json`
+  (the rebrand 1.1.0 said they would be removed).
+
+### Tests
+
+- Total: **242 tests across 30 suites** (was 173 / 17).
+- New unit tests for `cpuView`, `disassemblerView`, `historyView`,
+  `theme`, `tabs`, `modal`, `share`, `fileIO`, `sound`, `mobileMenu`,
+  `statsView`, `io`, `disassemble`, `cpu.getFlag`, `ram.format`,
+  `editor.destroy`, and the audit-i18n parity check.
+- Test infrastructure: `// @vitest-environment jsdom` on every suite
+  that needs DOM; a shared `localStorage` stub in DOM suites.
+
 ## [1.1.0] — 2026-08-08
 
 ### Rebrand: Pocho LMC → FetchCPU-Pocho

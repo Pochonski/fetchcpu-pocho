@@ -29,5 +29,8 @@ echo "==> Alias $ALIAS -> $URL"
 vercel alias set "$URL" "$ALIAS"
 
 echo "==> Smoke test:"
-curl -sS -o /dev/null -w "  HTTP %{http_code} (%{size_download} bytes)\n" "https://$ALIAS/"
+curl -sSf -o /dev/null -w "  HTTP %{http_code} (%{size_download} bytes)\n" "https://$ALIAS/" || {
+  echo "  Smoke test FAILED for $ALIAS" >&2
+  exit 1
+}
 

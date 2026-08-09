@@ -49,11 +49,24 @@ export function createCPUView(cpu, events) {
     if (refs.flagP) refs.flagP.dataset.active = flag === "P" ? "true" : "false";
   }
 
+  // Track every pending timeout so we can cancel them on destroy() / before
+  // re-arming. Without this, a fast event stream leaves stale timeouts that
+  // flicker the bus / diff indicators after the user has navigated away.
+  const pendingTimers = new Set();
+  function defer(ms, fn) {
+    const id = setTimeout(() => {
+      pendingTimers.delete(id);
+      fn();
+    }, ms);
+    pendingTimers.add(id);
+    return id;
+  }
+
   function flashBus(direction) {
     const el = direction === "out" ? refs.busToMemory : refs.busFromMemory;
     if (!el) return;
     el.dataset.active = "true";
-    setTimeout(() => { el.dataset.active = "false"; }, 140);
+    defer(140, () => { el.dataset.active = "false"; });
   }
 
   function updateAccessLog({ direction, address, value, phase }) {
@@ -69,7 +82,7 @@ export function createCPUView(cpu, events) {
     if (refs.accessLabelEl) {
       refs.accessLabelEl.dataset.direction = direction;
       refs.accessLabelEl.dataset.flash = "true";
-      setTimeout(() => { refs.accessLabelEl.dataset.flash = "false"; }, 200);
+      defer(200, () => { refs.accessLabelEl.dataset.flash = "false"; });
     }
   }
 
@@ -106,7 +119,7 @@ export function createCPUView(cpu, events) {
     refs.phaseDecode.dataset.active = cpu.state.phase === "decode" ? "true" : "false";
     refs.phaseExecute.dataset.active = cpu.state.phase === "execute" ? "true" : "false";
 
-    const flag = cpu.state.acc === 0 ? "Z" : cpu.state.acc < 0 ? "N" : "P";
+    const flag = cpu.getFlag();
     updateFlags(flag);
   }
 
@@ -116,7 +129,7 @@ export function createCPUView(cpu, events) {
     if (prev[key] !== undefined && prev[key] !== value && cpu.state.lastChanged.has(name)) {
       diffs[name].textContent = `← ${prev[key]}`;
       diffs[name].dataset.changed = "true";
-      setTimeout(() => { diffs[name].dataset.changed = "false"; }, 320);
+      defer(320, () => { diffs[name].dataset.changed = "false"; });
     } else if (!cpu.state.lastChanged.has(name)) {
       diffs[name].textContent = "";
     }
@@ -136,7 +149,14 @@ export function createCPUView(cpu, events) {
     render();
   });
 
-  return { render, resetAccessLog };
+  return {
+    render,
+    resetAccessLog,
+    destroy() {
+      for (const id of pendingTimers) clearTimeout(id);
+      pendingTimers.clear();
+    },
+  };
 }
 
 function pad2(v) { return String(v).padStart(2, "0"); }

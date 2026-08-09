@@ -14,7 +14,8 @@
   "scripts": {
     "test": "vitest run",
     "test:watch": "vitest",
-    "lint": "eslint js",
+    "test:coverage": "vitest run --coverage",
+    "lint": "eslint js tests",
     "audit:i18n": "node scripts/audit-i18n.mjs",
     "serve": "node scripts/serve.mjs",
     "start": "npm run serve"
@@ -37,10 +38,10 @@
   "license": "MIT",
   "private": true,
   "devDependencies": {
+    "@vitest/coverage-v8": "^2.1.9",
     "eslint": "^9.13.0",
     "globals": "^15.11.0",
     "jsdom": "^25.0.1",
     "vitest": "^2.1.4"
   }
 }
-

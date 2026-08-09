@@ -209,16 +209,18 @@ HLT
   });
 
   it("CSS defines styles for every part of the rich live feed", () => {
-    const compsCss = readFileSync(resolve(ROOT, "css/components.css"), "utf8");
-    expect(compsCss).toMatch(/\.lf-cycle/);
-    expect(compsCss).toMatch(/\.lf-phase/);
-    expect(compsCss).toMatch(/\.lf-mnem/);
-    expect(compsCss).toMatch(/\.lf-reg/);
-    expect(compsCss).toMatch(/\.lf-flag/);
-    expect(compsCss).toMatch(/\.lf-note/);
-    expect(compsCss).toMatch(/\.lf-mnem-io/);
-    expect(compsCss).toMatch(/\.lf-mnem-hlt/);
-    expect(compsCss).toMatch(/\.lf-mnem-branch/);
-    expect(compsCss).toMatch(/\.lf-flag-on/);
+    // css/components.css is now a thin facade that @imports per-concern
+    // files; the live-feed rules live in components/log.css.
+    const logCss = readFileSync(resolve(ROOT, "css/components/log.css"), "utf8");
+    expect(logCss).toMatch(/\.lf-cycle/);
+    expect(logCss).toMatch(/\.lf-phase/);
+    expect(logCss).toMatch(/\.lf-mnem/);
+    expect(logCss).toMatch(/\.lf-reg/);
+    expect(logCss).toMatch(/\.lf-flag/);
+    expect(logCss).toMatch(/\.lf-note/);
+    expect(logCss).toMatch(/\.lf-mnem-io/);
+    expect(logCss).toMatch(/\.lf-mnem-hlt/);
+    expect(logCss).toMatch(/\.lf-mnem-branch/);
+    expect(logCss).toMatch(/\.lf-flag-on/);
   });
 });

@@ -22,8 +22,23 @@ function read(rel) {
   return readFileSync(resolve(ROOT, rel), "utf8");
 }
 
+// Aggregate every CSS file served by the app so per-concern selectors in
+// the split components/ tree are still discoverable by the responsive
+// suite.
+const compsCss = [
+  "css/components.css",
+  "css/components/panel.css",
+  "css/components/buttons.css",
+  "css/components/forms.css",
+  "css/components/editor.css",
+  "css/components/cpu.css",
+  "css/components/ram.css",
+  "css/components/stats.css",
+  "css/components/log.css",
+  "css/components/modal.css",
+  "css/components/utilities.css",
+].map(read).join("\n");
 const layoutCss   = read("css/layout.css");
-const compsCss    = read("css/components.css");
 const tokensCss   = read("css/tokens.css");
 const themesCss   = read("css/themes.css");
 const indexHtml   = read("index.html");
@@ -220,8 +235,7 @@ describe("iOS Safari polish", () => {
 
 describe("SVG icon system", () => {
   it("the play strip has three icon-only buttons with SVG icons", () => {
-    let doc;
-    doc = document.implementation.createHTMLDocument("");
+    const doc = document.implementation.createHTMLDocument("");
     doc.documentElement.innerHTML = indexHtml;
     for (const id of ["btn-pause", "btn-step", "btn-restart"]) {
       const btn = doc.getElementById(id);
@@ -234,8 +248,7 @@ describe("SVG icon system", () => {
   });
 
   it("header icon buttons (theme/sound/share) use SVG icons", () => {
-    let doc;
-    doc = document.implementation.createHTMLDocument("");
+    const doc = document.implementation.createHTMLDocument("");
     doc.documentElement.innerHTML = indexHtml;
     for (const id of ["theme-toggle", "sound-toggle", "share-btn"]) {
       const btn = doc.getElementById(id);
@@ -254,8 +267,7 @@ describe("SVG icon system", () => {
   });
 
   it("step icon is a clean triangle + bar (not overlapping bars)", () => {
-    let doc;
-    doc = document.implementation.createHTMLDocument("");
+    const doc = document.implementation.createHTMLDocument("");
     doc.documentElement.innerHTML = indexHtml;
     const stepBtn = doc.getElementById("btn-step");
     const svg = stepBtn.querySelector("svg.icon");

@@ -1,5 +1,5 @@
 // Built-in example programs. Each entry references a translation key under
-// `i18n.examples.<value>` that holds `label`, `blurb`, and `expected`.
+// `i18n.examples.<value>` that holds `label` and `blurb`.
 
 export const PROGRAMS = [
   {
@@ -263,6 +263,5 @@ export function getProgramMeta(p, t) {
   return {
     label: meta.label || t("examples.fallbackLabel", [p.value]),
     blurb: meta.blurb || "",
-    expected: meta.expected || "—",
   };
 }

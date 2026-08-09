@@ -1,0 +1,237 @@
+/* ===================== BUTTONS ===================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-base);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  line-height: var(--lh-snug);
+  border: 1px solid transparent;
+  transition:
+    background var(--duration-fast) var(--easing-out),
+    color var(--duration-fast) var(--easing-out),
+    border-color var(--duration-fast) var(--easing-out),
+    transform var(--duration-fast) var(--easing-out),
+    box-shadow var(--duration-fast) var(--easing-out);
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Reserve width on the main Run/Load buttons so the editor panel header
+   stays stable when switching between EN ("Run" / "Load") and ES
+   ("Ejecutar" / "Cargar"). */
+#btn-load, #btn-run { min-width: 5rem; justify-content: center; }
+.btn:active:not(:disabled) { transform: translateY(1px); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn:focus-visible { box-shadow: 0 0 0 3px var(--accent-soft); }
+
+/* Touch devices: enforce the 44 px Apple HIG minimum tap target so users on
+   phones and iPads never miss a button. The CSS @media (hover: none) is the
+   canonical way to detect coarse-pointer / touch-only devices. */
+@media (hover: none) {
+  .btn { min-height: var(--tap-min); }
+  .icon-btn { min-width: var(--tap-min); min-height: var(--tap-min); }
+  /* Disable the press-down animation on touch — it's a desktop affordance. */
+  .btn:active:not(:disabled) { transform: none; }
+  /* Use active/focus-visible instead of hover for visual feedback. */
+  .btn:active:not(:disabled),
+  .btn:focus-visible {
+    background: var(--accent-strong);
+    color: var(--accent-fg);
+    border-color: var(--accent-strong);
+  }
+  .icon-btn:active,
+  .icon-btn:focus-visible {
+    color: var(--fg);
+    background: var(--bg-hover);
+    border-color: var(--border);
+  }
+}
+
+.btn-primary {
+  background: var(--accent);
+  color: var(--accent-fg);
+  border-color: var(--accent);
+}
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-strong);
+  border-color: var(--accent-strong);
+  box-shadow: 0 0 0 4px var(--accent-soft);
+}
+.btn-secondary {
+  background: var(--bg-elevated);
+  color: var(--fg);
+  border-color: var(--border-strong);
+}
+.btn-secondary:hover:not(:disabled) { background: var(--bg-hover); border-color: var(--fg-dim); }
+.btn-ghost {
+  background: transparent;
+  color: var(--fg-muted);
+}
+.btn-ghost:hover:not(:disabled) { color: var(--fg); background: var(--bg-hover); }
+.btn-danger {
+  background: var(--danger);
+  color: white;
+  border-color: var(--danger);
+}
+.btn-danger:hover:not(:disabled) { filter: brightness(1.1); }
+
+.btn.icon-only {
+  padding: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  justify-content: center;
+  align-items: center;
+}
+.btn.icon-only span { line-height: 1; font-size: 0.875rem; }
+
+/* SVG icon system — every icon is a 24×24 vector that picks up its colour
+   from currentColor. Sizing is responsive and icons inherit the button's
+   hover / active / focus state automatically. */
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  display: block;
+  fill: currentColor;
+  pointer-events: none;
+}
+.btn.icon-only .icon { width: 1.0625rem; height: 1.0625rem; }
+.icon-btn .icon { width: 1rem; height: 1rem; }
+
+/* Spin animation for the restart icon when pressed — small touch of
+   feedback so the user sees the action register. */
+@keyframes icon-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(-360deg); }
+}
+.btn-ghost#btn-restart:active .icon,
+.btn-ghost#btn-restart:focus-visible .icon {
+  animation: icon-spin 320ms var(--easing-out);
+}
+
+/* Active state highlight for the restart button on touch devices. */
+@media (hover: none) {
+  .btn-ghost#btn-restart:active {
+    background: var(--bg-hover);
+    color: var(--accent);
+    border-color: var(--accent);
+  }
+}
+
+/* SVG icon system — every icon is a 24×24 vector that picks up its colour
+   from currentColor. Sizing is responsive (smaller on mobile) and the
+   icons inherit the button's hover/active state automatically. */
+.icon {
+  width: 1rem;
+  height: 1rem;
+  flex: 0 0 auto;
+  display: block;
+  fill: currentColor;
+  pointer-events: none;
+}
+.btn.icon-only .icon { width: 1rem; height: 1rem; }
+.icon-btn .icon { width: 1rem; height: 1rem; }
+
+/* Play / step icons get a touch more weight so they read at small sizes. */
+.icon-play,
+.icon-step { width: 1.125rem; height: 1.125rem; }
+
+/* Pause (two bars) needs slightly tighter letter-spacing for visual balance
+   inside the 1.125rem square. */
+.icon-pause { letter-spacing: 1px; }
+
+.btn .badge-count {
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: var(--radius-pill);
+  background: rgba(255, 255, 255, 0.18);
+  color: inherit;
+}
+
+/* Header action buttons (icon buttons in top-right) */
+.icon-btn,
+.link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast), border-color var(--duration-fast);
+  -webkit-tap-highlight-color: transparent;
+  /* Disable iOS long-press context menu on header UI controls. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.icon-btn {
+  padding: var(--space-2);
+  width: 2.25rem;
+  height: 2.25rem;
+  justify-content: center;
+}
+.icon-btn:hover, .link-btn:hover {
+  color: var(--fg);
+  background: var(--bg-hover);
+  border-color: var(--border);
+}
+.link-btn {
+  padding: var(--space-2) var(--space-3);
+  white-space: nowrap;
+  /* Reserve width so the EN/ES text difference (Instruction Set vs
+     Set de instrucciones) doesn't reflow the header row. */
+  min-width: 7.5rem;
+  justify-content: center;
+}
+
+/* Hide text buttons on phones; show a hamburger that opens the bottom sheet. */
+@media (max-width: 639px) {
+  .app-header .link-btn { display: none; }
+  .menu-toggle { display: inline-flex; }
+}
+@media (min-width: 640px) {
+  .menu-toggle { display: none; }
+  .mobile-menu { display: none !important; }
+}
+
+/* Language switch (EN | ES) */
+.lang-switch {
+  display: inline-flex;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-pill);
+  padding: 2px;
+  gap: 2px;
+}
+.lang-btn {
+  padding: var(--space-1) var(--space-3);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+  transition: background var(--duration-fast), color var(--duration-fast);
+}
+.lang-btn[aria-pressed="true"] {
+  background: var(--accent);
+  color: var(--accent-fg);
+  box-shadow: 0 0 0 3px var(--accent-soft);
+}
+.lang-btn:hover:not([aria-pressed="true"]) {
+  color: var(--fg);
+}
+

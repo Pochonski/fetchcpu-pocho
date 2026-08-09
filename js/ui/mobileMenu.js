@@ -24,7 +24,7 @@ function open(menu, toggle) {
 export function initMobileMenu() {
   const toggle = document.querySelector(SELECTOR.toggle);
   const menu = document.querySelector(SELECTOR.menu);
-  if (!toggle || !menu) return { refresh: () => {} };
+  if (!toggle || !menu) return { refresh: () => {}, close: () => {}, isOpen: () => false, destroy: () => {} };
 
   // Each mobile-menu item delegates to the corresponding header button so
   // the existing handlers (Tutorial / Help / About) keep working untouched.
@@ -34,32 +34,45 @@ export function initMobileMenu() {
     "mobile-about": "about-link",
   };
 
+  const itemHandlers = [];
   menu.querySelectorAll(SELECTOR.items).forEach((item) => {
-    item.addEventListener("click", () => {
+    const handler = () => {
       const targetId = map[item.id];
       const target = targetId ? document.getElementById(targetId) : null;
       close(menu, toggle);
       if (target) target.click();
-    });
+    };
+    item.addEventListener("click", handler);
+    itemHandlers.push([item, handler]);
   });
 
-  toggle.addEventListener("click", (e) => {
+  const toggleHandler = (e) => {
     e.stopPropagation();
     if (menu.hidden) open(menu, toggle);
     else close(menu, toggle);
-  });
+  };
+  toggle.addEventListener("click", toggleHandler);
 
   // Close when tapping outside the sheet.
-  document.addEventListener("click", (e) => {
+  const docClickHandler = (e) => {
     if (menu.hidden) return;
     if (menu.contains(e.target) || toggle.contains(e.target)) return;
     close(menu, toggle);
-  });
+  };
+  document.addEventListener("click", docClickHandler);
 
   // Close on Escape, matching the rest of the app.
-  document.addEventListener("keydown", (e) => {
+  const docKeyHandler = (e) => {
     if (e.key === "Escape" && !menu.hidden) close(menu, toggle);
-  });
+  };
+  document.addEventListener("keydown", docKeyHandler);
+
+  function destroy() {
+    for (const [el, h] of itemHandlers) el.removeEventListener("click", h);
+    toggle.removeEventListener("click", toggleHandler);
+    document.removeEventListener("click", docClickHandler);
+    document.removeEventListener("keydown", docKeyHandler);
+  }
 
   return {
     refresh() {
@@ -69,5 +82,6 @@ export function initMobileMenu() {
     },
     close() { close(menu, toggle); },
     isOpen() { return !menu.hidden; },
+    destroy,
   };
 }

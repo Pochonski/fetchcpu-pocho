@@ -124,6 +124,9 @@ export function createInputSlots(container, options = {}) {
     if (!Array.isArray(values)) return;
     render();
     const slots = container.querySelectorAll(".io-slot-input");
+    // Truncate to the current slot count. The underlying IO queue retains
+    // any extra values, so the user can surface them later by adding
+    // slots (via addSlot() or by loading a program with more INPs).
     const trimmed = values.slice(0, slots.length);
     slots.forEach((node, i) => {
       const v = trimmed[i];

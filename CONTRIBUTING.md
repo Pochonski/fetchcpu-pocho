@@ -10,9 +10,10 @@ git clone <your-fork-url>
 cd fetchcpu-pocho
 npm install
 npm start                 # http://localhost:8000
-npm test                  # 173 tests
-npm run lint
-npm run audit:i18n        # optional: validates every key is in EN + ES
+npm test                  # 242 tests across 30 suites
+npm run lint              # ESLint over js/ and tests/
+npm run audit:i18n        # validates every key exists in EN + ES
+npm run test:coverage     # v8 coverage report (text + html)
 ```
 
 ## Workflow
@@ -38,6 +39,9 @@ npm run audit:i18n        # optional: validates every key is in EN + ES
 - Vanilla DOM — no React, no Vue, no jQuery.
 - Public modules live under `js/`, view layer under `js/ui/`, CPU model under
   `js/cpu/`, examples under `js/programs/`.
+- CSS lives under `css/`. The stylesheet bundle `css/components.css` is a
+  thin facade that `@import`s per-concern files under `css/components/`
+  (panel, buttons, forms, editor, cpu, ram, stats, log, modal, utilities).
 - 2-space indentation, single quotes, no trailing commas in object literals,
   semicolons avoided inside arrow function bodies when one expression.
 

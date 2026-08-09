@@ -10,7 +10,7 @@
 // Indirect addressing is preserved by a Set of instruction addresses that
 // the executor consults during decode.
 
-import { OPCODES } from "./opcodes.js";
+import { disassemble } from "./opcodes.js";
 
 export function createExecutor(cpu, ram, io, events = null, stats = null) {
   const history = []; // {cpu, ram, output, inputIndex, mnemonic, phase}
@@ -98,6 +98,10 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
       ...snapshot(),
       mnemonic: decoded?.mnemonic ?? null,
       address: prevPc,
+      // Save the executor's mid-cycle pointer alongside the CPU/RAM/IO
+      // state so stepBackPhase() can land on the correct phase boundary
+      // without re-deriving it from a stringly-typed cpu.state.phase.
+      cyclePhase,
     });
   }
 
@@ -300,7 +304,7 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
 
   function emitFlag() {
     if (!events) return;
-    const flag = cpu.state.acc === 0 ? "Z" : cpu.state.acc < 0 ? "N" : "P";
+    const flag = cpu.refreshFlag();
     events.emit("flag", { acc: cpu.state.acc, flag });
   }
 
@@ -320,24 +324,17 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
   }
 
   function decodeInstruction(word) {
-    if (word === 0) return { mnemonic: "HLT", operandValue: 0, mode: "direct" };
-    if (word === OPCODES.INP.code) return { mnemonic: "INP", operandValue: 0 };
-    if (word === OPCODES.OUT.code) return { mnemonic: "OUT", operandValue: 0 };
-
-    const opcode = Math.floor(word / 100);
-    const operand = word % 100;
-    switch (opcode) {
-      case 5: return { mnemonic: "LDA", operandValue: operand, mode: "direct" };
-      case 3: return { mnemonic: "STA", operandValue: operand, mode: "direct" };
-      case 1: return { mnemonic: "ADD", operandValue: operand, mode: "direct" };
-      case 2: return { mnemonic: "SUB", operandValue: operand, mode: "direct" };
-      case 8: return { mnemonic: "BRP", operandValue: operand, mode: "direct" };
-      case 7: return { mnemonic: "BRZ", operandValue: operand, mode: "direct" };
-      case 6: return { mnemonic: "BRA", operandValue: operand, mode: "direct" };
-      default:
-        // Not an instruction word. Treat as data (HLT-equivalent).
-        return { mnemonic: "HLT", operandValue: 0, mode: "direct" };
+    const d = disassemble(word);
+    if (d.mnemonic === "DAT") {
+      // Not an instruction word — treat as data (HLT-equivalent) so a stray
+      // numeric value doesn't crash the executor.
+      return { mnemonic: "HLT", operandValue: 0, mode: "direct" };
     }
+    return {
+      mnemonic: d.mnemonic,
+      operandValue: d.type === "io" || d.type === "control" ? 0 : Number(word % 100),
+      mode: "direct",
+    };
   }
 
   // Cycle-phase tracking for step-by-phase stepping.
@@ -398,18 +395,23 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
       // Start a new cycle: Fetch.
       const prevPc = cpu.state.pc;
       performFetch();
-      cyclePhase = 1;
       pendingDecoded = null;
-      // Record snapshot after Fetch for step-back fidelity.
+      // Advance cyclePhase BEFORE recording so the snapshot tags the
+      // phase boundary the user is about to leave (post-Fetch = pre-Decode).
+      cyclePhase = 1;
       record(prevPc, { mnemonic: null });
     } else if (cyclePhase === 1) {
       // Move to Decode.
       const prevPc = cpu.state.pc - 1;
       pendingDecoded = performDecode(prevPc);
-      // Replace the previous snapshot with one tagged with the mnemonic so
-      // history step-back shows the decoded instruction.
-      record(prevPc, pendingDecoded);
+      // Advance cyclePhase BEFORE recording so the snapshot tags the
+      // phase boundary the user is about to leave (post-Decode = pre-Execute).
       cyclePhase = 2;
+      // Drop the previous (post-Fetch) snapshot — replaced by the post-Decode
+      // one so step-back is symmetric with step(): one snapshot per
+      // completed cycle.
+      if (history.length > 0) history.pop();
+      record(prevPc, pendingDecoded);
     } else {
       // Execute completes the cycle.
       if (pendingDecoded) {
@@ -461,19 +463,26 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
   }
 
   function stepBackPhase() {
-    // Pop TWO snapshots if mid-cycle, ONE if at a cycle boundary.
-    const back = cyclePhase === 0 ? 1 : 2;
+    // stepPhase records one snapshot per cycle boundary:
+    //   cyclePhase 0 → 1 (after Fetch):   push S_fetch_N+1
+    //   cyclePhase 1 → 2 (after Decode):  pop S_fetch_N+1, push S_decode_N+1
+    //   cyclePhase 2 → 0 (after Execute): no record
+    //
+    // Each snapshot also stores the cyclePhase it was captured at, so we
+    // can pop the right number and land exactly on the matching phase
+    // boundary regardless of cpu.state.phase string semantics.
+    if (history.length === 0) return false;
+    const want = cyclePhase === 1 ? 2 : 1;
+    let lastSnapshotPhase = null;
     let popped = false;
-    for (let i = 0; i < back && history.length > 0; i++) {
+    for (let i = 0; i < want && history.length > 0; i++) {
       const snap = history.pop();
+      lastSnapshotPhase = snap.cyclePhase;
       restore(snap);
       popped = true;
     }
-    if (popped) {
-      // Recompute cyclePhase from current cpu.state.phase
-      if (cpu.state.phase === "fetch") cyclePhase = 0;
-      else if (cpu.state.phase === "decode") cyclePhase = 1;
-      else cyclePhase = 2;
+    if (popped && lastSnapshotPhase != null) {
+      cyclePhase = lastSnapshotPhase;
     }
     return popped;
   }

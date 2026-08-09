@@ -14,10 +14,28 @@ export function createCPU() {
     phase: "fetch", // 'fetch' | 'decode' | 'execute'
     cycle: 0,       // increments each FDE cycle completed
     lastChanged: new Set(),
+    flag: "P",      // 'Z' | 'N' | 'P' — single active flag derived from acc
   };
+
+  // Derive the active flag from the accumulator. Mirrors the LMC convention
+  // where exactly one of {Z, N, P} is asserted at any time. Exposed as a
+  // method so callers can also recompute it on the fly without an event.
+  function computeFlag() {
+    if (state.acc === 0) return "Z";
+    return state.acc < 0 ? "N" : "P";
+  }
 
   return {
     state,
+
+    /** Read the currently-active flag derived from acc. */
+    getFlag: computeFlag,
+
+    /** Recompute and store the flag in state.acc-aware form. */
+    refreshFlag() {
+      state.flag = computeFlag();
+      return state.flag;
+    },
 
     reset() {
       state.pc = 0;
@@ -30,6 +48,7 @@ export function createCPU() {
       state.phase = "fetch";
       state.cycle = 0;
       state.lastChanged.clear();
+      state.flag = "P";
     },
 
     /** Snapshot for step-backward. */
@@ -45,6 +64,7 @@ export function createCPU() {
         phase: state.phase,
         cycle: state.cycle,
         lastChanged: [...state.lastChanged],
+        flag: state.flag,
       }));
     },
 

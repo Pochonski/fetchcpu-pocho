@@ -1,0 +1,14 @@
+/* ===================== FORMS ===================== */
+select,
+input[type="text"]:not(.cell-editor input) {
+  font-family: var(--font-sans);
+  background: var(--bg-input);
+  border: 1px solid var(--border-strong);
+  color: var(--fg);
+  border-radius: var(--radius-sm);
+  padding: var(--space-2) var(--space-3);
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
+}
+select:focus,
+input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft); }
+

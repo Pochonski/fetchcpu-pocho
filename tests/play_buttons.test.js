@@ -36,9 +36,6 @@ describe("Play / Step / Restart buttons", () => {
     document.getElementById("btn-load").click();
   }
 
-  function playButtonPath() {
-    return document.getElementById("btn-pause").querySelector("svg.icon path").getAttribute("d");
-  }
   function isPauseIcon() {
     return document.getElementById("btn-pause").getAttribute("data-running") === "true";
   }

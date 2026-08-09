@@ -17,16 +17,15 @@ export function createTabs(rootEl = document) {
   tabs.forEach((tab, idx) => {
     tab.addEventListener("click", () => activate(idx));
     tab.addEventListener("keydown", (e) => {
-      if (e.key === "ArrowRight") {
+      let target = null;
+      if (e.key === "ArrowRight") target = (idx + 1) % tabs.length;
+      else if (e.key === "ArrowLeft") target = (idx - 1 + tabs.length) % tabs.length;
+      else if (e.key === "Home") target = 0;
+      else if (e.key === "End") target = tabs.length - 1;
+      if (target !== null) {
         e.preventDefault();
-        const next = (idx + 1) % tabs.length;
-        tabs[next].focus();
-        activate(next);
-      } else if (e.key === "ArrowLeft") {
-        e.preventDefault();
-        const prev = (idx - 1 + tabs.length) % tabs.length;
-        tabs[prev].focus();
-        activate(prev);
+        tabs[target].focus();
+        activate(target);
       }
     });
   });

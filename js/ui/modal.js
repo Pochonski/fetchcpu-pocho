@@ -12,8 +12,6 @@ const FOCUSABLE = [
   "[tabindex]:not([tabindex='-1'])",
 ].join(",");
 
-const openStack = [];
-
 function focusables(modal) {
   return Array.from(modal.querySelectorAll(FOCUSABLE)).filter((el) => {
     if (el.hasAttribute("hidden")) return false;
@@ -56,7 +54,6 @@ export function openModal(modalEl) {
     ? String(document.activeElement.id || "")
     : "";
   modalEl.hidden = false;
-  openStack.push(modalEl);
   const onKey = (e) => onKeydown(e, modalEl);
   modalEl._cleanupKey = () => modalEl.removeEventListener("keydown", onKey);
   modalEl.addEventListener("keydown", onKey);
@@ -72,8 +69,6 @@ export function closeModal(modalEl) {
   if (!modalEl || modalEl.hidden) return;
   modalEl.hidden = true;
   if (modalEl._cleanupKey) modalEl._cleanupKey();
-  const idx = openStack.indexOf(modalEl);
-  if (idx >= 0) openStack.splice(idx, 1);
   const openerId = modalEl.dataset.opener;
   if (openerId) {
     const opener = document.getElementById(openerId);

@@ -162,9 +162,12 @@ export function createEditorView(textareaEl, gutterEl, highlightEl, { onChange, 
   textareaEl.addEventListener("keyup", syncScroll);
 
   // Resize observer to keep the overlay aligned when the panel stretches.
+// Held in a closure so destroy() can disconnect it (no listener leak across
+// re-boots of the app in test harnesses).
+  let resizeObserver = null;
   if (window.ResizeObserver) {
-    const ro = new ResizeObserver(syncScroll);
-    ro.observe(textareaEl);
+    resizeObserver = new ResizeObserver(syncScroll);
+    resizeObserver.observe(textareaEl);
   }
 
   rerender();
@@ -185,6 +188,12 @@ export function createEditorView(textareaEl, gutterEl, highlightEl, { onChange, 
       if (span) {
         span.classList.add("active");
         setTimeout(() => span.classList.remove("active"), 600);
+      }
+    },
+    destroy() {
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+        resizeObserver = null;
       }
     },
   };

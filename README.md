@@ -22,6 +22,7 @@ exercisable without leaving the browser.
 - [Project structure](#project-structure)
 - [Architecture notes](#architecture-notes)
 - [Localization (English / Spanish)](#localization-english--spanish)
+- [Infrastructure (deploy, CI, security headers)](#infrastructure-deploy-ci-security-headers)
 - [Roadmap & ideas](#roadmap--ideas)
 - [Credits](#credits)
 - [License](#license)
@@ -244,6 +245,8 @@ fetchcpu-pocho/
 ├── CHANGELOG.md                   # release notes
 ├── CONTRIBUTING.md                # dev workflow
 ├── DEPLOY.md                      # Vercel + GitHub setup
+├── docs/
+│   └── INFRA.md                   # full infrastructure reference
 ├── LICENSE                        # MIT
 ├── package.json
 ├── eslint.config.js               # ESLint flat config
@@ -426,6 +429,17 @@ The legacy `pocho-lmc.vercel.app` and `lmc-simulator.vercel.app` aliases are
 preserved as **301 redirects** to the canonical domain (see `vercel.json`).
 GitHub autodeploys on push to `main`. See [DEPLOY.md](./DEPLOY.md) for the
 full setup.
+
+---
+
+## Infrastructure (deploy, CI, security headers)
+
+The full inventory of infra files (static server, i18n audit, promotion
+workflow, Vercel config, security headers, test/lint setup, and
+persistence keys) lives in [`docs/INFRA.md`](./docs/INFRA.md). Read
+that document before touching any of: `scripts/`, `.github/workflows/`,
+`vercel.json`, `vitest.config.js`, `eslint.config.js`, or the CSP/HSTS
+headers.
 
 ---
 

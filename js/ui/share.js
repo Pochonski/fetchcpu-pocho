@@ -23,9 +23,12 @@ export function encodeShare(source, input = "") {
 }
 
 export function decodeShare(hash) {
-  if (!hash.startsWith(HASH_PREFIX)) return null;
+  // window.location.hash includes the leading "#"; tolerate both forms so
+  // the function is reusable from tests (no "#") and the app (with "#").
+  const stripped = hash.startsWith("#") ? hash.slice(1) : hash;
+  if (!stripped.startsWith(HASH_PREFIX)) return null;
   try {
-    const b64 = hash.slice(HASH_PREFIX.length);
+    const b64 = stripped.slice(HASH_PREFIX.length);
     const payload = new TextDecoder().decode(base64ToBytes(b64));
     const parsed = JSON.parse(payload);
     return { source: parsed.s ?? "", input: parsed.i ?? "" };

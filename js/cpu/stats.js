@@ -50,10 +50,6 @@ export function createStats() {
         startedAt = null;
       }
     },
-    bump(metric, n = 1) {
-      if (counts[metric] == null) counts[metric] = 0;
-      counts[metric] += n;
-    },
     tickCycle() { counts.cycles = (counts.cycles || 0) + 1; },
     onInstruction(mnemonic) {
       if (mnemonic == null) return;

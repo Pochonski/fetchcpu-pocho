@@ -1,12 +1,20 @@
 // Theme manager.
-// `dark` is the default; the toggle persists the choice in localStorage.
+// Default resolution order: explicit localStorage override → system
+// `prefers-color-scheme` → "dark". The toggle persists the choice in
+// localStorage so it survives reloads.
 
 import { t, registerOnChange } from "./i18n/index.js";
 
 const KEY = "fetchcpu-theme";
 
+function systemPreference() {
+  if (typeof window === "undefined" || !window.matchMedia) return "dark";
+  return window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+}
+
 export function initTheme(toggleEl) {
-  let current = localStorage.getItem(KEY) || "dark";
+  const stored = localStorage.getItem(KEY);
+  let current = stored || systemPreference();
   document.documentElement.dataset.theme = current;
   if (toggleEl) {
     paintToggle(toggleEl, current);

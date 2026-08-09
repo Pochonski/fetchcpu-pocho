@@ -1,0 +1,43 @@
+/* ===================== STATS PANEL ===================== */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); padding: var(--space-2) var(--space-3); }
+  .stat-item { padding: var(--space-2); }
+  .stat-value { font-size: 1.0625rem; }
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.stat-label {
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--fg-muted);
+}
+.stat-value {
+  font-family: var(--font-mono);
+  font-feature-settings: var(--font-features-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: var(--tracking-tight);
+  color: var(--fg);
+  line-height: 1.1;
+}
+.stat-item[data-accent="danger"]  .stat-value { color: var(--danger); }
+.stat-item[data-accent="warning"] .stat-value { color: var(--warning); }
+.stat-item[data-accent="success"] .stat-value { color: var(--success); }
+

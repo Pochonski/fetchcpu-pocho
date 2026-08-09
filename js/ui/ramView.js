@@ -10,29 +10,7 @@
 // data cells at a glance.
 
 import { t, registerOnChange } from "./i18n/index.js";
-
-const MNEMONIC_BY_OPCODE = {
-  901: "INP",
-  902: "OUT",
-  5: "LDA",
-  3: "STA",
-  1: "ADD",
-  2: "SUB",
-  8: "BRP",
-  7: "BRZ",
-  6: "BRA",
-};
-
-function disassemble(word) {
-  if (word === 901) return { tag: "INP", operand: "" };
-  if (word === 902) return { tag: "OUT", operand: "" };
-  if (word === 0)   return { tag: "HLT", operand: "" };
-  const opcode = Math.floor(word / 100);
-  const operand = word % 100;
-  const tag = MNEMONIC_BY_OPCODE[opcode];
-  if (!tag) return { tag: "DAT", operand: String(word) };
-  return { tag, operand: String(operand).padStart(2, "0") };
-}
+import { disassemble } from "../cpu/opcodes.js";
 
 function formatValue(word) {
   // Display as 3-digit unsigned by default, but show sign for negative.
@@ -92,7 +70,7 @@ export function createRAMView(ram, cpu) {
       input.addEventListener("blur", () => { tdBlur(addr); });
       input.addEventListener("input", () => {
         const v = clampInput(input.value);
-        ram.write(addr, v);
+        if (v !== null) ram.write(addr, v);
         sync();
       });
       td.dataset.editing = "false";
@@ -123,8 +101,13 @@ export function createRAMView(ram, cpu) {
   }
 
   function clampInput(v) {
-    const n = Number(v);
-    if (!Number.isFinite(n)) return 0;
+    // An empty / non-numeric field is intentionally passed through as
+    // null so the caller can decide not to overwrite the RAM cell —
+    // clearing the input should not zero the underlying word.
+    const trimmed = typeof v === "string" ? v.trim() : v;
+    if (trimmed === "" || trimmed === "-" || trimmed === "+") return null;
+    const n = Number(trimmed);
+    if (!Number.isFinite(n)) return null;
     if (n > 999) return 999;
     if (n < -999) return -999;
     return Math.trunc(n);
@@ -156,8 +139,10 @@ export function createRAMView(ram, cpu) {
   function sync() {
     const pc = cpu.state.pc;
     const mar = cpu.state.mar;
-    if (ram.getLastWritten() >= 0) {
-      lastModified = ram.getLastWritten();
+    // getLastWritten() consumes the slot, so cache it before branching.
+    const lastWrittenAddr = ram.getLastWritten();
+    if (lastWrittenAddr >= 0) {
+      lastModified = lastWrittenAddr;
       modifiedFlash = Date.now();
     }
     let used = 0, codeCount = 0, dataCount = 0;
@@ -184,10 +169,10 @@ export function createRAMView(ram, cpu) {
       addrEl.textContent = String(i).padStart(2, "0");
       const dis = disassemble(value);
       // If the loader says this is a DAT cell, prefer that tag (regardless of value).
-      let displayTag = dis.tag;
+      let displayTag = dis.mnemonic;
       if (dataByAddr.has(i) || immediateByAddr.has(i)) displayTag = "DAT";
       // If it's a known instruction cell, prefer the mnemonic we recognise at load time.
-      if (instrByAddr.has(i)) displayTag = dis.tag === "DAT" ? "DAT" : dis.tag;
+      if (instrByAddr.has(i)) displayTag = dis.mnemonic === "DAT" ? "DAT" : dis.mnemonic;
       tag.textContent = displayTag;
       tag.dataset.tag = displayTag.toLowerCase();
       tag.title = displayTag + (dis.operand ? ` ${dis.operand}` : "");

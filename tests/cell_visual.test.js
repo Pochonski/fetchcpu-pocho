@@ -58,4 +58,19 @@ describe("RAM cell visual layout", () => {
     const td = document.querySelector('#ram-body [data-addr="4"]');
     expect(td.querySelector(".cell-value").textContent).toBe("042");
   });
+
+  it("a freshly written cell gets data-modified='true' (single getLastWritten call)", () => {
+    // Regression test: ramView.sync() used to call ram.getLastWritten() twice
+    // in the same expression. Because getLastWritten() CONSUMES the slot, the
+    // second call always returned -1 and the modified-cell flash never fired.
+    document.getElementById("codeListing").value = `INP\nSTA 5\nHLT\nDAT 0`;
+    document.getElementById("input").value = "17";
+    document.getElementById("btn-load").click();
+    document.getElementById("btn-step").click(); // INP -> ACC=17
+    document.getElementById("btn-step").click(); // STA 5 -> RAM[5]=17
+    const modifiedCell = document.querySelector('#ram-body [data-addr="5"]');
+    const untouchedCell = document.querySelector('#ram-body [data-addr="0"]');
+    expect(modifiedCell.dataset.modified).toBe("true");
+    expect(untouchedCell.dataset.modified).toBe("false");
+  });
 });

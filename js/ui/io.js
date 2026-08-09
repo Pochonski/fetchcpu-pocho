@@ -96,15 +96,24 @@ export function createIO(inputEl, outputEl) {
   // Re-parse input whenever the user edits the underlying element.
   // (The slot UI calls setInputValues/setInputText directly; this listener
   // remains as a safety net for any other path that mutates inputEl.value.)
+  // Stored as a named handler so destroy() can detach it cleanly.
+  const onInputElChange = () => {
+    try {
+      parseInput();
+      for (const l of listeners) l();
+    } catch {
+      // ignore while typing
+    }
+  };
   if (inputEl && typeof inputEl.addEventListener === "function") {
-    inputEl.addEventListener("input", () => {
-      try {
-        parseInput();
-        for (const l of listeners) l();
-      } catch {
-        // ignore while typing
-      }
-    });
+    inputEl.addEventListener("input", onInputElChange);
+  }
+
+  function destroy() {
+    if (inputEl && typeof inputEl.removeEventListener === "function") {
+      inputEl.removeEventListener("input", onInputElChange);
+    }
+    listeners.clear();
   }
 
   return {
@@ -120,5 +129,6 @@ export function createIO(inputEl, outputEl) {
     setInputText,
     getInputText,
     onChange: (cb) => { listeners.add(cb); return () => listeners.delete(cb); },
+    destroy,
   };
 }

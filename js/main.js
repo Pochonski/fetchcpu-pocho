@@ -26,8 +26,8 @@ import { en as enDict, es as esDict } from "./ui/i18n/dictionaries.js";
 import { openModal as openModalA11y, closeModal as closeModalA11y } from "./ui/modal.js";
 import { initMobileMenu } from "./ui/mobileMenu.js";
 
-const STORAGE_KEY = "fetchcpu-source";
-const INPUT_KEY = "fetchcpu-input";
+const SOURCE_KEY = "fetchcpu.source";
+const INPUT_KEY = "fetchcpu.input";
 
 const $ = (id) => document.getElementById(id);
 
@@ -66,7 +66,7 @@ function boot() {
 
   const cpuView = createCPUView(cpu, events);
   const ramView = createRAMView(ram, cpu);
-  const disasmView = createDisassemblerView(executor, ram, cpu);
+  const disasmView = createDisassemblerView(ram, cpu);
   const statsView = createStatsView(stats);
   const historyView = createHistoryView(executor);
   const logger = createLogger($("liveFeed"), $("log"));
@@ -76,13 +76,27 @@ function boot() {
     $("editor-gutter"),
     $("editor-highlight"),
     {
-      onChange: () => localStorage.setItem(STORAGE_KEY, $("codeListing").value),
-      onToggleBreakpoint: () => {},
+      onChange: () => localStorage.setItem(SOURCE_KEY, $("codeListing").value),
+      onToggleBreakpoint: () => {
+        // Breakpoints are tracked as source line indices in the editor
+        // but consumed as RAM addresses by the executor. Re-derive the
+        // address set whenever the user toggles one so Run/Step reflect
+        // the latest state without forcing a full reload.
+        currentBreakpointsByAddress = new Set();
+        editor.state.breakpoints.forEach((lineIdx) => {
+          const addr = currentAddressesBySourceLine.get(lineIdx + 1);
+          if (addr != null) currentBreakpointsByAddress.add(addr);
+        });
+      },
     },
   );
 
-  const currentAddressesBySourceLine = new Map();
+  // State shared across editor callbacks, loadProgram(), and the executor.
+  // Breakpoints live in the editor as source-line indices but are consumed
+  // as RAM addresses by the executor; loadProgram() rebuilds the address
+  // set, and onToggleBreakpoint keeps it fresh between reloads.
   let currentBreakpointsByAddress = new Set();
+  const currentAddressesBySourceLine = new Map();
 
   // Populate example dropdown with current-language labels.
   function fillExamples() {
@@ -207,10 +221,12 @@ function boot() {
       }
     }
 
-    // Footer
-    const footer = document.querySelector(".app-footer");
-    if (footer) {
-      footer.innerHTML = t("footer.text", { keys: keysForFooter() });
+    // Footer — only the keyboard-hints span is rewritten. The brand-badge
+    // (with the logo) lives as a sibling in the HTML so it survives every
+    // translation pass intact.
+    const footerText = $("footer-text");
+    if (footerText) {
+      footerText.innerHTML = t("footer.text", { keys: keysForFooter() });
     }
   }
 
@@ -284,11 +300,16 @@ function boot() {
     inputSlots.setCount(inpShape.count, inpShape.isLoop);
     inputSlots.setValues(io.getInputValues());
 
+    // PHASE 1 — prepare: mutate the instruction tree and build the data-cell
+    // list, but do NOT touch RAM yet. This keeps the load transactional:
+    // any failure below leaves RAM in its freshly-reset state rather than
+    // half-loaded.
     const dataCells = [];
     const allocator = 99;
     const usedAddresses = new Set(instructions.map((i) => i.address));
     const indirectSourceLines = new Set();
 
+    let prepError = null;
     for (const instr of instructions) {
       if (instr.mnemonic === "DAT") continue;
       if (!instr.operand) continue;
@@ -296,8 +317,8 @@ function boot() {
         let dataAddr = allocator;
         while (usedAddresses.has(dataAddr) && dataAddr > 0) dataAddr -= 1;
         if (dataAddr < 0) {
-          logger.onError(t("log.outOfMemory", [instr.sourceLine]));
-          return;
+          prepError = t("log.outOfMemory", [instr.sourceLine]);
+          break;
         }
         dataCells.push({ addr: dataAddr, value: Number(instr.operand.value) });
         usedAddresses.add(dataAddr);
@@ -307,33 +328,50 @@ function boot() {
       }
     }
 
+    // PHASE 2 — encode every instruction. Aborts the load on the first
+    // failure without writing anything to RAM.
     const entries = [];
     currentAddressesBySourceLine.clear();
-    instructions.forEach((instr) => {
-      try {
-        const code = encodeInstruction(instr);
-        entries.push({ ...instr, code });
-        currentAddressesBySourceLine.set(instr.sourceLine, instr.address);
-      } catch (e) {
-        logger.onError(e.message);
-        return;
+    let encodeError = null;
+    if (!prepError) {
+      for (const instr of instructions) {
+        try {
+          const code = encodeInstruction(instr);
+          entries.push({ ...instr, code });
+          currentAddressesBySourceLine.set(instr.sourceLine, instr.address);
+        } catch (e) {
+          encodeError = e.message;
+          break;
+        }
       }
-    });
+    }
 
-    try {
-      resolveLabels(entries, labels);
-    } catch (e) {
-      logger.onError(e.message);
+    // PHASE 3 — resolve labels. Again, no RAM writes until everything is OK.
+    let resolveError = null;
+    if (!prepError && !encodeError) {
+      try {
+        resolveLabels(entries, labels);
+      } catch (e) {
+        resolveError = e.message;
+      }
+    }
+
+    if (prepError || encodeError || resolveError) {
+      const msg = prepError || encodeError || resolveError;
+      logger.onError(msg);
+      refreshView();
       return;
     }
 
-    entries.forEach((e) => {
+    // PHASE 4 — commit. All preparation succeeded, so it is now safe to
+    // mutate RAM. We write entries and data cells in a single pass.
+    for (const e of entries) {
       const addr = e.address;
       let value = 0;
       if (e.mnemonic === "DAT") value = e.code.value ?? 0;
       else if (e.code.value != null) value = e.code.value;
       ram.write(addr, value);
-    });
+    }
     for (const { addr, value } of dataCells) {
       ram.write(addr, value);
     }
@@ -360,14 +398,6 @@ function boot() {
     logger.onProgramLoaded(entries.length);
     setExplanationText(t("explanation.idle"));
     refreshView();
-  }
-
-  function refreshView() {
-    cpuView.render();
-    ramView.sync();
-    disasmView.render();
-    statsView.render();
-    historyView.render();
   }
 
   // Refuse to run/step while any slot holds a value outside the 3-digit
@@ -572,10 +602,6 @@ function boot() {
     pauseProgram();
     loadProgram();
   }
-  function resetStats() {
-    stats.reset();
-    refreshView();
-  }
 
   function downloadLog() {
     if (!logger.isLogFileEnabled()) logger.setLogFile(true);
@@ -596,7 +622,7 @@ function boot() {
       editor.setProgram(source);
       io.setInputText(input);
       $("input").value = input;
-      localStorage.setItem(STORAGE_KEY, source);
+      localStorage.setItem(SOURCE_KEY, source);
       localStorage.setItem(INPUT_KEY, input);
       // Slots will be sized and populated by loadProgram() below.
       loadProgram();
@@ -643,18 +669,14 @@ function boot() {
   $("btn-load").addEventListener("click", loadProgram);
   $("btn-run").addEventListener("click", runProgram);
   $("btn-step").addEventListener("click", singleStep);
-  $("btn-step-phase")?.addEventListener("click", stepPhase);
   $("btn-pause").addEventListener("click", () => {
     if (executor.isRunning()) pauseProgram(); else runProgram();
   });
-  $("btn-restart")?.addEventListener("click", restartProgram);
-  $("btn-rewind")?.addEventListener("click", stepBack);
-  $("btn-fast-forward")?.addEventListener("click", runUntilHalt);
+  $("btn-restart").addEventListener("click", restartProgram);
   $("btn-select-program").addEventListener("click", selectExample);
-  $("btn-try-example")?.addEventListener("click", tryExample);
+  $("btn-try-example").addEventListener("click", tryExample);
   $("btn-clear").addEventListener("click", clearEditor);
   $("btn-reset").addEventListener("click", resetState);
-  $("btn-reset-stats")?.addEventListener("click", resetStats);
   $("btn-download-log").addEventListener("click", downloadLog);
   $("btn-clear-log").addEventListener("click", () => logger.clear());
   $("btn-export").addEventListener("click", exportProgram);
@@ -786,10 +808,14 @@ function boot() {
     editor.setProgram(shared.source);
     $("input").value = shared.input || "";
     io.setInputText(shared.input || "");
-    localStorage.setItem(STORAGE_KEY, shared.source);
+    localStorage.setItem(SOURCE_KEY, shared.source);
     localStorage.setItem(INPUT_KEY, shared.input || "");
+    // Drop the consumed hash so a subsequent reload doesn't keep
+    // re-importing the shared snapshot — the localStorage copy above is
+    // now the source of truth.
+    history.replaceState(null, "", location.pathname + location.search);
   } else {
-    const savedSource = localStorage.getItem(STORAGE_KEY);
+    const savedSource = localStorage.getItem(SOURCE_KEY);
     const savedInput = localStorage.getItem(INPUT_KEY);
     if (savedSource && savedSource.trim().length > 0) editor.setProgram(savedSource);
     else selectExample();
@@ -805,7 +831,7 @@ function boot() {
   loadProgram();
 
   $("codeListing").addEventListener("input", () => {
-    localStorage.setItem(STORAGE_KEY, $("codeListing").value);
+    localStorage.setItem(SOURCE_KEY, $("codeListing").value);
   });
 
   $("clock-value").textContent = formatClock(Number($("clock").value));
