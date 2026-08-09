@@ -42,11 +42,13 @@ jobs:
           echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y > /dev/null 2>&1 || true
           # Pick the most recent Ready production deployment. Use plain
           # grep rather than a multi-line regex so the workflow survives
-          # any Vercel CLI formatting change.
-          URL="$(vercel ls "$VERCEL_PROJECT" --no-color --limit 10 \
-            | grep 'Ready' \
+          # any Vercel CLI formatting change. LC_ALL=C + --no-color keep
+          # the matcher deterministic across locales.
+          URL="$(LC_ALL=C vercel ls "$VERCEL_PROJECT" --no-color --limit 10 \
+            | LC_ALL=C grep --text -F '● Ready' \
+            | head -1 \
             | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' \
-            | head -1 || true)"
+            || true)"
           if [ -z "$URL" ]; then
             echo "::error::No Ready deployment found — skipping alias update."
             exit 1
