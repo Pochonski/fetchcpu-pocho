@@ -39,9 +39,14 @@
     <link rel="stylesheet" href="css/themes.css" />
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="stylesheet" href="css/components.css" />
-    <link rel="icon" href="assets/brand-mark.svg" type="image/svg+xml" />
-    <link rel="apple-touch-icon" href="assets/brand-mark.svg" />
-    <link rel="mask-icon" href="assets/brand-mark.svg" color="#5b9eff" />
+    <!-- Favicon: cache-bust query string forces the browser to bypass any
+         stale favicon cache. The brand-mark.svg serves in-app images so the
+         query string is only critical for the favicon tab. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=2" />
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=2" />
+    <link rel="icon" type="image/svg+xml" href="assets/brand-mark.svg?v=2" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=2" />
+    <link rel="mask-icon" href="assets/brand-mark.svg?v=2" color="#5b9eff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="FetchCPU-Pocho" />
   </head>

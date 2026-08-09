@@ -39,9 +39,14 @@ describe("logo references in index.html", () => {
   });
 
   it("is declared as favicon, apple-touch-icon, and mask-icon", () => {
-    expect(html).toMatch(/<link rel="icon" href="assets\/brand-mark\.svg"/);
-    expect(html).toMatch(/<link rel="apple-touch-icon" href="assets\/brand-mark\.svg"/);
-    expect(html).toMatch(/<link rel="mask-icon" href="assets\/brand-mark\.svg"/);
+    // The hrefs may carry a cache-busting query string (e.g. ?v=2). Match
+    // the path part and ignore the query.
+    expect(html).toMatch(/<link rel="icon"[^>]+href="assets\/brand-mark\.svg/);
+    expect(html).toMatch(/<link rel="apple-touch-icon"[^>]+href="assets\/apple-touch-icon\.png/);
+    expect(html).toMatch(/<link rel="mask-icon"[^>]+href="assets\/brand-mark\.svg/);
+    // PNG fallbacks for browsers that don't render SVG favicons.
+    expect(html).toMatch(/<link rel="icon"[^>]+href="assets\/favicon-32\.png/);
+    expect(html).toMatch(/<link rel="icon"[^>]+href="assets\/favicon-192\.png/);
   });
 });
 
