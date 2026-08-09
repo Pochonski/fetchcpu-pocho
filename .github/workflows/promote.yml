@@ -27,12 +27,19 @@ jobs:
             echo "::error::or run scripts/promote.sh locally to re-alias the latest build."
             exit 1
           fi
-          npm install --no-save --no-audit --prefer-offline vercel@latest > /dev/null 2>&1 || true
-          if ! command -v vercel > /dev/null; then
-            echo "::error::vercel CLI not available"
+          # Install the Vercel CLI once and make sure it's on PATH.
+          # `--no-save` keeps package.json unchanged; the install is a
+          # throwaway and npx reuses the cache on subsequent runs.
+          if ! command -v vercel > /dev/null 2>&1; then
+            npm install --no-save --no-audit --prefer-offline vercel@latest > /dev/null 2>&1
+            export PATH="$PWD/node_modules/.bin:$PATH"
+          fi
+          if ! command -v vercel > /dev/null 2>&1; then
+            echo "::error::vercel CLI not available — install failed."
             exit 1
           fi
-          echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y 2>&1 | head -5 || true
+          # Pre-authenticate so subsequent vercel calls don't re-prompt.
+          echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y > /dev/null 2>&1 || true
           # Pick the most recent Ready production deployment. Use plain
           # grep rather than a multi-line regex so the workflow survives
           # any Vercel CLI formatting change.
