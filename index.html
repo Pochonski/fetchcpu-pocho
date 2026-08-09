@@ -19,7 +19,7 @@
     <meta property="og:title" content="FetchCPU-Pocho — CPU &amp; FDE cycle simulator" />
     <meta property="og:description" content="An interactive CPU simulator with FDE visualization, breakpoints, immediate/indirect addressing, stats, history, and bilingual UI." />
     <meta property="og:url" content="https://fetchcpu-pocho.vercel.app/" />
-    <meta property="og:image" content="https://fetchcpu-pocho.vercel.app/assets/brand-mark.svg" />
+    <meta property="og:image" content="https://fetchcpu-pocho.vercel.app/assets/logo.png" />
     <meta property="og:locale" content="en" />
     <meta property="og:locale:alternate" content="es" />
 
@@ -27,7 +27,7 @@
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="FetchCPU-Pocho — CPU &amp; FDE cycle simulator" />
     <meta name="twitter:description" content="A modern, dependency-free CPU simulator with Fetch/Decode/Execute visualization and English &amp; Spanish UI." />
-    <meta name="twitter:image" content="https://fetchcpu-pocho.vercel.app/assets/brand-mark.svg" />
+    <meta name="twitter:image" content="https://fetchcpu-pocho.vercel.app/assets/logo.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -40,20 +40,20 @@
     <link rel="stylesheet" href="css/layout.css" />
     <link rel="stylesheet" href="css/components.css" />
     <!-- Favicon: cache-bust query string forces the browser to bypass any
-         stale favicon cache. The brand-mark.svg serves in-app images so the
-         query string is only critical for the favicon tab. -->
-    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=2" />
-    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=2" />
-    <link rel="icon" type="image/svg+xml" href="assets/brand-mark.svg?v=2" />
-    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=2" />
-    <link rel="mask-icon" href="assets/brand-mark.svg?v=2" color="#5b9eff" />
+         stale favicon cache. The same logo.png is used everywhere so the
+         brand mark stays consistent across the tab, the iOS home screen,
+         and the in-app header / footer / modal. -->
+    <link rel="icon" type="image/png" sizes="32x32" href="assets/favicon-32.png?v=3" />
+    <link rel="icon" type="image/png" sizes="192x192" href="assets/favicon-192.png?v=3" />
+    <link rel="icon" type="image/png" sizes="512x512" href="assets/favicon-512.png?v=3" />
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=3" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="FetchCPU-Pocho" />
   </head>
   <body>
       <header class="app-header">
         <h1>
-          <img class="logo" src="assets/brand-mark.svg" alt="" width="28" height="28" />
+          <img class="logo" src="assets/logo.png" alt="FetchCPU-Pocho" width="28" height="28" />
           <span class="title-text">
           <span class="title-eyebrow" data-i18n="app.eyebrow">Von Neumann CPU</span>
           <span data-i18n="app.name">FetchCPU-Pocho</span>
@@ -364,7 +364,7 @@
 
     <footer class="app-footer">
       <span class="brand-badge">
-        <img class="brand-badge-icon" src="assets/brand-mark.svg" alt="" width="16" height="16" />
+        <img class="brand-badge-icon" src="assets/logo.png" alt="FetchCPU-Pocho" width="16" height="16" />
         <span data-i18n="app.tagline">An interactive Fetch/Decode/Execute simulator</span>
       </span>
       <span id="footer-text"></span>
@@ -392,7 +392,7 @@
       <div class="modal-content">
         <button class="modal-close" data-close="aboutPopup" data-i18n-attr="aria-label:modal.close" aria-label="Close">×</button>
         <div class="modal-logo-wrap">
-          <img class="modal-logo" src="assets/brand-mark.svg" alt="" width="64" height="64" />
+          <img class="modal-logo" src="assets/logo.png" alt="FetchCPU-Pocho" width="64" height="64" />
         </div>
         <h3 id="about-title" data-i18n="modal.about.title">About FetchCPU-Pocho</h3>
         <p id="about-p1"></p>

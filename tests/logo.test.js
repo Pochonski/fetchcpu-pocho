@@ -1,52 +1,75 @@
 // @vitest-environment jsdom
-// Logo / brand-mark rendering regression tests.
+// Logo / brand-mark rendering regression tests. The single source of
+// truth is assets/logo.png, with favicon-32.png / favicon-192.png /
+// favicon-512.png / apple-touch-icon.png as favicon-sized derivatives.
 import { describe, it, expect } from "vitest";
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, "..");
 
-describe("brand-mark.svg", () => {
-  const svg = readFileSync(resolve(ROOT, "assets/brand-mark.svg"), "utf8");
-
-  it("is a valid SVG", () => {
-    expect(svg).toMatch(/<svg[^>]*>/);
-    expect(svg).toContain("fill=");
+describe("logo.png", () => {
+  it("exists and is a non-empty PNG", () => {
+    const path = resolve(ROOT, "assets/logo.png");
+    expect(existsSync(path)).toBe(true);
+    const buf = readFileSync(path);
+    expect(buf.length).toBeGreaterThan(100);
+    // PNG magic: 89 50 4E 47 0D 0A 1A 0A
+    expect([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).toEqual([...buf.subarray(0, 8)]);
   });
+
+  it("is the only brand asset — old brand-mark.* files are removed", () => {
+    for (const legacy of [
+      "assets/brand-mark.svg",
+      "assets/brand-mark.png",
+    ]) {
+      expect(existsSync(resolve(ROOT, legacy))).toBe(false);
+    }
+  });
+});
+
+describe("favicon-sized derivatives", () => {
+  for (const name of ["favicon-32.png", "favicon-192.png", "favicon-512.png", "apple-touch-icon.png"]) {
+    it(`${name} exists and is a valid PNG`, () => {
+      const path = resolve(ROOT, `assets/${name}`);
+      expect(existsSync(path)).toBe(true);
+      const buf = readFileSync(path);
+      expect(buf.subarray(0, 4)).toEqual(Buffer.from([0x89, 0x50, 0x4e, 0x47]));
+    });
+  }
 });
 
 describe("logo references in index.html", () => {
   const html = readFileSync(resolve(ROOT, "index.html"), "utf8");
 
-  it("appears in the header with the brand-mark SVG src", () => {
-    const m = html.match(/<img class="logo"[^>]*\/>/);
-    expect(m).not.toBeNull();
-    expect(m[0]).toContain('src="assets/brand-mark.svg"');
+  it("in-app header uses assets/logo.png", () => {
+    expect(html).toMatch(/<img class="logo"[^>]+src="assets\/logo\.png/);
   });
 
-  it("appears in the footer brand-badge with the brand-mark SVG src", () => {
-    const m = html.match(/<img class="brand-badge-icon"[^>]*\/>/);
-    expect(m).not.toBeNull();
-    expect(m[0]).toContain('src="assets/brand-mark.svg"');
+  it("footer brand-badge uses assets/logo.png", () => {
+    expect(html).toMatch(/<img class="brand-badge-icon"[^>]+src="assets\/logo\.png/);
   });
 
-  it("appears in the about modal with the brand-mark SVG src", () => {
-    const m = html.match(/<img class="modal-logo"[^>]*\/>/);
-    expect(m).not.toBeNull();
-    expect(m[0]).toContain('src="assets/brand-mark.svg"');
+  it("about modal uses assets/logo.png", () => {
+    expect(html).toMatch(/<img class="modal-logo"[^>]+src="assets\/logo\.png/);
   });
 
-  it("is declared as favicon, apple-touch-icon, and mask-icon", () => {
-    // The hrefs may carry a cache-busting query string (e.g. ?v=2). Match
-    // the path part and ignore the query.
-    expect(html).toMatch(/<link rel="icon"[^>]+href="assets\/brand-mark\.svg/);
-    expect(html).toMatch(/<link rel="apple-touch-icon"[^>]+href="assets\/apple-touch-icon\.png/);
-    expect(html).toMatch(/<link rel="mask-icon"[^>]+href="assets\/brand-mark\.svg/);
-    // PNG fallbacks for browsers that don't render SVG favicons.
+  it("favicon stack uses only logo-derived PNGs (no SVG fallback)", () => {
+    // All favicon links point at PNG derivatives of logo.png.
     expect(html).toMatch(/<link rel="icon"[^>]+href="assets\/favicon-32\.png/);
     expect(html).toMatch(/<link rel="icon"[^>]+href="assets\/favicon-192\.png/);
+    expect(html).toMatch(/<link rel="icon"[^>]+href="assets\/favicon-512\.png/);
+    expect(html).toMatch(/<link rel="apple-touch-icon"[^>]+href="assets\/apple-touch-icon\.png/);
+    // No brand-mark.* or .svg favicon links remain.
+    expect(html).not.toMatch(/brand-mark/);
+    expect(html).not.toMatch(/rel="icon"[^>]+type="image\/svg\+xml"/);
+  });
+
+  it("og:image and twitter:image point at logo.png", () => {
+    expect(html).toMatch(/og:image" content="https:\/\/fetchcpu-pocho\.vercel\.app\/assets\/logo\.png/);
+    expect(html).toMatch(/twitter:image" content="https:\/\/fetchcpu-pocho\.vercel\.app\/assets\/logo\.png/);
   });
 });
 
@@ -57,13 +80,11 @@ describe("logo survival across rebuildModalContent()", () => {
   // pass. The fix targets only the #footer-text sibling span.
   it("does not overwrite the brand-badge with the localized footer text", () => {
     const html = readFileSync(resolve(ROOT, "index.html"), "utf8");
-    // The brand-badge and #footer-text must be siblings, not nested.
     const footer = html.match(/<footer class="app-footer">([\s\S]*?)<\/footer>/);
     expect(footer).not.toBeNull();
     expect(footer[1]).toContain('class="brand-badge"');
     expect(footer[1]).toContain('id="footer-text"');
-    // The brand-badge must contain the logo image and the tagline.
-    expect(footer[1]).toMatch(/<img class="brand-badge-icon"[^>]*brand-mark\.svg/);
+    expect(footer[1]).toMatch(/<img class="brand-badge-icon"[^>]+logo\.png/);
     expect(footer[1]).toMatch(/data-i18n="app\.tagline"/);
   });
 });
