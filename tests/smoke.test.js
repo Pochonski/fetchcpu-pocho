@@ -76,6 +76,32 @@ describe("Application smoke test", () => {
     expect(ta.value).toMatch(/INP/);
   });
 
+  it("selecting a different example re-assembles RAM (not just the editor)", () => {
+    // Regression test: previously the 'Load example' button only
+    // populated the editor textarea. RAM kept the previously-assembled
+    // program, so the next Step would execute the *old* program. The
+    // button must call loadProgram() to assemble the new example.
+    const sel = document.getElementById("files");
+    // Start with the default example.
+    sel.value = "1";
+    sel.dispatchEvent(new Event("change"));
+    document.getElementById("btn-select-program").click();
+    const initialFirstTag = document.querySelector('[data-addr="0"] .cell-tag')?.textContent;
+    expect(initialFirstTag).toBe("INP");
+    // Switch to example 3 (countdown) and click Load example again.
+    sel.value = "3";
+    sel.dispatchEvent(new Event("change"));
+    document.getElementById("btn-select-program").click();
+    // First cell should still be INP (every example starts with INP),
+    // but cell 5 should be BRP for the countdown loop — example 1
+    // has a SUB there instead. If RAM wasn't re-assembled, we'd see
+    // example 1's pattern.
+    const tags = Array.from(document.querySelectorAll(".cell-tag"))
+      .slice(0, 8)
+      .map((t) => t.textContent);
+    expect(tags.slice(0, 6)).toEqual(["INP", "OUT", "STA", "SUB", "STA", "BRP"]);
+  });
+
   it("runs the countdown timer and produces 5 4 3 2 1 0", async () => {
     const clock = document.getElementById("clock");
     clock.value = "10";

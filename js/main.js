@@ -646,8 +646,12 @@ function boot() {
       io.setInputText("");
       localStorage.setItem(INPUT_KEY, "");
     }
-    // Slots get populated by loadProgram() based on the parsed INP count.
     updateBlurb();
+    // Assemble the new program into RAM so the simulator is actually
+    // ready to run. Without this, the editor shows the new code but
+    // RAM still holds the previously-assembled program — the user
+    // would press Step and see the old instruction execute.
+    loadProgram();
   }
 
   function tryExample() {
