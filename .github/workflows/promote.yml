@@ -12,10 +12,13 @@ jobs:
       - name: Promote latest deployment
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_PROJECT: fetchcpu-simulator
+          VERCEL_ALIAS: fetchcpu-pocho.vercel.app
         run: |
           set -euo pipefail
           if [ -z "$VERCEL_TOKEN" ]; then
             echo "::warning::VERCEL_TOKEN secret not configured — skipping auto-promote."
+            echo "::notice::Run scripts/promote.sh locally to re-alias."
             exit 0
           fi
           npm install --no-save --no-audit --prefer-offline vercel@latest > /dev/null 2>&1 || true
@@ -24,18 +27,32 @@ jobs:
             exit 1
           fi
           echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y 2>&1 | head -5 || true
-          # Pick the most recent Ready production deployment — mirror scripts/promote.sh.
-          URL="$(vercel ls fetchcpu-simulator --no-color --limit 10 \
-            | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app.*●.*Ready' \
+          # Pick the most recent Ready production deployment. Use plain
+          # grep rather than a multi-line regex so the workflow survives
+          # any Vercel CLI formatting change.
+          URL="$(vercel ls "$VERCEL_PROJECT" --no-color --limit 10 \
+            | grep 'Ready' \
             | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' \
             | head -1 || true)"
           if [ -z "$URL" ]; then
             echo "::error::No Ready deployment found — skipping alias update."
             exit 1
           fi
-          vercel alias set "$URL" fetchcpu-pocho.vercel.app
-          if ! curl -sSf -o /dev/null -w "  HTTP %{http_code} (%{size_download} bytes)\n" "https://fetchcpu-pocho.vercel.app/"; then
+          echo "::notice::Re-aliasing $VERCEL_ALIAS → $URL"
+          # `vercel alias set` is idempotent: it replaces an existing
+          # alias. We do NOT call `vercel alias rm` first because that
+          # would create a window where the canonical domain is
+          # unaliased and any user request would 404.
+          vercel alias set "$URL" "$VERCEL_ALIAS"
+          # Smoke-test the canonical domain to make sure assets load.
+          if ! curl -sSf -o /dev/null -w "  HTTP %{http_code} (%{size_download} bytes)\n" "https://$VERCEL_ALIAS/"; then
             echo "::error::Smoke test failed after alias update."
             exit 1
           fi
-          echo "::notice::Promoted fetchcpu-pocho.vercel.app to $URL"
+          # Confirm the new logo asset is reachable (regression guard for
+          # stale aliases pointing at pre-rebrand deployments).
+          if ! curl -sSf -o /dev/null "https://$VERCEL_ALIAS/assets/logo.png"; then
+            echo "::error::assets/logo.png is 404 on $VERCEL_ALIAS — alias may be stale."
+            exit 1
+          fi
+          echo "::notice::Promoted https://$VERCEL_ALIAS/ → $URL"

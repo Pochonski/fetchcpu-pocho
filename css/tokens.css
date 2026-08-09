@@ -48,6 +48,7 @@
 
   /* Layout */
   --layout-max-width: 1480px;
+  --layout-max-width-wide: 2360px;  /* soft cap for ≥1640 px wide layouts */
   --bp-mobile: 640px;
   --bp-tablet: 980px;
   --bp-desktop: 1280px;
@@ -61,6 +62,7 @@
   --bp-lg: 1024px;      /* iPad landscape / small laptops */
   --bp-xl: 1280px;      /* desktop */
   --bp-2xl: 1480px;     /* wide desktop */
+  --bp-3xl: 1640px;     /* ultra-wide: 3-column layout for 25–27" monitors */
 
   /* Touch target minimum (Apple HIG). Applied via media query (hover: none). */
   --tap-min: 2.75rem;   /* 44px */

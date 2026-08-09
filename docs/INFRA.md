@@ -556,3 +556,46 @@ fetchcpu-pocho/
 | `npm run lint` complains about `no-undef` for a browser global | The file is missing `// @vitest-environment jsdom` AND the global isn't in the lint config. |
 | A `<bucket>-pochonskis-projects.vercel.app` URL returns 302 | Vercel auth is enabled. Either disable it for `main` or rely on `scripts/promote.sh`. |
 | The canonical domain shows stale content | The promote step didn't run. Check `.github/workflows/promote.yml` for failures and re-run `scripts/promote.sh`. |
+| `fetchcpu-pocho.vercel.app` serves the wrong assets (e.g. missing `logo.png` or a 13h-old `index.html`) | The alias points at a stale deployment. Re-alias with `bash scripts/promote.sh` locally (auth via `vercel login`). The script is idempotent: `vercel alias set` replaces the existing alias without leaving a 404 window. |
+
+### Diagnosing a stale alias
+
+```bash
+# What is the canonical domain pointing at?
+vercel alias ls
+# Look for the row whose `url` column is `fetchcpu-pocho.vercel.app`
+# and check the age in the `age` column.
+
+# What are the most recent Ready deployments?
+vercel ls fetchcpu-simulator --no-color --limit 5
+
+# Verify the new assets are reachable on the canonical domain
+curl -sSI https://fetchcpu-pocho.vercel.app/assets/logo.png
+# → should be HTTP/2 200 with Content-Type: image/png.
+# If 404, the alias is stale; re-run scripts/promote.sh.
+```
+
+### Manual re-aliasing
+
+When the GitHub workflow is missing `VERCEL_TOKEN` (Settings → Secrets
+and variables → Actions), it logs a warning and exits 0. The alias
+stays stale until somebody runs:
+
+```bash
+bash scripts/promote.sh
+# or, with overrides
+VERCEL_PROJECT=fetchcpu-simulator \
+VERCEL_ALIAS=fetchcpu-pocho.vercel.app \
+  bash scripts/promote.sh
+```
+
+The script:
+
+1. Lists the 10 most recent deployments.
+2. Picks the first one matching `Ready`.
+3. Calls `vercel alias set <url> <alias>` (idempotent — replaces
+   the existing alias without a 404 window).
+4. Smoke-tests the canonical domain with `curl --fail`.
+5. Regression-guards against a stale alias by HEADing
+   `assets/logo.png` — if the alias points at a pre-rebrand
+   deployment, this fails and the script exits 1.

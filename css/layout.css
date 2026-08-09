@@ -9,6 +9,7 @@
      --bp-lg     1024px  iPad landscape / small laptops
      --bp-xl     1280px  desktop
      --bp-2xl    1480px  wide desktop
+     --bp-3xl    1640px  ultra-wide (25–27" monitors, 3-col + log row)
    ============================================================ */
 
 /* ----- Body / page shell ----- */
@@ -163,6 +164,26 @@ body {
   }
 }
 
+/* ≥ 1640px — wide desktop (25–27" monitors). Reorganize the grid into
+   3 columns + a full-width Activity row so the workspace uses horizontal
+   space instead of stacking panels vertically:
+     editor   controls  ram
+     editor   cpu       ram
+     log      log       log
+   The wider soft cap (--layout-max-width-wide: 2360px) prevents columns
+   from stretching to absurd widths on 4K / 32"+ displays. */
+@media (min-width: 1640px) {
+  .app-grid {
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1.05fr);
+    grid-template-areas:
+      "editor  controls  ram"
+      "editor  cpu       ram"
+      "log     log       log";
+    max-width: var(--layout-max-width-wide);
+    gap: var(--space-5);
+  }
+}
+
 /* ----- Footer ----- */
 .app-footer {
   padding:
@@ -183,6 +204,11 @@ body {
   /* Reserve height so the footer doesn't reflow when the tagline wraps
      differently in EN vs ES. */
   min-height: 3rem;
+}
+/* Footer follows the wider soft cap on ≥1640 px so it stays aligned
+   with the 3-column app grid above. */
+@media (min-width: 1640px) {
+  .app-footer { max-width: var(--layout-max-width-wide); }
 }
 
 .app-footer kbd {

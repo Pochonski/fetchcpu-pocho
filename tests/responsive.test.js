@@ -102,7 +102,7 @@ describe("responsive meta & DOM", () => {
 
 describe("responsive tokens", () => {
   it("declares the breakpoint scale in tokens.css", () => {
-    ["--bp-xs", "--bp-sm", "--bp-md", "--bp-tablet", "--bp-lg", "--bp-xl", "--bp-2xl"]
+    ["--bp-xs", "--bp-sm", "--bp-md", "--bp-tablet", "--bp-lg", "--bp-xl", "--bp-2xl", "--bp-3xl"]
       .forEach((name) => expect(tokensCss).toContain(name));
   });
 
@@ -117,6 +117,10 @@ describe("responsive tokens", () => {
     expect(tokensCss).toMatch(/--tap-min:\s*2\.75rem/);
   });
 
+  it("declares a wider layout cap for the wide-desktop breakpoint", () => {
+    expect(tokensCss).toMatch(/--layout-max-width-wide:\s*2360px/);
+  });
+
   it("respects prefers-reduced-motion", () => {
     expect(themesCss).toMatch(/@media\s*\(prefers-reduced-motion:\s*reduce\)/);
   });
@@ -125,11 +129,14 @@ describe("responsive tokens", () => {
 describe("responsive layout breakpoints", () => {
   // The grid is mobile-first: default is 1 column, with 2-column variants
   // kicking in at the iPad portrait (820 px) and refining at iPad landscape
-  // (1024 px) / desktop (1280 px).
+  // (1024 px) / desktop (1280 px). On wide desktops (≥1640 px) the layout
+  // switches to 3 columns + a full-width Activity row to use horizontal
+  // space on 25–27" monitors.
   const expected = [
     { name: "tablet portrait (≥820px)", pattern: /@media\s*\(min-width:\s*820px\)/ },
     { name: "tablet landscape (≥1024px)", pattern: /@media\s*\(min-width:\s*1024px\)/ },
     { name: "desktop (≥1280px)", pattern: /@media\s*\(min-width:\s*1280px\)/ },
+    { name: "wide desktop (≥1640px)", pattern: /@media\s*\(min-width:\s*1640px\)/ },
   ];
 
   expected.forEach(({ name, pattern }) => {
@@ -150,6 +157,27 @@ describe("responsive layout breakpoints", () => {
   it("applies env(safe-area-inset-*) to the header", () => {
     expect(layoutCss).toMatch(/--safe-top/);
     expect(layoutCss).toMatch(/--safe-bottom/);
+  });
+
+  it("switches the grid to 3 columns + full-width log row at ≥1640px", () => {
+    // Pull out just the wide-desktop block so the assertions don't match
+    // against the default 1-col or 2-col rules.
+    const wideBlock = layoutCss.match(
+      /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.app-grid\s*\{[\s\S]*?\}\s*\}/,
+    );
+    expect(wideBlock).toBeTruthy();
+    expect(wideBlock[0]).toMatch(/grid-template-columns:\s*minmax\(0,\s*1\.15fr\)\s+minmax\(0,\s*0\.8fr\)\s+minmax\(0,\s*1\.05fr\)/);
+    // The Activity panel ("log") must occupy the entire bottom row.
+    expect(wideBlock[0]).toMatch(/grid-template-areas:\s*"editor\s+controls\s+ram"\s+"editor\s+cpu\s+ram"\s+"log\s+log\s+log"/);
+    expect(wideBlock[0]).toMatch(/max-width:\s*var\(--layout-max-width-wide\)/);
+  });
+
+  it("footer follows the wider layout cap at ≥1640px", () => {
+    const footerWideBlock = layoutCss.match(
+      /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.app-footer\s*\{[\s\S]*?\}\s*\}/,
+    );
+    expect(footerWideBlock).toBeTruthy();
+    expect(footerWideBlock[0]).toMatch(/max-width:\s*var\(--layout-max-width-wide\)/);
   });
 });
 
@@ -214,6 +242,21 @@ describe("responsive component rules", () => {
 
   it("uses dynamic viewport height for full-screen modals (iOS Safari)", () => {
     expect(compsCss).toMatch(/height:\s*100dvh/);
+  });
+
+  it("loosens FDE step + speed-control minimums for the narrow middle column at ≥1640px", () => {
+    // Inside the 3-col layout the Controls panel lives in a narrow middle
+    // column (~430–620 px). The default 7rem / 14rem minimums would force
+    // overflow, so both need an override inside the wide-desktop media
+    // query.
+    const fdeOverride = compsCss.match(
+      /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.fde-step\s*\{[\s\S]*?min-width:\s*0[\s\S]*?\}/,
+    );
+    expect(fdeOverride).toBeTruthy();
+    const speedOverride = compsCss.match(
+      /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.speed-control\s*\{[\s\S]*?min-width:\s*0[\s\S]*?\}/,
+    );
+    expect(speedOverride).toBeTruthy();
   });
 });
 

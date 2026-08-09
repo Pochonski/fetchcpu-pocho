@@ -78,7 +78,7 @@ npm start                # http://localhost:8000
 ### UI / UX
 
 - **Modern dark & light themes** — auto-initialised from system preference if no override.
-- **Fully responsive** — mobile-first layout from iPhone SE to 1480 px desktop with **7 breakpoints** (`--bp-xs / sm / md / tablet / lg / xl / 2xl`) and a hamburger bottom-sheet menu on phones.
+- **Fully responsive** — mobile-first layout from iPhone SE to 25–27" wide desktops with **8 breakpoints** (`--bp-xs / sm / md / tablet / lg / xl / 2xl / 3xl`) and a hamburger bottom-sheet menu on phones. On screens ≥1640 px the workspace reorganises into 3 columns + a full-width Activity row so you stop scrolling vertically on big monitors.
 - **Touch-optimised** — 44 px minimum tap targets on coarse pointers (Apple HIG), `-webkit-tap-highlight-color: transparent`, hover-only states replaced by `:active`/`:focus-visible` on touch.
 - **iOS / Android safe-area aware** — `env(safe-area-inset-*)` insets the header, footer and modals so content never sits under the notch / Dynamic Island / home indicator.
 - **Glass / radial gradients** — non-flat surfaces.
@@ -97,10 +97,11 @@ npm start                # http://localhost:8000
 | 480 – 819 px | Standard phones / phablets      | 1 column, IO panels single column, full-width controls          |
 | 820 – 1023 px| iPad portrait                   | 2 columns (RAM full-width left, Controls+CPU right)             |
 | 1024 – 1279 px| iPad landscape / small laptops | 2 columns with refined ratios                                   |
-| ≥ 1280 px    | Desktop                         | Same 2-column layout with larger gaps and breathing room        |
+| 1280 – 1639 px| Desktop                        | Same 2-column layout with larger gaps and breathing room        |
+| ≥ 1640 px    | Wide desktop (25–27" monitors)  | 3 columns (Editor / Controls+CPU / RAM) with Activity full-width below; soft cap at 2360 px so 4K displays don't stretch columns too far |
 
 The breakpoint scale is declared in `css/tokens.css` and consumed throughout
-`css/layout.css` and `css/components.css`. A 28-test suite
+`css/layout.css` and `css/components.css`. A 42-test suite
 (`tests/responsive.test.js`) guards every media query, breakpoint, safe-area
 rule and the mobile menu module.
 
