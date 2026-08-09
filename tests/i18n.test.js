@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach } from "vitest";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
+import { en as enDict, es as esDict } from "../js/ui/i18n/dictionaries.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -308,5 +309,44 @@ describe("Instruction Set modal content", () => {
     // The phase key + F10 shortcut is rendered in the footer.
     const footer = document.querySelector(".app-footer");
     expect(footer.textContent).toContain("F10");
+  });
+});
+
+describe("CPU + RAM didactic tooltips", () => {
+  it("every register label has a translated tooltip", () => {
+    for (const reg of ["pc", "cir", "mar", "mdr", "acc"]) {
+      const label = document.querySelector(`label[for="${reg}"]`);
+      expect(label).toBeTruthy();
+      const enTip = enDict.panels.cpu.tip[reg];
+      const esTip = esDict.panels.cpu.tip[reg];
+      // Real explanation, not a one-word label.
+      expect(enTip.length).toBeGreaterThan(20);
+      expect(esTip.length).toBeGreaterThan(20);
+      // Falls back to a non-empty title attribute even before translateDom.
+      const title = label.getAttribute("title");
+      expect(title).toBeTruthy();
+      expect(title.length).toBeGreaterThan(20);
+    }
+  });
+
+  it("every RAM legend item has a translated tooltip", () => {
+    for (const item of ["pc", "mar", "code", "data"]) {
+      const span = document.querySelector(`.legend-item.${item === "pc" ? "legend-active" : item === "mar" ? "legend-mar" : item === "code" ? "legend-code" : "legend-data"}`);
+      expect(span).toBeTruthy();
+      const tip = enDict.panels.ram.legendTip[item];
+      expect(tip).toBeTruthy();
+      expect(tip.length).toBeGreaterThan(15);
+    }
+  });
+
+  it("the FDE flow container has a tooltip explaining the cycle", () => {
+    const flow = document.getElementById("fde-indicator");
+    expect(flow).toBeTruthy();
+    expect(flow.getAttribute("title").length).toBeGreaterThan(20);
+    // The EN translation of the FDE tip must mention each phase name.
+    const enFde = enDict.panels.cpu.tip.fde;
+    expect(enFde).toMatch(/Fetch/i);
+    expect(enFde).toMatch(/Decode|Decodif/i);
+    expect(enFde).toMatch(/Execute|Ejecución/i);
   });
 });

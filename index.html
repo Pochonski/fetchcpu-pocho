@@ -195,7 +195,7 @@
           </div>
         </header>
 
-        <div class="fde-flow" id="fde-indicator" aria-live="polite">
+        <div class="fde-flow" id="fde-indicator" aria-live="polite" data-i18n-attr="title:panels.cpu.tip.fde">
           <div class="fde-step" data-phase="fetch"><span data-i18n="panels.cpu.phaseFetch">Fetch</span></div>
           <span class="fde-arrow" aria-hidden="true">→</span>
           <div class="fde-step" data-phase="decode"><span data-i18n="panels.cpu.phaseDecode">Decode</span></div>
@@ -219,7 +219,7 @@
           <span class="explanation-text" id="explanation-cpu">—</span>
         </div>
 
-        <div class="bus" aria-hidden="true">
+        <div class="bus" aria-hidden="true" data-i18n-attr="title:panels.cpu.tip.bus">
           <div class="bus-line" id="bus-memory-out" data-direction="out">
             <span class="bus-arrow">↗</span> <span data-i18n="panels.cpu.busWrite">CPU writes to RAM</span>
           </div>
@@ -242,46 +242,46 @@
         <div class="cpu-card">
           <div class="cpu-chip">
             <div class="register" data-register="pc">
-              <label for="pc" data-i18n="panels.cpu.registers.pc">PC</label>
+              <label for="pc" data-i18n="panels.cpu.registers.pc" data-i18n-attr="title:panels.cpu.tip.pc">PC</label>
               <div class="register-value">
                 <input type="text" id="pc" value="00" inputmode="numeric" maxlength="2" />
                 <span class="diff" id="pc-diff"></span>
               </div>
             </div>
             <div class="register" data-register="cir">
-              <label for="cir" data-i18n="panels.cpu.registers.cir">CIR</label>
+              <label for="cir" data-i18n="panels.cpu.registers.cir" data-i18n-attr="title:panels.cpu.tip.cir">CIR</label>
               <div class="register-value">
                 <input type="text" id="cir" value="000" inputmode="numeric" maxlength="3" />
                 <span class="diff" id="cir-diff"></span>
               </div>
             </div>
             <div class="register" data-register="mar">
-              <label for="mar" data-i18n="panels.cpu.registers.mar">MAR</label>
+              <label for="mar" data-i18n="panels.cpu.registers.mar" data-i18n-attr="title:panels.cpu.tip.mar">MAR</label>
               <div class="register-value">
                 <input type="text" id="mar" value="00" inputmode="numeric" maxlength="2" />
                 <span class="diff" id="mar-diff"></span>
               </div>
             </div>
             <div class="register" data-register="mdr">
-              <label for="mdr" data-i18n="panels.cpu.registers.mdr">MDR</label>
+              <label for="mdr" data-i18n="panels.cpu.registers.mdr" data-i18n-attr="title:panels.cpu.tip.mdr">MDR</label>
               <div class="register-value">
                 <input type="text" id="mdr" value="000" inputmode="numeric" maxlength="3" />
                 <span class="diff" id="mdr-diff"></span>
               </div>
             </div>
             <div class="register" data-register="acc">
-              <label for="acc" data-i18n="panels.cpu.registers.acc">ACC</label>
+              <label for="acc" data-i18n="panels.cpu.registers.acc" data-i18n-attr="title:panels.cpu.tip.acc">ACC</label>
               <div class="register-value">
                 <input type="text" id="acc" value="0000" inputmode="numeric" maxlength="4" />
                 <span class="diff" id="acc-diff"></span>
               </div>
             </div>
             <div class="register" data-register="flags-host" aria-hidden="true">
-              <label data-i18n="panels.cpu.registers.flags">FLAGS</label>
+              <label data-i18n="panels.cpu.registers.flags" data-i18n-attr="title:panels.cpu.tip.flags">FLAGS</label>
               <div class="register-value flags">
-                <span class="flag" id="flag-z" data-i18n-attr="title:panels.cpu.flagZ" title="Zero">Z</span>
-                <span class="flag" id="flag-n" data-i18n-attr="title:panels.cpu.flagN" title="Negative">N</span>
-                <span class="flag" id="flag-p" data-i18n-attr="title:panels.cpu.flagP" title="Positive">P</span>
+                <span class="flag" id="flag-z" data-i18n-attr="title:panels.cpu.flagTip.z" title="Zero">Z</span>
+                <span class="flag" id="flag-n" data-i18n-attr="title:panels.cpu.flagTip.n" title="Negative">N</span>
+                <span class="flag" id="flag-p" data-i18n-attr="title:panels.cpu.flagTip.p" title="Positive">P</span>
               </div>
             </div>
           </div>
@@ -293,10 +293,10 @@
         <header class="panel-header">
           <h2 id="ram-title" data-i18n="panels.ram.title">RAM · 100 mailboxes</h2>
           <div class="legend">
-            <span class="legend-item legend-active" data-i18n="panels.ram.legend.pc">PC</span>
-            <span class="legend-item legend-mar" data-i18n="panels.ram.legend.mar">MAR</span>
-            <span class="legend-item legend-code" data-i18n="panels.ram.legend.code">Code</span>
-            <span class="legend-item legend-data" data-i18n="panels.ram.legend.data">Data</span>
+            <span class="legend-item legend-active" data-i18n="panels.ram.legend.pc" data-i18n-attr="title:panels.ram.legendTip.pc">PC</span>
+            <span class="legend-item legend-mar" data-i18n="panels.ram.legend.mar" data-i18n-attr="title:panels.ram.legendTip.mar">MAR</span>
+            <span class="legend-item legend-code" data-i18n="panels.ram.legend.code" data-i18n-attr="title:panels.ram.legendTip.code">Code</span>
+            <span class="legend-item legend-data" data-i18n="panels.ram.legend.data" data-i18n-attr="title:panels.ram.legendTip.data">Data</span>
           </div>
         </header>
         <div class="ram-map-wrap">
