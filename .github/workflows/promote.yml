@@ -40,12 +40,13 @@ jobs:
           fi
           # Pre-authenticate so subsequent vercel calls don't re-prompt.
           echo "$VERCEL_TOKEN" | vercel login --token "$VERCEL_TOKEN" --scope team_yWJsw0FoQ8oy1Ys0ZNCEec7Y > /dev/null 2>&1 || true
-          # Pick the most recent Ready production deployment. Use plain
-          # grep rather than a multi-line regex so the workflow survives
-          # any Vercel CLI formatting change. LC_ALL=C + --no-color keep
-          # the matcher deterministic across locales.
+          # Pick the most recent Ready production deployment. The CI
+          # output above shows the literal line format; the bullet glyph
+          # and "Ready" appear in the same field. We match on "Ready"
+          # alone so a font rendering change of the bullet can't break
+          # the picker.
           URL="$(LC_ALL=C vercel ls "$VERCEL_PROJECT" --no-color --limit 10 \
-            | LC_ALL=C grep --text -F '● Ready' \
+            | LC_ALL=C grep --text -E '^ *[0-9]+[smh].*Ready' \
             | head -1 \
             | grep -oE 'https://[a-z0-9-]+-pochonskis-projects\.vercel\.app' \
             || true)"
