@@ -577,9 +577,18 @@ curl -sSI https://fetchcpu-pocho.vercel.app/assets/logo.png
 
 ### Manual re-aliasing
 
-When the GitHub workflow is missing `VERCEL_TOKEN` (Settings → Secrets
-and variables → Actions), it logs a warning and exits 0. The alias
-stays stale until somebody runs:
+The canonical domain (`fetchcpu-pocho.vercel.app`) only re-aliases
+to the latest deployment when either:
+
+1. The `.github/workflows/promote.yml` workflow runs successfully
+   (it has been wired and runs on every push to `main`), **and**
+2. The `VERCEL_TOKEN` secret is configured in GitHub (Settings →
+   Secrets and variables → Actions).
+
+If the token is missing the workflow **fails loudly with exit 1**
+(since the last refactor) so you notice the stale alias in CI
+immediately. If that happens, the only thing left to do is run the
+promote script locally with your authenticated `vercel` CLI:
 
 ```bash
 bash scripts/promote.sh
@@ -599,3 +608,26 @@ The script:
 5. Regression-guards against a stale alias by HEADing
    `assets/logo.png` — if the alias points at a pre-rebrand
    deployment, this fails and the script exits 1.
+
+### Why a stale alias happens
+
+Vercel creates a new preview URL (`<project>-<hash>-<team>.vercel.app`)
+on every push to `main`, but it does **not** automatically re-alias
+the canonical domain unless either:
+
+- Vercel deployment protection is disabled (Settings → Security), in
+  which case the alias updates automatically, or
+- The `promote.yml` workflow successfully calls
+  `vercel alias set` (requires `VERCEL_TOKEN`).
+
+If the user only sees their changes on the preview URL (e.g.
+`https://fetchcpu-simulator-e8h04mdd0-pochonskis-projects.vercel.app/`)
+but not on the canonical URL (`https://fetchcpu-pocho.vercel.app/`),
+that's the symptom of a stale alias. The fix is the manual
+re-aliasing step above, or configuring `VERCEL_TOKEN` so the
+workflow can do it automatically.
+
+**Note on the redirect aliases**: the legacy domains
+`pocho-lmc.vercel.app` and `lmc-simulator.vercel.app` have their
+own 301 redirects in `vercel.json` and are not affected by the
+alias state.

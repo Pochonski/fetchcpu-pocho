@@ -9,17 +9,23 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
-      - name: Promote latest deployment
+      - name: Re-alias the canonical domain
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
           VERCEL_PROJECT: fetchcpu-simulator
           VERCEL_ALIAS: fetchcpu-pocho.vercel.app
         run: |
           set -euo pipefail
+          # If the token is missing, fail loudly with actionable
+          # instructions. Previously this step exited 0 silently, which
+          # left the canonical domain pointing at a stale deployment
+          # while CI reported success — a footgun for production.
           if [ -z "$VERCEL_TOKEN" ]; then
-            echo "::warning::VERCEL_TOKEN secret not configured — skipping auto-promote."
-            echo "::notice::Run scripts/promote.sh locally to re-alias."
-            exit 0
+            echo "::error::VERCEL_TOKEN secret is not configured in GitHub."
+            echo "::error::The canonical domain $VERCEL_ALIAS will stay on its previous deployment."
+            echo "::error::Either set the VERCEL_TOKEN secret (Settings → Secrets and variables → Actions)"
+            echo "::error::or run scripts/promote.sh locally to re-alias the latest build."
+            exit 1
           fi
           npm install --no-save --no-audit --prefer-offline vercel@latest > /dev/null 2>&1 || true
           if ! command -v vercel > /dev/null; then
@@ -38,7 +44,16 @@ jobs:
             echo "::error::No Ready deployment found — skipping alias update."
             exit 1
           fi
-          echo "::notice::Re-aliasing $VERCEL_ALIAS → $URL"
+          # Detect a stale alias BEFORE swapping. If the canonical domain
+          # is already pointing at this build, the step is a no-op — we
+          # skip the smoke test (which would 200 against the same
+          # deployment twice) and exit 0 quickly.
+          CURRENT="$(curl -sSI -o /dev/null -w '%{redirect_url}' "https://$VERCEL_ALIAS/" || true)"
+          if [ -n "$CURRENT" ] && [ "$CURRENT" = "https://$URL" ]; then
+            echo "::notice::Alias already up to date ($VERCEL_ALIAS → $URL)."
+            exit 0
+          fi
+          echo "::notice::Re-aliasing $VERCEL_ALIAS → $URL (was: ${CURRENT:-<none>})"
           # `vercel alias set` is idempotent: it replaces an existing
           # alias. We do NOT call `vercel alias rm` first because that
           # would create a window where the canonical domain is
