@@ -63,11 +63,17 @@ body {
 
 .app-header .logo {
   display: inline-block;
-  width: 28px;
-  height: 28px;
-  border-radius: var(--radius-sm);
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
   flex: 0 0 auto;
-  box-shadow: var(--shadow-sm);
+  box-shadow: var(--shadow-md);
+}
+@media (max-width: 480px) {
+  .app-header .logo {
+    width: 40px;
+    height: 40px;
+  }
 }
 
 .app-header .title-text {
