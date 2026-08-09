@@ -170,6 +170,7 @@ export const en = {
   modal: {
     close: "Close",
     instructions: {
+      eyebrow: "The complete FetchCPU-Pocho ISA",
       title: "Instruction Set",
       intro: 'In the following table <em>xx</em> refers to a memory address (a cell) in the RAM. FetchCPU-Pocho has 100 memory cells ranging from <code>00</code> to <code>99</code>.',
       th: { mnemonic: "Mnemonic", name: "Name", desc: "Description", code: "Op Code" },
@@ -186,6 +187,7 @@ export const en = {
         ["HLT", "HALT",          "Stop the code", "000"],
         ["DAT", "DATA LOCATION", "Associate a label with a free memory address. An optional initial value can also be stored there."],
       ],
+      addressingTitleText: "Address variants (FetchCPU-Pocho extension)",
       addressingTitle: "Address variants (FetchCPU-Pocho extension)",
       addressingIntro: "In addition to the standard opcodes above, FetchCPU-Pocho supports two addressing modes for any memory-touching instruction:",
       addressing: [
@@ -194,17 +196,29 @@ export const en = {
       ],
     },
     about: {
+      eyebrow: "An interactive Von Neumann CPU simulator",
       title: "About FetchCPU-Pocho",
+      version: "v1.1.0",
+      pill: "Bilingual · No dependencies · Browser-only",
       paragraphs: [
         "FetchCPU-Pocho is a teaching simulator for the classic <strong>Von Neumann</strong> architecture: a tiny computer with a single accumulator, a hundred memory cells, and an instruction set small enough to learn by heart.",
       ],
       paragraph2: "Every Fetch / Decode / Execute cycle is visible: the current instruction, the next one, the read/write traffic on the bus, and the values held by each register. The UI is bilingual (English / Spanish) and the entire simulator runs in the browser with no dependencies.",
       paragraph3: "Three-digit values are represented in <strong>nine's complement</strong> so subtraction works correctly with values from <code>-499</code> to <code>+500</code>. The two extensions beyond the standard instruction set are immediate (<code>#</code>) and indirect (<code>@</code>) addressing.",
       shortcuts: "Keyboard shortcuts: {shortcuts}.",
+      shortcutsTitle: "Keyboard shortcuts",
+      features: [
+        { icon: "bus",    title: "Animated FDE cycle",  desc: "Every Fetch / Decode / Execute step is visible and traceable." },
+        { icon: "ram",    title: "100-cell memory",     desc: "Editable RAM grid with badges, labels, and per-cell diff." },
+        { icon: "bilingual", title: "Bilingual UI",     desc: "Full English / Spanish translation, switchable on the fly." },
+        { icon: "share",  title: "Shareable links",    desc: "Encode a program + input in a single #fcpu= hash." },
+      ],
       credits: 'Built by <a href="https://github.com/Pochonski" target="_blank" rel="noreferrer">Pocho</a>.',
     },
     tutorial: {
+      eyebrow: "From zero to a running program in 8 steps",
       title: "Quick tutorial",
+      cta: "Got it — start the simulator",
       steps: [
         "<strong>Pick an example</strong> from the dropdown above the editor.",
         "Type <code>3</code> and <code>4</code> in the input box if the program expects values.",
@@ -425,6 +439,7 @@ export const es = {
   modal: {
     close: "Cerrar",
     instructions: {
+      eyebrow: "El set completo de instrucciones de FetchCPU-Pocho",
       title: "Set de instrucciones",
       intro: 'En la siguiente tabla <em>xx</em> representa una dirección de memoria (una celda) en la RAM. FetchCPU-Pocho tiene 100 celdas de memoria, del <code>00</code> al <code>99</code>.',
       th: { mnemonic: "Mnemónico", name: "Nombre", desc: "Descripción", code: "Op Code" },
@@ -441,6 +456,7 @@ export const es = {
         ["HLT", "DETENER",       "Detiene el código.", "000"],
         ["DAT", "DATO",          "Asocia una etiqueta a una dirección de memoria libre. Opcionalmente acepta un valor inicial que se guarda en esa dirección."],
       ],
+      addressingTitleText: "Variantes de direccionamiento (extensión FetchCPU-Pocho)",
       addressingTitle: "Variantes de direccionamiento (extensión FetchCPU-Pocho)",
       addressingIntro: "Además de los opcodes estándar, FetchCPU-Pocho admite dos modos de direccionamiento para cualquier instrucción que toque memoria:",
       addressing: [
@@ -449,17 +465,29 @@ export const es = {
       ],
     },
     about: {
+      eyebrow: "Un simulador interactivo de CPU Von Neumann",
       title: "Acerca de FetchCPU-Pocho",
+      version: "v1.1.0",
+      pill: "Bilingüe · Sin dependencias · En el navegador",
       paragraphs: [
         "FetchCPU-Pocho es un simulador didáctico de la arquitectura clásica <strong>Von Neumann</strong>: una computadora mínima con un único acumulador, cien celdas de memoria y un set de instrucciones lo bastante pequeño como para aprenderse de memoria.",
       ],
       paragraph2: "Cada ciclo Fetch / Decode / Execute es visible: la instrucción actual, la siguiente, el tráfico de lectura/escritura en el bus y los valores de cada registro. La interfaz es bilingüe (español / inglés) y el simulador completo corre en el navegador sin dependencias externas.",
       paragraph3: "Los valores de tres dígitos se representan en <strong>complemento a 9</strong> para que la resta funcione correctamente entre <code>-499</code> y <code>+500</code>. Las dos extensiones sobre el set estándar son el direccionamiento inmediato (<code>#</code>) y el indirecto (<code>@</code>).",
       shortcuts: "Atajos de teclado: {shortcuts}.",
+      shortcutsTitle: "Atajos de teclado",
+      features: [
+        { icon: "bus",    title: "Ciclo FDE animado",  desc: "Cada paso de Fetch / Decode / Execute es visible y trazable." },
+        { icon: "ram",    title: "Memoria de 100 celdas", desc: "RAM editable con badges, etiquetas y diff por celda." },
+        { icon: "bilingual", title: "Interfaz bilingüe", desc: "Traducción completa español / inglés, cambiable al vuelo." },
+        { icon: "share",  title: "Links compartibles", desc: "Codifica un programa + entrada en un único hash #fcpu=." },
+      ],
       credits: 'Hecho por <a href="https://github.com/Pochonski" target="_blank" rel="noreferrer">Pocho</a>.',
     },
     tutorial: {
+      eyebrow: "De cero a un programa corriendo en 8 pasos",
       title: "Tutorial rápido",
+      cta: "Entendido — empezar",
       steps: [
         "<strong>Elige un ejemplo</strong> del desplegable arriba del editor.",
         "Escribe <code>3</code> y <code>4</code> en la caja de entrada si el programa lo requiere.",

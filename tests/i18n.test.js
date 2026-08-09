@@ -290,16 +290,17 @@ describe("Instruction Set modal content", () => {
     expect(head[3].textContent.toLowerCase()).toContain("op");
 
     const rows = document.querySelectorAll("#instructions-tbody tr");
-    // 11 standard mnemonics + len in row
+    // 11 standard mnemonics (INP, OUT, LDA, STA, ADD, SUB, BRP, BRZ, BRA, HLT, DAT)
     expect(rows.length).toBeGreaterThanOrEqual(11);
 
     // Confirm INP row uses the new four-column shape and the long description.
     const inpRow = Array.from(rows).find((r) => r.textContent.includes("INPUT"));
     expect(inpRow).toBeTruthy();
     expect(inpRow.textContent).toMatch(/Read user input/i);
-    expect(inpRow.textContent).toMatch(/901/);
+    // 901 lives inside a <code> in the Op Code column.
+    expect(inpRow.querySelector("code")?.textContent ?? inpRow.textContent).toMatch(/901/);
 
-    // DAT row has no op code cell.
+    // DAT row has no op code cell (or has empty code cell).
     const datRow = Array.from(rows).find((r) => r.textContent.includes("DATA LOCATION"));
     expect(datRow).toBeTruthy();
     expect(datRow.querySelectorAll("td").length).toBe(3);

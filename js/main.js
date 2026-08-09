@@ -147,65 +147,44 @@ function boot() {
     const creds = $("about-credits");
     if (a1) a1.innerHTML = t("modal.about.paragraphs");
     if (a2) a2.innerHTML = t("modal.about.paragraph2");
-    if (a3) a3.innerHTML = t("modal.about.paragraph3");
+    // Feature cards: 2-column grid, each card has an icon + title + desc.
+    if (a3) {
+      const features = readArray("modal.about.features");
+      if (Array.isArray(features)) {
+        a3.innerHTML = features.map((f) => `
+          <div class="feature-card">
+            <div class="feature-icon" aria-hidden="true">${featureIconSvg(f.icon)}</div>
+            <div class="feature-title">${escapeHtml(f.title)}</div>
+            <div class="feature-desc">${escapeHtml(f.desc)}</div>
+          </div>
+        `).join("");
+      } else {
+        // Fallback: render the paragraph3 string verbatim.
+        a3.innerHTML = t("modal.about.paragraph3");
+      }
+    }
     if (shorts) {
-      const k = keysForFooter();
-      shorts.innerHTML = t("modal.about.shortcuts", { shortcuts: k });
+      shorts.innerHTML = t("modal.about.shortcuts", { shortcuts: kbdShortcutsHtml(keysForFooter()) });
     }
     if (creds) creds.innerHTML = t("modal.about.credits");
 
     // Instructions table (Mnemonic / Name / Description / Op Code)
-    const head = $("instructions-thead-row");
-    const body = $("instructions-tbody");
-    const intro = $("instructions-intro");
-    if (intro) intro.innerHTML = t("modal.instructions.intro");
-    if (head) {
-      head.innerHTML = [
-        t("modal.instructions.th.mnemonic"),
-        t("modal.instructions.th.name"),
-        t("modal.instructions.th.desc"),
-        t("modal.instructions.th.code"),
-      ].map((s) => `<th>${s}</th>`).join("");
-    }
-    if (body) {
-      const list = readArray("modal.instructions.instructions");
-      body.innerHTML = "";
-      if (Array.isArray(list)) {
-        for (const row of list) {
-          const [mnemonic, name, desc, code] = row;
-          const tr = document.createElement("tr");
-          const codeCell = code ? `<td><code>${code}</code></td>` : "";
-          tr.innerHTML = `<td><code>${mnemonic}</code></td><td>${name || ""}</td><td>${desc}</td>${codeCell}`;
-          body.appendChild(tr);
-        }
-      }
-    }
+    renderInstructionTable(
+      "instructions-thead-row",
+      "instructions-tbody",
+      readArray("modal.instructions.instructions"),
+      "modal.instructions.th",
+      /* withCode */ true,
+    );
 
     // Addressing variants sub-table
-    const aHead = $("addressing-thead-row");
-    const aBody = $("addressing-tbody");
-    const aIntro = $("instructions-addressing-intro");
-    if (aIntro) aIntro.innerHTML = t("modal.instructions.addressingIntro");
-    if (aHead) {
-      aHead.innerHTML = [
-        t("modal.instructions.th.mnemonic"),
-        t("modal.instructions.th.name"),
-        t("modal.instructions.th.desc"),
-        t("modal.instructions.th.code"),
-      ].map((s) => `<th>${s}</th>`).join("");
-    }
-    if (aBody) {
-      const list = readArray("modal.instructions.addressing");
-      aBody.innerHTML = "";
-      if (Array.isArray(list)) {
-        for (const row of list) {
-          const [mnemonic, name, desc, code] = row;
-          const tr = document.createElement("tr");
-          tr.innerHTML = `<td><code>${mnemonic}</code></td><td>${name}</td><td>${desc}</td><td><code>${code}</code></td>`;
-          aBody.appendChild(tr);
-        }
-      }
-    }
+    renderInstructionTable(
+      "addressing-thead-row",
+      "addressing-tbody",
+      readArray("modal.instructions.addressing"),
+      "modal.instructions.th",
+      /* withCode */ true,
+    );
 
     // Tutorial
     const tlist = $("tutorial-steps");
@@ -215,7 +194,11 @@ function boot() {
       if (Array.isArray(steps)) {
         for (const step of steps) {
           const li = document.createElement("li");
-          li.innerHTML = step;
+          // Wrap the step text in a span so the grid layout (number |
+          // content) has exactly two items per row. Otherwise a
+          // mixed-content step like "<strong>Hi</strong> there" yields
+          // three grid items and the text node wraps into a stray row.
+          li.innerHTML = `<span class="step-body">${step}</span>`;
           tlist.appendChild(li);
         }
       }
@@ -226,20 +209,108 @@ function boot() {
     // translation pass intact.
     const footerText = $("footer-text");
     if (footerText) {
-      footerText.innerHTML = t("footer.text", { keys: keysForFooter() });
+      // t() flattens the {keys} array into a string. We join the
+      // "F5 run · F6 pause · …" segments with " · " so the footer
+      // shows both the shortcut keys and the human-readable labels.
+      footerText.textContent = t("footer.text", {
+        keys: keysForFooter().map((it) => `${it.kbd} ${it.label}`).join(" · "),
+      });
     }
   }
 
   function keysForFooter() {
     return [
-      `<kbd>${t("shortcutFormat.f5")}</kbd> ${t("footer.keys.run")}`,
-      `· <kbd>${t("shortcutFormat.f6")}</kbd> ${t("footer.keys.pause")}`,
-      `· <kbd>${t("shortcutFormat.f9")}</kbd> ${t("footer.keys.step")}`,
-      `· <kbd>${t("shortcutFormat.f10")}</kbd> ${t("footer.keys.phase") || t("panels.cpu.stepPhase").toLowerCase()}`,
-      `· <kbd>${t("shortcutFormat.f8")}</kbd> ${t("footer.keys.back")}`,
-      `· <kbd>${t("shortcutFormat.f4")}</kbd> ${t("footer.keys.restart")}`,
-      `· <kbd>${t("shortcutFormat.ctrlS")}</kbd> ${t("footer.keys.save")}`,
-    ].join(" ");
+      { kbd: t("shortcutFormat.f5"),    label: t("footer.keys.run") },
+      { kbd: t("shortcutFormat.f6"),    label: t("footer.keys.pause") },
+      { kbd: t("shortcutFormat.f9"),    label: t("footer.keys.step") },
+      { kbd: t("shortcutFormat.f10"),   label: t("footer.keys.phase") || t("panels.cpu.stepPhase").toLowerCase() },
+      { kbd: t("shortcutFormat.f8"),    label: t("footer.keys.back") },
+      { kbd: t("shortcutFormat.f4"),    label: t("footer.keys.restart") },
+      { kbd: t("shortcutFormat.ctrlS"), label: t("footer.keys.save") },
+    ];
+  }
+
+  // Render a [{ kbd, label }, ...] list as a flat, dot-separated string of
+  // <kbd>...</kbd> keys + plain labels. Used for both the footer
+  // keyboard hints and the About modal "Keyboard shortcuts" section.
+  function kbdShortcutsHtml(items) {
+    return items
+      .map((it, i) => `${i > 0 ? " · " : ""}<kbd>${escapeHtml(it.kbd)}</kbd> ${escapeHtml(it.label)}`)
+      .join("");
+  }
+
+  // Escape a string for safe injection into innerHTML. The modal
+  // renderers interpolate i18n values directly, so anything coming
+  // from the dictionary needs to be HTML-escaped first to avoid
+  // injection via translated strings.
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
+  // SVG markup for the feature cards in the About modal. The 4 variants
+  // match the icons in modal.about.features[].icon. Each is intentionally
+  // minimal so they render sharply at 18 px.
+  const FEATURE_ICONS = {
+    bus: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 12h7M3 7h7M3 17h7" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M14 8l4-2v12l-4-2" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" fill="none"/><path d="M14 8v8" stroke="currentColor" stroke-width="1.6"/></svg>',
+    ram: '<svg viewBox="0 0 24 24" focusable="false"><rect x="3" y="6" width="18" height="12" rx="1.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M3 10h18M7 6v12M11 6v12M15 6v12" stroke="currentColor" stroke-width="1.2"/></svg>',
+    bilingual: '<svg viewBox="0 0 24 24" focusable="false"><path d="M3 6h7M5 6v0M6.5 6c0 5-2 8-3.5 9M4 11c1 2 3 4 6 4" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/><path d="M11 12h10M14 12c0 4-2 7-4 8M14 12c0 4 2 7 4 8" stroke="currentColor" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>',
+    share: '<svg viewBox="0 0 24 24" focusable="false"><circle cx="6" cy="12" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="6" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="18" cy="18" r="2.5" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 11l8-4M8 13l8 4" stroke="currentColor" stroke-width="1.5"/></svg>',
+  };
+  function featureIconSvg(name) {
+    return FEATURE_ICONS[name] || "";
+  }
+
+  // Render one of the instruction tables. Each row in the dictionary
+  // is one of:
+  //   [mnemonic, name, description, opCode]                (standard)
+  //   [mnemonic, name, description, opCode, category]      (extended)
+  // The 5th element is the "category" used to colour the mnemonic
+  // chip: io | memory | branch | control | dat. If absent, we
+  // fall back to the opcode prefix.
+  function renderInstructionTable(headId, bodyId, list, thKeyPrefix, withCode) {
+    const head = $(headId);
+    const body = $(bodyId);
+    if (head) {
+      const tMnemonic = t(thKeyPrefix + ".mnemonic");
+      const tName     = t(thKeyPrefix + ".name");
+      const tDesc     = t(thKeyPrefix + ".desc");
+      const tCode     = t(thKeyPrefix + ".code");
+      head.innerHTML = [tMnemonic, tName, tDesc, tCode]
+        .map((s) => `<th>${escapeHtml(s)}</th>`)
+        .join("");
+    }
+    if (!body) return;
+    body.innerHTML = "";
+    if (!Array.isArray(list)) return;
+    for (const row of list) {
+      const [mnemonic, name, desc, code] = row;
+      const tr = document.createElement("tr");
+      const cat = guessCategoryFromCode(code);
+      tr.innerHTML = `
+        <td class="col-mnemonic"><span class="mnemonic-chip mnemonic-${cat}">${escapeHtml(mnemonic)}</span></td>
+        <td class="col-name">${escapeHtml(name || "")}</td>
+        <td class="col-desc">${desc || ""}</td>
+        ${withCode && code ? `<td class="col-code"><code>${escapeHtml(code)}</code></td>` : ""}
+      `;
+      body.appendChild(tr);
+    }
+  }
+
+  // Guess the chip category from the op-code prefix when the dictionary
+  // didn't provide one explicitly. Used as a fallback so an old
+  // dictionary (e.g. 1.0.0) still renders the colours.
+  function guessCategoryFromCode(code) {
+    if (!code) return "memory";
+    if (code === "901" || code === "902") return "io";
+    if (code === "000") return "control";
+    if (code === "8xx" || code === "7xx" || code === "6xx") return "branch";
+    if (code === "5xx" || code === "3xx" || code === "1xx" || code === "2xx") return "memory";
+    return "memory";
   }
 
   function readArray(key) {

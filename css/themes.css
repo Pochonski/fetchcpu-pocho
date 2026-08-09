@@ -30,6 +30,16 @@
   --danger:  #ff6b6b;
   --info:    #66d9ef;
 
+  /* Mnemonic chip colours (used in the Instruction Set modal). Each
+     category has a distinct hue so the eye can group opcodes by kind
+     at a glance. The text colour is --bg (the page background) so the
+     chip has high contrast regardless of theme. */
+  --mnemonic-io:      #66d9ef;
+  --mnemonic-memory:  #5b9eff;
+  --mnemonic-branch:  #ffb84d;
+  --mnemonic-control: #f87171;
+  --mnemonic-dat:     #98a0b4;
+
   /* FDE cycle colors (slightly different hues for distinction) */
   --phase-fetch:    #38bdf8;
   --phase-decode:   #c084fc;
@@ -74,6 +84,14 @@
   --warning: #d97706;
   --danger:  #dc2626;
   --info:    #0891b2;
+
+  /* Mnemonic chip colours (light theme). Darker hues so the chip is
+     legible against the bright background. */
+  --mnemonic-io:      #0e7490;
+  --mnemonic-memory:  #2563eb;
+  --mnemonic-branch:  #b45309;
+  --mnemonic-control: #b91c1c;
+  --mnemonic-dat:     #6b7280;
 
   --phase-fetch:    #0284c7;
   --phase-decode:   #7c3aed;
