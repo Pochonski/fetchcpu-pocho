@@ -818,11 +818,13 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 @media (max-width: 819px) {
   .controls-row-buttons { flex-direction: column; align-items: stretch; }
   .control-buttons { justify-content: center; }
-  /* Pin the play + clock strip to the bottom of the viewport on mobile so
-     Run/Pause, Step and Restart stay visible while scrolling through RAM
-     and the user can see each RAM cell highlight advance as they tap. */
+  /* On mobile the play + clock strip stays in document flow at the TOP
+     of the Controls panel (above the Examples picker) and sticks to the
+     bottom of the viewport while the Controls panel is visible. This
+     way the play buttons appear ABOVE the operation selector in the
+     panel layout, AND stay reachable while scrolling within the panel. */
   .controls-row-buttons {
-    position: fixed;
+    position: sticky;
     bottom: 0;
     left: 0;
     right: 0;
@@ -837,7 +839,7 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
     justify-content: center;
     gap: var(--space-3);
   }
-  /* Inside the fixed bar, lay out control-buttons + speed-control side by
+  /* Inside the sticky bar, lay out control-buttons + speed-control side by
      side and let the clock slider stretch to fill the rest. */
   .control-buttons { gap: var(--space-2); flex: 0 0 auto; }
   .speed-control { flex: 1 1 auto; min-width: 0; }

@@ -291,13 +291,12 @@ body {
   .blurb-text { display: none; }
 }
 
-/* On phones and small tablets (where the play strip is pinned to the
-   viewport bottom) leave enough room at the end of the grid so the last
-   log panel / examples strip doesn't slip under the floating bar. */
+/* On phones and small tablets the play strip is sticky inside the
+   Controls panel, so no extra bottom padding is needed — the panel
+   itself reserves its own height. */
 @media (max-width: 819px) {
   .app-grid {
     gap: var(--space-3);
     padding: var(--space-3);
-    padding-bottom: calc(96px + var(--safe-bottom));
   }
 }
