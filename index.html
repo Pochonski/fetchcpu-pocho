@@ -118,28 +118,34 @@
           <h2 id="controls-title" data-i18n="panels.controls.title">Controls · Execution</h2>
         </header>
 
-        <div class="controls-row controls-row-buttons">
-          <div class="control-buttons">
-            <button class="btn btn-secondary icon-only" id="btn-pause" data-i18n-attr="title:panels.cpu.pauseRun;aria-label:panels.cpu.pauseRun" aria-label="Run/Pause" title="Run (F5)">
-              <svg class="icon icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
-            </button>
-            <button class="btn btn-primary icon-only" id="btn-step" data-i18n-attr="title:panels.cpu.step;aria-label:panels.cpu.step" aria-label="Step one FDE cycle" title="Step (F9)">
-              <svg class="icon icon-step" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4l10 8-10 8V4zm11 0h3v16h-3V4z" fill="currentColor"/></svg>
-            </button>
-            <button class="btn btn-ghost icon-only" id="btn-restart" data-i18n-attr="title:panels.cpu.restart;aria-label:panels.cpu.restart" aria-label="Restart" title="Restart (F4)">
-              <svg class="icon icon-restart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5V2L7 7l5 5V8a6 6 0 1 1-6 6H4a8 8 0 1 0 8-9z" fill="currentColor"/></svg>
-            </button>
+        <div class="mobile-sticky-bar">
+          <div class="controls-row controls-row-buttons">
+            <div class="control-buttons">
+              <button class="btn btn-secondary icon-only" id="btn-pause" data-i18n-attr="title:panels.cpu.pauseRun;aria-label:panels.cpu.pauseRun" aria-label="Run/Pause" title="Run (F5)">
+                <svg class="icon icon-play" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M8 5v14l11-7z" fill="currentColor"/></svg>
+              </button>
+              <button class="btn btn-primary icon-only" id="btn-step" data-i18n-attr="title:panels.cpu.step;aria-label:panels.cpu.step" aria-label="Step one FDE cycle" title="Step (F9)">
+                <svg class="icon icon-step" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 4l10 8-10 8V4zm11 0h3v16h-3V4z" fill="currentColor"/></svg>
+              </button>
+              <button class="btn btn-ghost icon-only" id="btn-restart" data-i18n-attr="title:panels.cpu.restart;aria-label:panels.cpu.restart" aria-label="Restart" title="Restart (F4)">
+                <svg class="icon icon-restart" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5V2L7 7l5 5V8a6 6 0 1 1-6 6H4a8 8 0 1 0 8-9z" fill="currentColor"/></svg>
+              </button>
+            </div>
+            <div class="speed-control">
+              <label for="clock" data-i18n="panels.cpu.clock">Clock</label>
+              <button class="btn btn-ghost icon-only clock-step" id="btn-clock-down" data-i18n-attr="title:panels.cpu.slower;aria-label:panels.cpu.slower" aria-label="Slower" title="Slow down">
+                <svg class="icon icon-minus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 11h14v2H5z" fill="currentColor"/></svg>
+              </button>
+              <input type="range" id="clock" min="50" max="3000" value="500" step="25" aria-valuemin="50" aria-valuemax="3000" />
+              <button class="btn btn-ghost icon-only clock-step" id="btn-clock-up" data-i18n-attr="title:panels.cpu.faster;aria-label:panels.cpu.faster" aria-label="Faster" title="Speed up">
+                <svg class="icon icon-plus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor"/></svg>
+              </button>
+              <output id="clock-value" for="clock">120 ms</output>
+            </div>
           </div>
-          <div class="speed-control">
-            <label for="clock" data-i18n="panels.cpu.clock">Clock</label>
-            <button class="btn btn-ghost icon-only clock-step" id="btn-clock-down" data-i18n-attr="title:panels.cpu.slower;aria-label:panels.cpu.slower" aria-label="Slower" title="Slow down">
-              <svg class="icon icon-minus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 11h14v2H5z" fill="currentColor"/></svg>
-            </button>
-            <input type="range" id="clock" min="50" max="3000" value="500" step="25" aria-valuemin="50" aria-valuemax="3000" />
-            <button class="btn btn-ghost icon-only clock-step" id="btn-clock-up" data-i18n-attr="title:panels.cpu.faster;aria-label:panels.cpu.faster" aria-label="Faster" title="Speed up">
-              <svg class="icon icon-plus" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6z" fill="currentColor"/></svg>
-            </button>
-            <output id="clock-value" for="clock">120 ms</output>
+          <div class="instruction-explanation instruction-explanation-mobile">
+            <span class="explanation-label" data-i18n="explanation.didLabel">Did</span>
+            <span class="explanation-text" id="explanation-controls" data-i18n="explanation.idle">Press Step or Run to begin</span>
           </div>
         </div>
 
@@ -172,11 +178,6 @@
             <label for="output" data-i18n="panels.cpu.outputLabel">Output · stdout</label>
             <textarea id="output" class="io-textarea" rows="2" readonly aria-label="Program output"></textarea>
           </div>
-        </div>
-
-        <div class="instruction-explanation">
-          <span class="explanation-label" data-i18n="explanation.didLabel">Did</span>
-          <span class="explanation-text" id="explanation-controls" data-i18n="explanation.idle">Press Step or Run to begin</span>
         </div>
       </section>
 

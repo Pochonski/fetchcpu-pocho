@@ -818,12 +818,13 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
 @media (max-width: 819px) {
   .controls-row-buttons { flex-direction: column; align-items: stretch; }
   .control-buttons { justify-content: center; }
-  /* On mobile the play + clock strip stays in document flow at the TOP
-     of the Controls panel (above the Examples picker) and sticks to the
-     bottom of the viewport while the Controls panel is visible. This
-     way the play buttons appear ABOVE the operation selector in the
-     panel layout, AND stay reachable while scrolling within the panel. */
-  .controls-row-buttons {
+  /* On mobile the .mobile-sticky-bar wrapper holds the play row + the
+     instruction-explanation pill together. It sticks to the bottom of
+     the viewport while the Controls panel is visible, so the user sees:
+       [ play buttons ]                ← always reachable
+       [ Did: HLT 000 — Stop exec. ]   ← just below, updates live
+     ...with the Examples picker and IO flowing above in the panel. */
+  .mobile-sticky-bar {
     position: sticky;
     bottom: 0;
     left: 0;
@@ -832,12 +833,22 @@ input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px 
     background: var(--glass-bg);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    border-top: 1px solid var(--border);
     box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.2);
-    padding-bottom: calc(var(--space-3) + var(--safe-bottom));
+    padding-bottom: var(--safe-bottom);
+  }
+  .mobile-sticky-bar .controls-row-buttons {
+    border-top: 1px solid var(--border);
     flex-direction: row;
     justify-content: center;
     gap: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+  }
+  .mobile-sticky-bar .instruction-explanation-mobile {
+    border-top: 1px solid var(--border);
+    background: var(--bg-elevated);
+    font-size: var(--fs-xs);
+    padding: var(--space-1) var(--space-3);
+    min-height: 1.75rem;
   }
   /* Inside the sticky bar, lay out control-buttons + speed-control side by
      side and let the clock slider stretch to fill the rest. */
