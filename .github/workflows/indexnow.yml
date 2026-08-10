@@ -1,0 +1,63 @@
+name: IndexNow ping
+
+# Pings IndexNow (Bing, DuckDuckGo, Ecosia, Yahoo…) whenever a push to
+# main lands, so the canonical URL is re-indexed within minutes rather
+# than weeks. The IndexNow key file is the source of truth for the key
+# itself, so this workflow only reads the filename and contents from
+# the just-deployed tree.
+on:
+  push:
+    branches: [main]
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Detect IndexNow key file
+        id: detect
+        run: |
+          set -euo pipefail
+          # The key is a 32-char hex string. IndexNow requires the key
+          # file to live at https://<host>/<key>.txt with the key as
+          # its only contents. We pick the first matching file at root.
+          KEY_FILE="$(ls ./*.txt 2>/dev/null \
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const f=d.split(/\r?\n/).filter(Boolean).find(x=>/^[0-9a-f]{32}\.txt$/.test(x));process.stdout.write(f||'')})")"
+          if [ -z "${KEY_FILE:-}" ]; then
+            echo "::notice::No IndexNow key file at repo root — skipping ping."
+            exit 0
+          fi
+          KEY="${KEY_FILE%.txt}"
+          echo "key=$KEY" >> "$GITHUB_OUTPUT"
+          # Sanity check: the file must contain only the key.
+          CONTENTS="$(cat "$KEY_FILE")"
+          if [ "$CONTENTS" != "$KEY" ]; then
+            echo "::error::IndexNow key file $KEY_FILE does not contain the expected key."
+            exit 1
+          fi
+      - name: Submit URLs to IndexNow
+        env:
+          INDEXNOW_KEY: ${{ steps.detect.outputs.key }}
+        run: |
+          set -euo pipefail
+          HOST="https://fetchcpu-pocho.vercel.app"
+          # Only one canonical URL today. As the app grows, add more
+          # entries here (or read them from sitemap.xml).
+          URLS_JSON="$(node -e "process.stdout.write(JSON.stringify({host:'$HOST',key:process.env.INDEXNOW_KEY,urlList:['$HOST/','$HOST/sitemap.xml']}))")"
+          echo "Submitting: $URLS_JSON"
+          HTTP="$(curl -sS -o /tmp/indexnow.out -w '%{http_code}' \
+            -H 'Content-Type: application/json; charset=utf-8' \
+            -X POST \
+            --data "$URLS_JSON" \
+            'https://api.indexnow.org/indexnow')"
+          echo "IndexNow HTTP $HTTP"
+          cat /tmp/indexnow.out || true
+          # 200 = OK, 202 = accepted (key not yet validated, will retry).
+          case "$HTTP" in
+            200|202) echo "::notice::IndexNow accepted." ;;
+            400) echo "::error::IndexNow: bad request (check urlList shape)." ; exit 1 ;;
+            403) echo "::error::IndexNow: key not validated. Make sure $INDEXNOW_KEY.txt is reachable at $HOST/$INDEXNOW_KEY.txt" ; exit 1 ;;
+            422) echo "::error::IndexNow: urls do not belong to host." ; exit 1 ;;
+            429) echo "::warning::IndexNow: rate-limited (will retry next push)." ;;
+            *) echo "::warning::IndexNow: unexpected HTTP $HTTP." ;;
+          esac

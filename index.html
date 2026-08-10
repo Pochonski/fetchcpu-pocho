@@ -49,6 +49,46 @@
     <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png?v=3" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-title" content="FetchCPU-Pocho" />
+
+    <!-- Structured data (Schema.org) — helps Google understand the page
+         and can enable rich results (rating, software, author, etc.). -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "SoftwareApplication",
+        "name": "FetchCPU-Pocho",
+        "alternateName": "FetchCPU Pocho — CPU & FDE cycle simulator",
+        "url": "https://fetchcpu-pocho.vercel.app/",
+        "applicationCategory": "EducationalApplication",
+        "applicationSubCategory": "CPU Simulator",
+        "operatingSystem": "Any (Browser)",
+        "browserRequirements": "Requires JavaScript. Requires HTML5.",
+        "inLanguage": ["en", "es"],
+        "description": "Interactive CPU simulator with Fetch/Decode/Execute cycle visualization, breakpoints, signed integers, immediate and indirect addressing, statistics, history timeline, and English/Spanish UI.",
+        "image": "https://fetchcpu-pocho.vercel.app/assets/logo.png",
+        "screenshot": "https://fetchcpu-pocho.vercel.app/assets/logo.png",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "Pocho",
+          "url": "https://github.com/Pochonski",
+          "sameAs": ["https://github.com/Pochonski/fetchcpu-pocho"]
+        },
+        "featureList": [
+          "Fetch/Decode/Execute cycle visualization",
+          "Breakpoints",
+          "Signed integers",
+          "Immediate and indirect addressing",
+          "Statistics and history timeline",
+          "Bilingual UI (English/Spanish)"
+        ],
+        "keywords": "CPU simulator, Von Neumann, FDE, Fetch-Decode-Execute, assembly, breakpoints, education"
+      }
+    </script>
   </head>
   <body>
       <header class="app-header">
