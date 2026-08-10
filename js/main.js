@@ -8,6 +8,7 @@ import { createEvents } from "./cpu/events.js";
 import { createStats } from "./cpu/stats.js";
 import { createIO } from "./ui/io.js";
 import { createInputSlots } from "./ui/ioSlots.js";
+import { countInps } from "./ui/inputShape.js";
 import { createRAMView } from "./ui/ramView.js";
 import { createCPUView } from "./ui/cpuView.js";
 import { createEditorView } from "./ui/editor.js";
@@ -63,6 +64,7 @@ function boot() {
     },
   });
   $("btn-add-input")?.addEventListener("click", () => inputSlots.addSlot());
+  $("btn-reset-input")?.addEventListener("click", resetToExample);
 
   const cpuView = createCPUView(cpu, events);
   const ramView = createRAMView(ram, cpu);
@@ -322,7 +324,15 @@ function boot() {
     return cur;
   }
 
-  sel.addEventListener("change", updateBlurb);
+  // Changing the dropdown loads the example immediately — otherwise the user
+// sees a mismatch between the selected example (dropdown) and the loaded
+// program (editor + slots), and wonders why e.g. "Max of 2 inputs" only
+// shows one slot. The "Load example" button still works as a no-op
+// confirmation.
+sel.addEventListener("change", () => {
+  updateBlurb();
+  selectExample();
+});
 
   // Wire language switch buttons.
   document.querySelectorAll(".lang-btn").forEach((btn) => {
@@ -367,7 +377,7 @@ function boot() {
 
     // Re-shape the input panel to match the number of INPs in the program,
     // then sync the current IO queue into the slots (truncated to count).
-    const inpShape = countInps(instructions);
+    const inpShape = countInps(instructions, labels);
     inputSlots.setCount(inpShape.count, inpShape.isLoop);
     inputSlots.setValues(io.getInputValues());
 
@@ -598,36 +608,7 @@ function boot() {
     return null;
   }
 
-  // Count INP mnemonics and detect whether any live inside a backward
-  // branch (loop). Returns { count, isLoop } used to size the input slots.
-  function countInps(instructions) {
-    const branchAddrs = [];
-    for (const instr of instructions) {
-      if (
-        instr.mnemonic === "BRA" ||
-        instr.mnemonic === "BRP" ||
-        instr.mnemonic === "BRZ"
-      ) {
-        const target = Number(instr.operand?.value);
-        if (Number.isFinite(target)) branchAddrs.push({ addr: instr.address, target });
-      }
-    }
-    const inLoop = new Set();
-    for (const { addr, target } of branchAddrs) {
-      if (target < addr) {
-        for (let i = target; i <= addr; i++) inLoop.add(i);
-      }
-    }
-    let linear = 0;
-    let loopHasInp = false;
-    for (const instr of instructions) {
-      if (instr.mnemonic !== "INP") continue;
-      if (inLoop.has(instr.address)) loopHasInp = true;
-      else linear += 1;
-    }
-    if (loopHasInp) return { count: Math.max(1, linear), isLoop: true };
-    return { count: Math.max(1, linear), isLoop: false };
-  }
+  // countInps is imported from ./ui/inputShape.js and reused below.
 
   function selectExample() {
     const v = $("files").value;
@@ -646,12 +627,44 @@ function boot() {
       io.setInputText("");
       localStorage.setItem(INPUT_KEY, "");
     }
+    updateResetButton();
     updateBlurb();
     // Assemble the new program into RAM so the simulator is actually
     // ready to run. Without this, the editor shows the new code but
     // RAM still holds the previously-assembled program — the user
     // would press Step and see the old instruction execute.
     loadProgram();
+  }
+
+  // Show the "Reset to example" button only when an example with input
+  // metadata is selected. Programs without example inputs have nothing
+  // to restore, so the button stays hidden.
+  function updateResetButton() {
+    const btn = $("btn-reset-input");
+    if (!btn) return;
+    const program = PROGRAMS.find((p) => p.value === $("files").value);
+    const hasInput = !!(program && program.input != null && program.input.length > 0);
+    btn.hidden = !hasInput;
+  }
+
+  // Restore the currently selected example's input values into the slots
+  // and IO queue. Also re-sizes the slots to match the program, dropping
+  // any extra slots the user may have added via "+ Add value".
+  function resetToExample() {
+    const program = PROGRAMS.find((p) => p.value === $("files").value);
+    if (!program || program.input == null) return;
+    const text = program.input;
+    $("input").value = text;
+    io.setInputText(text);
+    localStorage.setItem(INPUT_KEY, text);
+    // Re-parse to re-size slots based on the program's actual INP count.
+    const result = parse($("codeListing").value);
+    if (result.ok) {
+      const inpShape = countInps(result.program.instructions, result.program.labels);
+      inputSlots.setCount(inpShape.count, inpShape.isLoop);
+    }
+    inputSlots.setValues(io.getInputValues());
+    refreshView();
   }
 
   function tryExample() {
