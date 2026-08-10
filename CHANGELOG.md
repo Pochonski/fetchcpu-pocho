@@ -94,16 +94,6 @@ improvements are robustness, accessibility, and developer ergonomics.
 - Removed obsolete `/lmc` and `/LMC` redirects from `vercel.json`
   (the rebrand 1.1.0 said they would be removed).
 
-### Tests
-
-- Total: **242 tests across 30 suites** (was 173 / 17).
-- New unit tests for `cpuView`, `disassemblerView`, `historyView`,
-  `theme`, `tabs`, `modal`, `share`, `fileIO`, `sound`, `mobileMenu`,
-  `statsView`, `io`, `disassemble`, `cpu.getFlag`, `ram.format`,
-  `editor.destroy`, and the audit-i18n parity check.
-- Test infrastructure: `// @vitest-environment jsdom` on every suite
-  that needs DOM; a shared `localStorage` stub in DOM suites.
-
 ## [1.1.0] — 2026-08-08
 
 ### Rebrand: Pocho LMC → FetchCPU-Pocho
@@ -199,9 +189,7 @@ simulator designed for teaching the Fetch/Decode/Execute cycle.
 - **Docs**
   - `README.md` — installation, usage, architecture, i18n guide.
   - `CONTRIBUTING.md` — workflow, style, i18n contribution notes.
-  - `LICENSE` — MIT.
-
-## Unreleased
+- `LICENSE` — MIT.
 
 ### Input slots: shaped to the program
 
@@ -209,7 +197,7 @@ The Input panel is no longer a free-form textarea. After the parser runs,
 the panel renders **one `<input type="number">` per top-level `INP`** of the
 loaded program (labelled `#1`, `#2`, …). When `INP` is detected inside a
 backward branch the panel collapses to a single slot with an **`∞` badge**
-and a **+ Add value** button so the user can stage one value per iteration.
+and a **+ Add value** button so you can stage one value per iteration.
 
 - `js/ui/ioSlots.js` is a new module exporting `createInputSlots(container,
   { t, addButton, onChange })` with `setCount`, `setValues`, `getValues`,
@@ -260,10 +248,10 @@ and a **+ Add value** button so the user can stage one value per iteration.
 
 ### Documentation
 
-- `README.md` rewritten end-to-end: 173 tests reflected, every test suite
-  listed, project structure and architecture notes updated, Input slots
-  section now documents the range validation, Responsive section
-  references the 7 breakpoint tokens, Deployment section added.
+- `README.md` rewritten end-to-end: every test suite listed, project
+  structure and architecture notes updated, Input slots section now
+  documents the range validation, Responsive section references the 7
+  breakpoint tokens, Deployment section added.
 
 ### UI simplification
 
@@ -317,5 +305,78 @@ and a **+ Add value** button so the user can stage one value per iteration.
   44 px tap minimum, and the key responsive rules (`(hover: none)`,
   `max-width: 360px`, etc.).
 
+### Bug fix: `countInps` resolved label-based branches
+
+`countInps(instructions)` was reading branch targets via
+`Number(instr.operand?.value)`, but the parser stores label-based branches
+as `{ mode: "direct", value: null, ref: "label" }`. `Number(null)` returns
+`0`, so every `BRP` / `BRA` / `BRZ` looked like a jump to address 0 — the
+whole program was treated as one big loop and the input panel rendered a
+single slot for any program with multiple top-level `INP`s (e.g.
+"Adding 2 inputs", "Max of 2 inputs", "Multiplying 2 inputs").
+
+- Extracted to a new module `js/ui/inputShape.js` exporting
+  `countInps(instructions, labels)`. Label references are now resolved
+  through the `labels` map before backward-jump detection.
+- `main.js` imports `countInps` and passes both `instructions` and
+  `labels` from the parser output.
+- Regression test `tests/inputShape.test.js` pins the expected shape per
+  example program (12 cases).
+- Integration test `tests/inputPanel_integration.test.js` exercises the
+  full chain `parse → countInps → setCount → setValues` per example.
+
+### Feature: "↺ Ejemplo" button (restore example inputs)
+
+The Input panel now ships with a second button next to "+ Add value":
+
+- **"↺ Ejemplo"** — restores the example's input text, re-sizes the slots
+  to the program's actual `INP` count (drops any extra slots the user
+  added via "+ Add value"), and persists the restored text to
+  localStorage.
+- Hidden when the selected example has no `program.input` (program 7,
+  "Immediate Addressing", since it reads no input).
+- New i18n keys (EN+ES): `panels.cpu.inputResetExample`,
+  `panels.cpu.inputResetExampleHint`.
+- Regression test `tests/reset_button.test.js` covers visibility, the
+  restore flow, extra-slot cleanup, and localStorage persistence.
+
+### UX: dropdown change loads the example automatically
+
+Previously the example `<select>` `change` handler only refreshed the
+description blurb — the user had to click "Load example" to actually swap
+the loaded program. That made the dropdown feel broken when it showed
+"Max of 2 inputs" while the slots still held the previous program's
+values.
+
+`change` now also calls `selectExample()` so the dropdown is the source of
+truth for the loaded program. "Load example" remains as a no-op
+confirmation.
+
+### Cache-bust: `?v=` query string on `js/main.js`
+
+`vercel.json` sets `Cache-Control: public, max-age=31536000, immutable`
+on every `.js` response. Without intervention the browser keeps loading
+the previous build for a full year. `index.html` now references the main
+script as `js/main.js?v=1.1.2`; bump the `?v=` value whenever you ship a
+change to anything under `js/` or `css/`. Documented in
+[`docs/DEPLOY.md`](./docs/DEPLOY.md) and
+`docs/INFRA.md`.
+
+### Tests
+
+- Total: **310 tests across 35 suites** (was 242 / 30, originally 173 / 17).
+- New unit tests during the 4-phase refactor: `cpuView`,
+  `disassemblerView`, `historyView`, `theme`, `tabs`, `modal`, `share`,
+  `fileIO`, `sound`, `mobileMenu`, `statsView`, `io`, `disassemble`,
+  `cpu.getFlag`, `ram.format`, `editor.destroy`, and the audit-i18n
+  parity check.
+- New suites this round: `tests/inputShape.test.js` (13),
+  `tests/inputPanel_integration.test.js` (13), `tests/reset_button.test.js`
+  (6), `tests/modals_visual.test.js` (15 — was brittle and broke when a
+  comment was added near the modal markup).
+- Test infrastructure: `// @vitest-environment jsdom` on every suite
+  that needs DOM; a shared `localStorage` stub in DOM suites.
+
 [1.1.0]: https://github.com/Pochonski/fetchcpu-pocho/releases/tag/v1.1.0
 [1.0.0]: https://github.com/Pochonski/fetchcpu-pocho/releases/tag/v1.0.0
+

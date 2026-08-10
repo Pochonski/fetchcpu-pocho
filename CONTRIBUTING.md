@@ -10,7 +10,7 @@ git clone <your-fork-url>
 cd fetchcpu-pocho
 npm install
 npm start                 # http://localhost:8000
-npm test                  # 242 tests across 30 suites
+npm test                  # 310 tests across 35 suites
 npm run lint              # ESLint over js/ and tests/
 npm run audit:i18n        # validates every key exists in EN + ES
 npm run test:coverage     # v8 coverage report (text + html)
@@ -44,6 +44,10 @@ npm run test:coverage     # v8 coverage report (text + html)
   (panel, buttons, forms, editor, cpu, ram, stats, log, modal, utilities).
 - 2-space indentation, single quotes, no trailing commas in object literals,
   semicolons avoided inside arrow function bodies when one expression.
+- **If you modify anything under `js/` or `css/`, bump the `?v=` query string
+  in `index.html`.** Vercel serves `.js` / `.css` with
+  `Cache-Control: public, max-age=31536000, immutable`, so without the bump
+  the browser keeps loading the previous build for a year.
 
 ## Internationalization (i18n)
 
@@ -62,3 +66,4 @@ If you're adding or updating UI strings:
 This project exists because clear, animated simulators are one of the best
 ways to teach low-level computing. If you find a way to make it clearer,
 please send a PR.
+

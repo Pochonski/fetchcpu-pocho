@@ -13,7 +13,7 @@ const ROOT = resolve(__dirname, "..");
 describe("Tutorial modal — new structure", () => {
   it("renders a header with icon + title + eyebrow", () => {
     const html = readFileSync(resolve(ROOT, "index.html"), "utf8");
-    const tutorial = html.match(/<div class="modal modal-tutorial"[^>]*>([\s\S]*?)<\/div>\s*<script/);
+    const tutorial = html.match(/<div class="modal modal-tutorial"[^>]*>([\s\S]*)<\/div>[\s\S]*?<script/);
     expect(tutorial).not.toBeNull();
     expect(tutorial[1]).toMatch(/<header class="modal-header">/);
     expect(tutorial[1]).toMatch(/<h2 id="tutorial-title"/);

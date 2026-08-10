@@ -166,6 +166,8 @@ On the editor gutter, click any line number to toggle a breakpoint.
 
 - When you **load a program**, the Input panel renders **one numeric slot per top-level `INP`** (e.g. a program with two `INP`s shows `#1` and `#2`).
 - If the program has an `INP` inside a **loop**, the panel shows **one slot with an `∞` badge** and a **+ Add value** button so you can stage one value per iteration.
+- **Changing the example dropdown** immediately loads the new program and reshapes the slots. The "Load example" button is still there as a confirmation.
+- **"↺ Ejemplo" button** — restores the example's input values and re-sizes the slots to the program's actual `INP` count (drops any extra slots you added with "+ Add value").
 - **Range enforcement** — every slot is bounded to the LMC's 3-digit signed range (`-499` to `+500`). Out-of-range values are highlighted in red and **Run / Step are blocked** until the value is corrected or cleared. The live feed surfaces a localised error pointing to the offending slot.
 - **Pasting** a list of numbers into the panel replaces the slots with the pasted numbers (truncated to the slot count, overflow is silently discarded).
 - Anything you write in the slots is mirrored to the share/export `.fcpu` format, so the new UI is fully compatible with the old text-based input box.
@@ -193,7 +195,7 @@ python3 -m http.server 8000
 | Script | Description |
 |---|---|
 | `npm start` / `npm run serve` | Start a static server on `http://127.0.0.1:8000/`. |
-| `npm test` | Run all **173** unit + integration + smoke tests with Vitest. |
+| `npm test` | Run all **310** unit + integration + smoke tests with Vitest. |
 | `npm run test:watch` | Vitest in watch mode. |
 | `npm run lint` | ESLint across `js/`. |
 | `npm run audit:i18n` | Validate that every i18n key referenced in code exists in both dictionaries (EN + ES). |
@@ -202,7 +204,7 @@ python3 -m http.server 8000
 
 ## Testing
 
-The project ships with **173 tests** across **17 suites** that exercise every
+The project ships with **310 tests** across **35 suites** that exercise every
 public module and the most critical user-facing flows.
 
 | Suite | What it covers |
@@ -224,6 +226,10 @@ public module and the most critical user-facing flows.
 | `tests/responsive.test.js` | Viewport meta, breakpoints, safe-areas, tap targets, mobile menu. |
 | `tests/step_fresh_load.test.js` | Fresh-boot assembly + first-step behaviour. |
 | `tests/step_phase.test.js` | One-phase stepping through the FDE pipeline. |
+| `tests/inputShape.test.js` | `countInps(instructions, labels)` for every example program. |
+| `tests/inputPanel_integration.test.js` | End-to-end `parse → countInps → setCount → setValues` per example. |
+| `tests/reset_button.test.js` | "↺ Ejemplo" button: visibility, restore, persistence, dropdown auto-load. |
+| `tests/modals_visual.test.js` | Modal HTML structure and modal CSS keyframes / grid / max-widths. |
 
 Run them all:
 
@@ -245,9 +251,9 @@ fetchcpu-pocho/
 ├── README.md                      # this file
 ├── CHANGELOG.md                   # release notes
 ├── CONTRIBUTING.md                # dev workflow
-├── DEPLOY.md                      # Vercel + GitHub setup
 ├── docs/
-│   └── INFRA.md                   # full infrastructure reference
+│   ├── INFRA.md                   # full infrastructure reference
+│   └── DEPLOY.md                  # Vercel + GitHub setup
 ├── LICENSE                        # MIT
 ├── package.json
 ├── eslint.config.js               # ESLint flat config
@@ -285,6 +291,7 @@ fetchcpu-pocho/
 │   │   ├── statsView.js
 │   │   ├── historyView.js
 │   │   ├── disassemblerView.js
+│   │   ├── inputShape.js          # countInps() — loop-aware INP count
 │   │   ├── io.js                  # IO queue + textarea bridge
 │   │   ├── ioSlots.js             # typed <input> slots with range validation
 │   │   ├── theme.js
@@ -306,7 +313,7 @@ fetchcpu-pocho/
 │   ├── promote.sh                 # alias latest Vercel deployment to fetchcpu-pocho
 │   └── audit-i18n.mjs             # verifies every referenced key exists
 │
-└── tests/                         # 17 suites, 173 tests
+└── tests/                         # 35 suites, 310 tests
 ```
 
 ---
@@ -337,20 +344,30 @@ Three layers keep the model honest:
 ### Input slots & range enforcement
 
 `js/ui/ioSlots.js` renders the Input panel as one `<input type="number">` per
-top-level `INP` mnemonic. When the program is loaded, `countInps(instructions)`
-walks the parsed AST and:
+top-level `INP` mnemonic. When the program is loaded,
+`countInps(instructions, labels)` (in `js/ui/inputShape.js`) walks the parsed
+AST and:
 
 - counts every `INP` outside a backward branch (linear flow → 1 slot each),
 - detects loops via `BRA`/`BRP`/`BRZ` whose target is `<` their own address,
   and collapses any `INP` inside a loop to a **single slot with an `∞` badge**
   plus a **+ Add value** button (so the user can stage one value per iteration).
 
+`labels` is needed because the parser stores label-based branches as
+`{ mode: "direct", value: null, ref: "label" }` — without resolving the label
+to an address, every branch looked like a jump to address 0 and the whole
+program appeared to be one giant loop. See `tests/inputShape.test.js` and
+`tests/inputPanel_integration.test.js` for the regression tests that pin
+this behavior across all 12 example programs.
+
 Each slot has `min="-499" max="500" maxlength="5"` and a `setValidity()` hook
 that toggles `.io-slot-input--invalid` whenever the entered value falls
 outside the LMC's 3-digit signed range. `isValid()` and `firstInvalid()` expose
 that state; `main.js` runs `guardInputRange()` before every `Run`, `Run to
 halt` and `Step`, focusing the offending slot and pushing a localised error
-to the live feed if validation fails.
+to the live feed if validation fails. The **"↺ Ejemplo"** button
+(`resetToExample()` in `main.js`) restores the example's input values and
+re-sizes the slots to the program's actual `INP` count.
 
 ### Immediate & indirect addressing
 
@@ -428,8 +445,8 @@ Production runs on Vercel:
 
 The legacy `pocho-lmc.vercel.app` and `lmc-simulator.vercel.app` aliases are
 preserved as **301 redirects** to the canonical domain (see `vercel.json`).
-GitHub autodeploys on push to `main`. See [DEPLOY.md](./DEPLOY.md) for the
-full setup.
+GitHub autodeploys on push to `main`. See [docs/DEPLOY.md](./docs/DEPLOY.md)
+for the full setup.
 
 ---
 
@@ -471,4 +488,5 @@ Want to help? Pick one:
 ## License
 
 MIT — see `LICENSE` for the full text.
+
 

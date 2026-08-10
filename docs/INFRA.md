@@ -82,7 +82,7 @@ npm install              # only needed for tests, lint, audit
 npm start                # http://127.0.0.1:8000
 
 # Quality gates
-npm test                 # 242 tests, 30 suites
+npm test                 # 310 tests, 35 suites
 npm run lint             # eslint js/ tests/
 npm run audit:i18n       # EN/ES parity + missing references
 npm run test:coverage    # v8 coverage (text + html)
@@ -300,6 +300,13 @@ directory.
 | `headers[4]` (`/index.html`) | `Cache-Control: no-cache, must-revalidate` so the entry point always re-validates. |
 | `redirects[*]` | 301 redirects from `pocho-lmc.vercel.app` and `lmc-simulator.vercel.app` (legacy aliases) to the canonical domain. |
 
+> **Cache-bust caveat:** because `.js` is served with
+> `max-age=31536000, immutable`, the browser keeps the previous build for a
+> full year unless the URL changes. `index.html` therefore references the
+> main script as `js/main.js?v=<version>`; **bump the `?v=` value whenever
+> you ship a change to anything under `js/` or `css/`**. See
+> [`DEPLOY.md`](./DEPLOY.md) for the full note.
+
 ### `.vercelignore`
 
 Excludes `node_modules/`, `.git/`, `.vscode/`, `.idea/`, `*.log`, and
@@ -478,9 +485,9 @@ fetchcpu-pocho/
 ├── README.md                   # user-facing docs
 ├── CHANGELOG.md                # version history
 ├── CONTRIBUTING.md             # dev workflow
-├── DEPLOY.md                   # Vercel-specific deploy notes
 ├── docs/
-│   └── INFRA.md                # this file
+│   ├── INFRA.md                # this file
+│   └── DEPLOY.md               # Vercel + GitHub setup
 ├── LICENSE                     # MIT
 │
 ├── assets/
@@ -515,6 +522,15 @@ fetchcpu-pocho/
 │   │   ├── events.js           # pub/sub
 │   │   └── stats.js            # runtime metrics
 │   ├── ui/                     # view layer (no business logic)
+│   │   ├── inputShape.js       # countInps() — loop-aware INP count
+│   │   ├── io.js               # IO queue + textarea bridge
+│   │   ├── ioSlots.js          # typed <input> slots with range validation
+│   │   ├── editor.js           # code editor with gutter + breakpoints
+│   │   ├── cpuView.js, ramView.js, disassemblerView.js
+│   │   ├── logger.js, statsView.js, historyView.js
+│   │   ├── theme.js, sound.js, tabs.js, modal.js, mobileMenu.js
+│   │   ├── share.js            # #fcpu=base64 URL hash
+│   │   ├── fileIO.js           # .fcpu import / export
 │   │   └── i18n/
 │   │       ├── dictionaries.js
 │   │       └── index.js
@@ -526,7 +542,7 @@ fetchcpu-pocho/
 │   ├── audit-i18n.mjs          # i18n static analyser
 │   └── promote.sh              # one-shot Vercel promotion
 │
-├── tests/                      # 30 suites, 242 tests
+├── tests/                      # 35 suites, 310 tests
 │
 ├── .github/
 │   └── workflows/
@@ -631,3 +647,4 @@ workflow can do it automatically.
 `pocho-lmc.vercel.app` and `lmc-simulator.vercel.app` have their
 own 301 redirects in `vercel.json` and are not affected by the
 alias state.
+
