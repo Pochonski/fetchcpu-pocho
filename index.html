@@ -218,6 +218,7 @@
             <div class="io-slots" id="input-list" role="group" aria-label="Input values"></div>
             <input type="hidden" id="input" />
             <button class="btn btn-ghost btn-sm io-add-slot" id="btn-add-input" type="button" data-i18n="panels.cpu.inputAddValue" hidden>+ Add value</button>
+            <button class="btn btn-ghost btn-sm io-reset-slot" id="btn-reset-input" type="button" data-i18n="panels.cpu.inputResetExample" data-i18n-attr="title:panels.cpu.inputResetExampleHint" hidden>↺ Ejemplo</button>
           </div>
           <div class="io-panel">
             <label for="output" data-i18n="panels.cpu.outputLabel">Output · stdout</label>
@@ -514,6 +515,9 @@
       </div>
     </div>
 
-    <script type="module" src="js/main.js"></script>
+    <!-- Bump ?v= when shipping JS/CSS changes. Vercel's Cache-Control sets
+         max-age=31536000 on .js, so without this query string the browser
+         serves the previous build for a year. -->
+    <script type="module" src="js/main.js?v=1.1.2"></script>
   </body>
 </html>

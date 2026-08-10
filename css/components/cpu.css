@@ -595,4 +595,5 @@
   margin-left: auto;
 }
 .io-add-slot { margin-top: var(--space-2); }
+.io-reset-slot { margin-top: var(--space-2); margin-left: var(--space-2); }
 

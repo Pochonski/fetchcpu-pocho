@@ -56,6 +56,26 @@ curl -sS https://fetchcpu-pocho.vercel.app/robots.txt
 curl -sS https://fetchcpu-pocho.vercel.app/sitemap.xml | head -c 200
 ```
 
+## Cache headers + browser cache-busting
+
+`vercel.json` sets `Cache-Control: public, max-age=31536000, immutable` on
+every `.js` / `.css` / `.svg` response. That is correct for cache lifetime
+but means **the browser keeps loading the previous build for a full year**
+unless the URL itself changes.
+
+The `index.html` `<script>` tag therefore carries a version query string:
+
+```html
+<script type="module" src="js/main.js?v=1.1.2"></script>
+```
+
+**Whenever you ship a change to anything under `js/` or `css/`, bump the
+`?v=` value in `index.html`.** Any browser that already has the old URL
+cached will fetch the new one because the URL is now different. Without
+the bump, users stuck on a previous version will report "the bug is still
+there" — and they will be right, because they are still running the old
+build.
+
 ## Known issue: GitHub autodeploys land as Preview-only on this project
 
 When a push to `main` triggers an autodeploy via the GitHub integration, the
@@ -77,3 +97,4 @@ Two fixes — pick one:
 The CI workflow in `.github/workflows/promote.yml` makes option **B**
 zero-touch on CI; it needs a `VERCEL_TOKEN` secret in the GitHub repo
 settings to authenticate against the Vercel API.
+
