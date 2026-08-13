@@ -239,18 +239,18 @@
             <header class="io-panel-header">
               <label class="io-panel-label" data-i18n="panels.cpu.outputLabel" id="io-output-label" for="output">Output · stdout</label>
               <span class="io-panel-counter" id="io-output-counter" aria-live="polite"></span>
-              <div class="io-panel-actions">
-                <button class="btn btn-secondary btn-sm" id="btn-output-copy" type="button" data-i18n-attr="title:panels.cpu.outputCopyHint;aria-label:panels.cpu.outputCopyHint">
-                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="9" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-                  <span data-i18n="panels.cpu.outputCopy">Copy</span>
-                </button>
-                <button class="btn btn-secondary btn-sm" id="btn-output-clear" type="button" data-i18n-attr="title:panels.cpu.outputClearHint;aria-label:panels.cpu.outputClearHint">
-                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                  <span data-i18n="panels.cpu.outputClear">Clear output</span>
-                </button>
-              </div>
             </header>
             <textarea id="output" class="io-textarea" rows="4" readonly aria-label="Program output"></textarea>
+            <div class="io-panel-actions">
+              <button class="btn btn-secondary btn-sm" id="btn-output-copy" type="button" data-i18n-attr="title:panels.cpu.outputCopyHint;aria-label:panels.cpu.outputCopyHint">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="9" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                <span data-i18n="panels.cpu.outputCopy">Copy</span>
+              </button>
+              <button class="btn btn-secondary btn-sm" id="btn-output-clear" type="button" data-i18n-attr="title:panels.cpu.outputClearHint;aria-label:panels.cpu.outputClearHint">
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span data-i18n="panels.cpu.outputClear">Clear output</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>

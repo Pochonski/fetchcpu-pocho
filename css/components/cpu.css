@@ -633,9 +633,10 @@
   letter-spacing: 0;
   margin-left: auto;
 }
-/* Action buttons inside the IO panel: full-width + secondary style so they
-   read as discoverable actions (the previous btn-ghost btn-sm looked like
-   plain text links). */
+/* Action buttons inside the IO panel: all four (Add value, Reset to
+   example, Copy, Clear output) share the same flex layout so the
+   input + output panels look symmetric. Each pair stretches to fill
+   its parent .io-panel-actions equally: 50/50 within its own column. */
 .io-panel-actions .io-add-slot,
 .io-panel-actions .io-reset-slot,
 .io-panel-actions #btn-output-copy,
@@ -643,15 +644,6 @@
   flex: 1 1 auto;
   justify-content: center;
   min-width: 7rem;
-}
-#btn-output-copy,
-#btn-output-clear {
-  /* The output panel buttons sit in the header so they should not stretch
-     full-width like the input row buttons. Cap their width. */
-  flex: 0 0 auto;
-  min-width: 0;
-  padding-left: var(--space-2);
-  padding-right: var(--space-2);
 }
 #btn-output-copy .icon,
 #btn-output-clear .icon,
