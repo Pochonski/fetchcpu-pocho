@@ -9,7 +9,7 @@
      --bp-lg     1024px  iPad landscape / small laptops
      --bp-xl     1280px  desktop
      --bp-2xl    1480px  wide desktop
-     --bp-3xl    1640px  ultra-wide (25–27" monitors, 2-row × 3-col)
+     --bp-3xl    1640px  ultra-wide (25–27" monitors, 3-col + log row)
    ============================================================ */
 
 /* ----- Body / page shell ----- */
@@ -164,16 +164,19 @@ body {
   }
 }
 
-/* ≥ 1640px — wide desktop (25–27" monitors). Two rows × three columns.
-   The left column stacks CPU · State over the Program · Assembly editor.
-   The centre column stacks Controls · Execution over the Activity panel.
-   RAM spans both rows on the right:
+/* ≥ 1640px — wide desktop (25–27" monitors). Three columns × two rows.
+   The left column stacks CPU · State (top) and Program · Assembly (bottom).
+   The centre column stacks Controls · Execution (top) and Activity (bottom).
+   RAM spans both rows on the right. Activity is therefore a sibling of
+   Controls — NOT a sibling of the editor — which keeps every panel
+   visible at once on a 25–27" monitor without a full-width horizontal
+   Activity row underneath:
 
-        +---------+------------+--------+
-   row1 |  cpu    |  controls  |        |
-        +---------+------------+        |
-   row2 |  editor |  activity  |  ram   |
-        +---------+------------+--------+
+        +--------+-----------+--------+
+   row1 |  cpu   |  controls |        |
+        +--------+-----------+   ram   |
+   row2 | editor |    log    |        |
+        +--------+-----------+--------+
 
    The wider soft cap (--layout-max-width-wide: 2360px) prevents columns
    from stretching to absurd widths on 4K / 32"+ displays. */
@@ -186,29 +189,32 @@ body {
     grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas:
       "cpu     controls  ram"
-      "editor  activity  ram";
+      "editor  log       ram";
     max-width: var(--layout-max-width-wide);
     gap: var(--space-5);
   }
 
-  /* Activity collapsed → Controls grows to fill the centre column. */
+  /* Activity collapsed → Controls absorbs the bottom row of the
+     centre column. CPU + Editor stay in the left column as-is. */
   .app-grid:has(.log-panel[data-collapsed="true"]) {
     grid-template-areas:
       "cpu     controls  ram"
       "editor  controls  ram";
   }
 
-  /* Editor collapsed → CPU grows to take over the left column. */
+  /* Editor collapsed → CPU absorbs the bottom row of the left column.
+     Activity stays in row 2 of the centre column. */
   .app-grid:has(.editor-panel[data-collapsed="true"]) {
     grid-template-areas:
-      "cpu     controls  ram"
-      "cpu     activity  ram";
+      "cpu     log  ram"
+      "cpu     log  ram";
   }
 
-  /* RAM spans both rows of the right column; the grid cell needs an
-     explicit height so .panel { display: flex; flex-direction: column }
-     can stretch the inner scroll containers to fill the column. */
-  .ram-panel {
+  /* RAM spans both rows. Controls + Activity each need an explicit
+     height so the inner scroll containers fill their grid cells. */
+  .controls-panel,
+  .ram-panel,
+  .log-panel {
     height: 100%;
     min-height: 0;
   }
