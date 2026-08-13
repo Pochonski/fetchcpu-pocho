@@ -10,7 +10,7 @@ git clone <your-fork-url>
 cd fetchcpu-pocho
 npm install
 npm start                 # http://localhost:8000
-npm test                  # 310 tests across 35 suites
+npm test                  # 382 tests across 43 suites
 npm run lint              # ESLint over js/ and tests/
 npm run audit:i18n        # validates every key exists in EN + ES
 npm run test:coverage     # v8 coverage report (text + html)
@@ -45,9 +45,15 @@ npm run test:coverage     # v8 coverage report (text + html)
 - 2-space indentation, single quotes, no trailing commas in object literals,
   semicolons avoided inside arrow function bodies when one expression.
 - **If you modify anything under `js/` or `css/`, bump the `?v=` query string
-  in `index.html`.** Vercel serves `.js` / `.css` with
-  `Cache-Control: public, max-age=31536000, immutable`, so without the bump
-  the browser keeps loading the previous build for a year.
+  in `index.html`** (`js/main.js?v=X.Y.Z` and the favicon URLs). Vercel
+  serves `.js` / `.css` with `Cache-Control: public, max-age=31536000,
+  immutable`, so without the bump the browser keeps loading the previous
+  build for a year.
+- **The `?v=` counter is intentionally independent of `package.json`
+  `version`.** Hot-fixes or mid-release changes can bump `?v=` without
+  publishing a new release. The About modal shows `package.json`'s value;
+  the `?v=` (and the favicons) can run ahead. Don't try to keep them in
+  lockstep.
 
 ## Internationalization (i18n)
 

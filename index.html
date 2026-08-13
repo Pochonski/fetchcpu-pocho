@@ -517,7 +517,10 @@
 
     <!-- Bump ?v= when shipping JS/CSS changes. Vercel's Cache-Control sets
          max-age=31536000 on .js, so without this query string the browser
-         serves the previous build for a year. -->
+         serves the previous build for a year.
+         The ?v= counter is a release counter independent of the package
+         version shown in the About modal — it can run ahead when hot-fixes
+         ship without a full release. See CONTRIBUTING.md. -->
     <script type="module" src="js/main.js?v=1.1.2"></script>
   </body>
 </html>

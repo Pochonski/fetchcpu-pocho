@@ -491,7 +491,11 @@ fetchcpu-pocho/
 ├── LICENSE                     # MIT
 │
 ├── assets/
-│   └── brand-mark.svg
+│   ├── logo.png                  # brand mark (single source of truth)
+│   ├── favicon-32.png            # tab favicon
+│   ├── favicon-192.png           # Android / PWA icon
+│   ├── favicon-512.png           # PWA splash icon
+│   └── apple-touch-icon.png      # iOS home-screen icon
 │
 ├── css/
 │   ├── reset.css

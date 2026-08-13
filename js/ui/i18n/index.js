@@ -3,7 +3,7 @@
 //   - t("key", args?)              → string
 //   - setLanguage("en" | "es")     → applies language, fires event
 //   - currentLanguage()            → string
-//   - registerOnChange(fn)          → notify on language switch
+//   - registerOnChange(fn)          → returns unsubscribe()
 //
 // Keys use dot-notation. Interpolation uses {0}, {1} placeholders.
 // Missing keys return the key itself with a console warning (so untranslated

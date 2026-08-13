@@ -137,7 +137,7 @@ export function createCPUView(cpu, events) {
   }
 
   // Refresh on language change.
-  registerOnChange(() => {
+  const unsubscribeLang = registerOnChange(() => {
     if (lastAccess && refs.accessTag) {
       refs.accessTag.textContent = lastAccess.direction === "in"
         ? t("access.read")
@@ -155,6 +155,7 @@ export function createCPUView(cpu, events) {
     destroy() {
       for (const id of pendingTimers) clearTimeout(id);
       pendingTimers.clear();
+      unsubscribeLang();
     },
   };
 }

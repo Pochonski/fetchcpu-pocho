@@ -18,7 +18,8 @@ export function createHistoryView(executor) {
     const clickHint = t("history.clickToView");
     const cycleLabel = t("history.cycle");
     for (let i = start; i < hist.length; i++) {
-      const row = document.createElement("div");
+      const row = document.createElement("button");
+      row.type = "button";
       row.className = "history-row";
       row.dataset.idx = i;
       const entry = hist[i];
@@ -30,6 +31,7 @@ export function createHistoryView(executor) {
         <span class="history-meta">ACC ${fmtHex(entry.cpu.acc, 3)}</span>
       `;
       row.title = clickHint;
+      row.setAttribute("aria-label", `${clickHint}: #${i + 1} ${entry.mnemonic || ""}`);
       row.addEventListener("click", () => {
         while (executor.history().length > i + 1) executor.stepBack();
       });

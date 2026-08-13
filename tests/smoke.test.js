@@ -102,7 +102,7 @@ describe("Application smoke test", () => {
     expect(tags.slice(0, 6)).toEqual(["INP", "OUT", "STA", "SUB", "STA", "BRP"]);
   });
 
-  it("runs the countdown timer and produces 5 4 3 2 1 0", async () => {
+  it("runs the countdown timer and produces 5 4 3 2 1 0", { timeout: 15_000 }, async () => {
     const clock = document.getElementById("clock");
     clock.value = "10";
     clock.dispatchEvent(new Event("input"));
@@ -117,14 +117,16 @@ describe("Application smoke test", () => {
     document.getElementById("btn-load").click();
     document.getElementById("btn-run").click();
 
-    const start = Date.now();
-    while (Date.now() - start < 4000) {
+    // Wait until the program halts naturally (clock default + coverage
+    // overhead can stretch execution). Cap to 8 s so a real failure
+    // surfaces as a timeout instead of an indefinite loop.
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < 8000) {
       await new Promise((r) => setTimeout(r, 50));
       const out = document.getElementById("output").value;
       if (/^5\s*4\s*3\s*2\s*1\s*0\s*$/.test(out.trim())) break;
     }
 
-    document.getElementById("btn-pause").click();
     const out = document.getElementById("output").value;
     expect(out.trim().split(/\s+/)).toEqual(["5", "4", "3", "2", "1", "0"]);
   });

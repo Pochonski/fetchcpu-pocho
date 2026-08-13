@@ -34,7 +34,7 @@ export function createRAMView(ram, cpu) {
   let modifiedFlash = 0;
 
   // --- Layout: grid of 10 columns × 10 rows ---
-  root.innerHTML = "";
+  root.replaceChildren();
 
   // Column header row.
   const headRow = document.createElement("tr");

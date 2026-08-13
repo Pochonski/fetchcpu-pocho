@@ -120,6 +120,12 @@ export function createEditorView(textareaEl, gutterEl, highlightEl, { onChange, 
     breakpoints: new Set(),
   };
 
+  // Suppress onChange() during the constructor's first render so a
+  // freshly-mounted editor does not overwrite the persisted source with
+  // an empty value before boot() reads it. Subsequent user edits and
+  // programmatic setProgram() calls re-enable the side-effect.
+  let suppressOnChange = true;
+
   function rerender() {
     const lines = textareaEl.value.split("\n");
     gutterEl.innerHTML = "";
@@ -134,7 +140,7 @@ export function createEditorView(textareaEl, gutterEl, highlightEl, { onChange, 
       fragments.push(highlightLine(line));
     });
     highlightEl.innerHTML = fragments.join("\n");
-    if (typeof onChange === "function") onChange(state);
+    if (!suppressOnChange && typeof onChange === "function") onChange(state);
   }
 
   function toggleBreakpoint(lineIdx) {
@@ -162,21 +168,25 @@ export function createEditorView(textareaEl, gutterEl, highlightEl, { onChange, 
   textareaEl.addEventListener("keyup", syncScroll);
 
   // Resize observer to keep the overlay aligned when the panel stretches.
-// Held in a closure so destroy() can disconnect it (no listener leak across
-// re-boots of the app in test harnesses).
+  // Held in a closure so destroy() can disconnect it (no listener leak across
+  // re-boots of the app in test harnesses).
   let resizeObserver = null;
   if (window.ResizeObserver) {
     resizeObserver = new ResizeObserver(syncScroll);
     resizeObserver.observe(textareaEl);
   }
 
+  // First render runs with suppression active; lift it immediately after.
   rerender();
+  suppressOnChange = false;
 
   return {
     state,
     rerender,
     syncScroll,
     setProgram(text) {
+      // Programmatic loads (share hash import, example selection) DO
+      // propagate to localStorage so the source of truth stays in sync.
       textareaEl.value = text;
       rerender();
     },

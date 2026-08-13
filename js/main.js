@@ -225,7 +225,7 @@ function boot() {
       { kbd: t("shortcutFormat.f5"),    label: t("footer.keys.run") },
       { kbd: t("shortcutFormat.f6"),    label: t("footer.keys.pause") },
       { kbd: t("shortcutFormat.f9"),    label: t("footer.keys.step") },
-      { kbd: t("shortcutFormat.f10"),   label: t("footer.keys.phase") || t("panels.cpu.stepPhase").toLowerCase() },
+      { kbd: t("shortcutFormat.f10"),   label: t("footer.keys.phase") },
       { kbd: t("shortcutFormat.f8"),    label: t("footer.keys.back") },
       { kbd: t("shortcutFormat.f4"),    label: t("footer.keys.restart") },
       { kbd: t("shortcutFormat.ctrlS"), label: t("footer.keys.save") },
@@ -335,21 +335,23 @@ sel.addEventListener("change", () => {
 });
 
   // Wire language switch buttons.
-  document.querySelectorAll(".lang-btn").forEach((btn) => {
+  const langButtons = document.querySelectorAll(".lang-btn");
+  function syncLangButtons(lang = currentLanguage()) {
+    langButtons.forEach((b) => {
+      b.setAttribute("aria-pressed", b.dataset.lang === lang ? "true" : "false");
+    });
+  }
+  langButtons.forEach((btn) => {
     btn.addEventListener("click", () => {
       const lang = btn.dataset.lang;
       setLanguage(lang);
-      document.querySelectorAll(".lang-btn").forEach((b) => {
-        b.setAttribute("aria-pressed", b.dataset.lang === lang ? "true" : "false");
-      });
+      syncLangButtons(lang);
       applyAllTranslations();
     });
   });
 
   // Sync aria-pressed to the active language on boot.
-  document.querySelectorAll(".lang-btn").forEach((b) => {
-    b.setAttribute("aria-pressed", b.dataset.lang === currentLanguage() ? "true" : "false");
-  });
+  syncLangButtons();
 
   // Apply once on boot.
   applyAllTranslations();
@@ -935,9 +937,13 @@ sel.addEventListener("change", () => {
 
 // Auto-boot detection: only call boot() in the actual browser, not in tests.
 // Vitest's jsdom env exposes `globalThis.__vitest_worker__` so we gate on that.
-if (typeof globalThis !== "undefined" &&
-    typeof globalThis.__vitest_worker__ === "undefined" &&
-    typeof document !== "undefined") {
+function shouldAutoBoot() {
+  return typeof globalThis !== "undefined"
+    && typeof globalThis.__vitest_worker__ === "undefined"
+    && typeof document !== "undefined";
+}
+
+if (shouldAutoBoot()) {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);
   } else {
@@ -945,6 +951,6 @@ if (typeof globalThis !== "undefined" &&
   }
 }
 
-export { boot, resetBoot };
+export { boot, resetBoot, shouldAutoBoot };
 
 function resetBoot() { booted = false; }

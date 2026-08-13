@@ -273,10 +273,13 @@ export function createLogger(liveFeedEl, logEl) {
     setTimeout(() => URL.revokeObjectURL(url), 250);
   }
 
-  registerOnChange(() => rerenderAll());
+  const unsubscribeLang = registerOnChange(() => rerenderAll());
 
   return {
     onCycle, onProgramLoaded, onProgramHalted, onInputExhausted, onError,
     clear, setLogFile, isLogFileEnabled, download,
+    destroy() {
+      unsubscribeLang();
+    },
   };
 }
