@@ -215,17 +215,42 @@
           </div>
         </div>
 
-        <div class="controls-row controls-row-io">
-          <div class="io-panel">
-            <label data-i18n="panels.cpu.inputLabel">Input · stdin</label>
-            <div class="io-slots" id="input-list" role="group" aria-label="Input values"></div>
+        <div class="controls-row controls-row-io" id="controls-io">
+          <div class="io-panel io-panel--input">
+            <header class="io-panel-header">
+              <label class="io-panel-label" data-i18n="panels.cpu.inputLabel" id="io-input-label">Input · stdin</label>
+              <span class="io-panel-counter" id="io-input-counter" aria-live="polite"></span>
+            </header>
+            <div class="io-slots" id="input-list" role="group" aria-labelledby="io-input-label"></div>
             <input type="hidden" id="input" />
-            <button class="btn btn-ghost btn-sm io-add-slot" id="btn-add-input" type="button" data-i18n="panels.cpu.inputAddValue" hidden>+ Add value</button>
-            <button class="btn btn-ghost btn-sm io-reset-slot" id="btn-reset-input" type="button" data-i18n="panels.cpu.inputResetExample" data-i18n-attr="title:panels.cpu.inputResetExampleHint" hidden>↺ Ejemplo</button>
+            <div class="io-panel-actions">
+              <button class="btn btn-secondary btn-sm io-add-slot" id="btn-add-input" type="button" data-i18n-attr="title:panels.cpu.inputAddValue;aria-label:panels.cpu.inputAddValue" hidden>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span data-i18n="panels.cpu.inputAddValue">+ Add value</span>
+              </button>
+              <button class="btn btn-secondary btn-sm io-reset-slot" id="btn-reset-input" type="button" data-i18n-attr="title:panels.cpu.inputResetExampleHint;aria-label:panels.cpu.inputResetExampleHint" hidden>
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 4v6h6M20 12a8 8 0 1 1-2.34-5.66" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                <span data-i18n="panels.cpu.inputResetExample">↺ Example</span>
+              </button>
+            </div>
           </div>
-          <div class="io-panel">
-            <label for="output" data-i18n="panels.cpu.outputLabel">Output · stdout</label>
-            <textarea id="output" class="io-textarea" rows="2" readonly aria-label="Program output"></textarea>
+
+          <div class="io-panel io-panel--output">
+            <header class="io-panel-header">
+              <label class="io-panel-label" data-i18n="panels.cpu.outputLabel" id="io-output-label" for="output">Output · stdout</label>
+              <span class="io-panel-counter" id="io-output-counter" aria-live="polite"></span>
+              <div class="io-panel-actions">
+                <button class="btn btn-secondary btn-sm" id="btn-output-copy" type="button" data-i18n-attr="title:panels.cpu.outputCopyHint;aria-label:panels.cpu.outputCopyHint">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><rect x="9" y="9" width="11" height="11" rx="1.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M5 15V5a1 1 0 0 1 1-1h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+                  <span data-i18n="panels.cpu.outputCopy">Copy</span>
+                </button>
+                <button class="btn btn-secondary btn-sm" id="btn-output-clear" type="button" data-i18n-attr="title:panels.cpu.outputClearHint;aria-label:panels.cpu.outputClearHint">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 7h16M9 7V4h6v3M6 7l1 13a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                  <span data-i18n="panels.cpu.outputClear">Clear output</span>
+                </button>
+              </div>
+            </header>
+            <textarea id="output" class="io-textarea" rows="4" readonly aria-label="Program output"></textarea>
           </div>
         </div>
       </section>

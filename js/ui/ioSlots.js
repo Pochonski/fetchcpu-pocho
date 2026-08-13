@@ -70,7 +70,13 @@ export function createInputSlots(container, options = {}) {
 
   function buildSlot(index) {
     const wrap = el("div", { class: "io-slot" + (isLoop ? " io-slot--loop" : "") });
-    const label = el("span", { class: "io-slot-label" }, [`#${index + 1}`]);
+    // Slot label: "#1 INP" — the leading "#N" is the slot index (so the user
+    // can see "Value for INP #2"); the trailing "INP" mnemonic badge makes the
+    // label unambiguous in the input panel (vs. the output to its right).
+    const label = el("span", { class: "io-slot-label" }, [
+      `#${index + 1}`,
+      el("span", { class: "io-slot-mnemonic" }, ["INP"]),
+    ]);
     const input = el("input", {
       type: "number",
       step: "1",
@@ -118,6 +124,7 @@ export function createInputSlots(container, options = {}) {
     if (options.addButton) {
       options.addButton.hidden = !isLoop;
     }
+    updateCounter();
   }
 
   function setValues(values) {
@@ -195,6 +202,20 @@ export function createInputSlots(container, options = {}) {
     });
   }
 
+  // Helper called by main.js after setCount / setLanguage so the visible
+  // counter pill in the panel header stays in sync. The element id is
+  // resolved at call time (rather than passed in on construction) so the
+  // test harness can change the DOM between boot and counter update.
+  function updateCounter() {
+    const el = typeof document !== "undefined"
+      ? document.getElementById("io-input-counter")
+      : null;
+    if (!el) return;
+    if (count === 0) { el.textContent = ""; return; }
+    const key = count === 1 ? "panels.cpu.inputCountOne" : "panels.cpu.inputCountMany";
+    el.textContent = t(key, { count });
+  }
+
   return {
     setCount,
     setValues,
@@ -206,5 +227,6 @@ export function createInputSlots(container, options = {}) {
     firstInvalid,
     rangeMin: () => RANGE_MIN,
     rangeMax: () => RANGE_MAX,
+    updateCounter,
   };
 }

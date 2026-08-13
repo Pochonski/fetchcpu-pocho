@@ -50,12 +50,16 @@ describe("input slots", () => {
     expect(badge?.textContent).toBe("∞");
   });
 
-  it("numbers slots sequentially as #1, #2, #3", () => {
+  it("numbers slots sequentially as #1, #2, #3 + INP badge", () => {
     slots.setCount(3, false);
     const labels = container.querySelectorAll(".io-slot-label");
-    expect(labels[0].textContent).toBe("#1");
-    expect(labels[1].textContent).toBe("#2");
-    expect(labels[2].textContent).toBe("#3");
+    // Each label is rendered as "#N" + an "INP" mnemonic span. textContent
+    // concatenates without whitespace, so the expected value is "#1INP".
+    expect(labels[0].textContent).toBe("#1INP");
+    expect(labels[1].textContent).toBe("#2INP");
+    expect(labels[2].textContent).toBe("#3INP");
+    // The mnemonic span inside the first label says "INP".
+    expect(labels[0].querySelector(".io-slot-mnemonic")?.textContent).toBe("INP");
   });
 
   it("setValues populates each slot and emits the values", () => {

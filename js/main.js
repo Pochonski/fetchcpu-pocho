@@ -22,7 +22,7 @@ import { initTheme } from "./ui/theme.js";
 import { PROGRAMS, getProgramMeta } from "./programs/examples.js";
 import { decodeShare, currentShare } from "./ui/share.js";
 import { parseFile, downloadAs } from "./ui/fileIO.js";
-import { t, currentLanguage, setLanguage, translateDom, initI18n } from "./ui/i18n/index.js";
+import { t, currentLanguage, setLanguage, translateDom, initI18n, registerOnChange } from "./ui/i18n/index.js";
 import { en as enDict, es as esDict } from "./ui/i18n/dictionaries.js";
 import { openModal as openModalA11y, closeModal as closeModalA11y } from "./ui/modal.js";
 import { initMobileMenu } from "./ui/mobileMenu.js";
@@ -65,6 +65,42 @@ function boot() {
   });
   $("btn-add-input")?.addEventListener("click", () => inputSlots.addSlot());
   $("btn-reset-input")?.addEventListener("click", resetToExample);
+
+  // Output panel: Clear and Copy actions. These are independent of the
+  // simulator runtime — they only manipulate the #output textarea.
+  // Copy uses the async Clipboard API; if it's blocked (older browser,
+  // insecure context) we silently fall back rather than throwing.
+  const outputEl = $("output");
+  function refreshOutputCounter() {
+    const counterEl = $("io-output-counter");
+    if (!counterEl || !outputEl) return;
+    const text = outputEl.value;
+    if (text.trim() === "") {
+      counterEl.textContent = t("panels.cpu.outputCountZero");
+      return;
+    }
+    const lines = text.trim().split(/\s+/).length;
+    const key = lines === 1
+      ? "panels.cpu.outputCountOne"
+      : "panels.cpu.outputCountMany";
+    counterEl.textContent = t(key, { count: lines });
+  }
+  $("btn-output-clear")?.addEventListener("click", () => {
+    if (outputEl) outputEl.value = "";
+    refreshOutputCounter();
+  });
+  $("btn-output-copy")?.addEventListener("click", async () => {
+    const text = outputEl?.value ?? "";
+    if (!text) return;
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch {
+      // Fallback: select + execCommand for older browsers or insecure
+      // contexts (jsdom, file://). No visible feedback if both fail.
+      outputEl.focus();
+      outputEl.select();
+    }
+  });
 
   const cpuView = createCPUView(cpu, events);
   const ramView = createRAMView(ram, cpu);
@@ -130,6 +166,13 @@ function boot() {
     updateBlurb();
     rebuildModalContent();
     refreshView();
+    // The IO counter pills (#io-input-counter / #io-output-counter) are
+    // plain <span> elements with no data-i18n attribute, so translateDom
+    // can't update them. Re-render them against the active language so
+    // labels like "2 slots" → "2 valores" flip when the user switches
+    // between EN and ES.
+    inputSlots.updateCounter();
+    refreshOutputCounter();
   }
 
   function refreshView() {
@@ -355,6 +398,21 @@ sel.addEventListener("change", () => {
 
   // Apply once on boot.
   applyAllTranslations();
+  // Sync the IO counter pills (input slots, output lines) with the
+  // freshly-translated labels.
+  inputSlots.updateCounter();
+  refreshOutputCounter();
+
+  // Keep the IO counter pills in sync whenever the language is changed
+  // programmatically (e.g. tests calling setLanguage directly). The
+  // click handler on the language buttons also calls applyAllTranslations,
+  // but that path was added before the counter pills existed; this
+  // listener is the single source of truth so both paths keep the pills
+  // consistent.
+  registerOnChange(() => {
+    inputSlots.updateCounter();
+    refreshOutputCounter();
+  });
 
   // ---- Panel collapse / expand (wide-desktop only) -------------------------
   // On ≥1640px the Activity and Editor panels share the left column of the
@@ -527,6 +585,7 @@ sel.addEventListener("change", () => {
     logger.onProgramLoaded(entries.length);
     setExplanationText(t("explanation.idle"));
     refreshView();
+    refreshOutputCounter();
   }
 
   // Refuse to run/step while any slot holds a value outside the 3-digit

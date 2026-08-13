@@ -481,33 +481,61 @@
   white-space: nowrap;
 }
 
-/* IO panels */
-.io-panels {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
+/* IO panels — controls-row-io now wraps on narrow viewports so the
+   input + output panels stack vertically on phones. The dead .io-panels
+   class (previously a grid 1fr 1fr but never produced in markup) is gone. */
+.controls-row-io {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border);
-}
-@media (max-width: 480px) {
-  .io-panels { grid-template-columns: 1fr; padding: var(--space-2) var(--space-3); }
 }
 .io-panel {
   display: flex;
   flex-direction: column;
   gap: var(--space-2);
   min-width: 0;
+  flex: 1 1 18rem;
 }
-.io-panel label {
+.io-panel-header {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+  min-height: 1.75rem;
+}
+.io-panel-label {
   font-size: 0.625rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
   color: var(--fg-muted);
+  flex: 1 1 auto;
+}
+.io-panel-counter {
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  color: var(--accent);
+  background: var(--accent-soft);
+  padding: 1px 8px;
+  border-radius: var(--radius-pill);
+  /* Reserve a stable width so the pill doesn't reflow when the count
+     crosses single/double digits ("1 slot" → "10 slots"). */
+  min-width: 4.5rem;
+  text-align: center;
+  white-space: nowrap;
+}
+.io-panel-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-left: auto;
 }
 .io-textarea {
   resize: vertical;
-  min-height: 4.5rem;
+  min-height: 6rem;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--bg-input);
@@ -550,8 +578,19 @@
 .io-slot-label {
   font-size: var(--fs-md);
   color: var(--fg-muted);
-  min-width: 3ch;
+  min-width: 5ch;
   text-align: right;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+.io-slot-mnemonic {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 .io-slot-input {
   flex: 0 0 auto;
@@ -594,6 +633,41 @@
   letter-spacing: 0;
   margin-left: auto;
 }
-.io-add-slot { margin-top: var(--space-2); }
-.io-reset-slot { margin-top: var(--space-2); margin-left: var(--space-2); }
+/* Action buttons inside the IO panel: full-width + secondary style so they
+   read as discoverable actions (the previous btn-ghost btn-sm looked like
+   plain text links). */
+.io-panel-actions .io-add-slot,
+.io-panel-actions .io-reset-slot,
+.io-panel-actions #btn-output-copy,
+.io-panel-actions #btn-output-clear {
+  flex: 1 1 auto;
+  justify-content: center;
+  min-width: 7rem;
+}
+#btn-output-copy,
+#btn-output-clear {
+  /* The output panel buttons sit in the header so they should not stretch
+     full-width like the input row buttons. Cap their width. */
+  flex: 0 0 auto;
+  min-width: 0;
+  padding-left: var(--space-2);
+  padding-right: var(--space-2);
+}
+#btn-output-copy .icon,
+#btn-output-clear .icon,
+.io-add-slot .icon,
+.io-reset-slot .icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+/* Stacks each IO panel on its own row under 480 px so they don't share
+   the cramped controls row on phones. */
+@media (max-width: 480px) {
+  .controls-row-io { padding: var(--space-2) var(--space-3); gap: var(--space-3); }
+  .io-panel { flex-basis: 100%; }
+  .io-panel-actions .io-add-slot,
+  .io-panel-actions .io-reset-slot { flex: 1 1 calc(50% - var(--space-2)); }
+  .io-textarea { min-height: 5rem; }
+}
 
