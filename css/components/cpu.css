@@ -481,13 +481,14 @@
   white-space: nowrap;
 }
 
-/* IO panels — controls-row-io now wraps on narrow viewports so the
-   input + output panels stack vertically on phones. The dead .io-panels
-   class (previously a grid 1fr 1fr but never produced in markup) is gone. */
+/* IO panels — Input · stdin and Output · stdout sit side-by-side as two
+   equal-width columns of the same grid row, so the Controls panel uses a
+   single compact horizontal strip instead of stacking the two IO panels
+   vertically. On narrow phones (≤480 px) the grid collapses to a single
+   column and each panel claims the full row width. */
 .controls-row-io {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
   border-top: 1px solid var(--border);
@@ -497,7 +498,6 @@
   flex-direction: column;
   gap: var(--space-2);
   min-width: 0;
-  flex: 1 1 18rem;
 }
 .io-panel-header {
   display: flex;
@@ -664,8 +664,11 @@
 /* Stacks each IO panel on its own row under 480 px so they don't share
    the cramped controls row on phones. */
 @media (max-width: 480px) {
-  .controls-row-io { padding: var(--space-2) var(--space-3); gap: var(--space-3); }
-  .io-panel { flex-basis: 100%; }
+  .controls-row-io {
+    grid-template-columns: 1fr;
+    padding: var(--space-2) var(--space-3);
+    gap: var(--space-3);
+  }
   .io-panel-actions .io-add-slot,
   .io-panel-actions .io-reset-slot { flex: 1 1 calc(50% - var(--space-2)); }
   .io-textarea { min-height: 5rem; }

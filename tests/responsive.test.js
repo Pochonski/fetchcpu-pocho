@@ -256,21 +256,20 @@ describe("responsive component rules", () => {
     expect(compsCss).toMatch(/@media\s*\(max-width:\s*480px\)[\s\S]*?\.modal\s*\{[\s\S]*?padding:\s*0/);
   });
 
-  it("wraps the IO row on narrow screens (no horizontal overflow)", () => {
-    // .controls-row-io is the actual class in the markup. flex-wrap:
-    // wrap means the input + output panels stack vertically once the row
-    // runs out of horizontal space — critical for ≤480 px where each
-    // io-panel can claim the full width.
+  it("lays out the IO row in two equal columns by default", () => {
+    // .controls-row-io is a CSS Grid with two equal columns so the input
+    // + output panels sit side-by-side in the Controls panel and save
+    // vertical space on wide desktops.
     expect(compsCss).toMatch(
-      /\.controls-row-io\s*\{[\s\S]*?flex-wrap:\s*wrap[\s\S]*?\}/,
+      /\.controls-row-io\s*\{[\s\S]*?grid-template-columns:\s*1fr\s+1fr[\s\S]*?\}/,
     );
   });
 
   it("stacks each IO panel into its own row under 480px", () => {
-    // @media (max-width: 480px) … .io-panel { flex-basis: 100% } so
-    // both panels occupy the full row width on phones.
+    // @media (max-width: 480px) collapses the grid-template-columns to a
+    // single column so each panel claims the full row width on phones.
     expect(compsCss).toMatch(
-      /@media\s*\(max-width:\s*480px\)\s*\{[\s\S]*?\.io-panel\s*\{[\s\S]*?flex-basis:\s*100%[\s\S]*?\}\s*\}/,
+      /@media\s*\(max-width:\s*480px\)\s*\{[\s\S]*?\.controls-row-io\s*\{[\s\S]*?grid-template-columns:\s*1fr[\s\S]*?\}\s*\}/,
     );
   });
 
