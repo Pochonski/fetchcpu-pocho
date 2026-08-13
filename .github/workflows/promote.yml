@@ -9,6 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
+      - uses: actions/checkout@v4
       - name: Re-alias the canonical domain
         env:
           VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
