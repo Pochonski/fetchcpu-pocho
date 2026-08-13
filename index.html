@@ -132,10 +132,13 @@
 
     <main class="app-grid" id="app-grid">
       <!-- ============== EDITOR ============== -->
-      <section class="panel editor-panel" aria-labelledby="editor-title">
+      <section class="panel editor-panel" id="editor-panel" aria-labelledby="editor-title">
         <header class="panel-header">
           <h2 id="editor-title" data-i18n="panels.editor.title">Program · Assembly</h2>
           <div class="panel-actions">
+            <button class="btn btn-ghost icon-only panel-collapse-btn" id="btn-toggle-editor" aria-expanded="true" aria-controls="editor-panel" data-i18n-attr="title:panels.editor.collapse;aria-label:panels.editor.collapse" aria-label="Collapse" title="Collapse">
+              <svg class="icon icon-collapse" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
             <button class="btn btn-secondary" id="btn-load" data-i18n="panels.editor.load" title="Assemble and load into RAM">Load</button>
             <button class="btn btn-primary" id="btn-run" data-i18n="panels.editor.run" title="Run at clock speed (F5)">Run</button>
           </div>
@@ -350,10 +353,13 @@
       </section>
 
       <!-- ============== TABS: Live / Log / History / Stats ============== -->
-      <section class="panel log-panel" aria-labelledby="log-title">
+      <section class="panel log-panel" id="log-panel" aria-labelledby="log-title">
         <header class="panel-header">
           <h2 id="log-title" data-i18n="panels.log.title">Activity</h2>
           <div class="panel-actions">
+            <button class="btn btn-ghost icon-only panel-collapse-btn" id="btn-toggle-log" aria-expanded="true" aria-controls="log-panel" data-i18n-attr="title:panels.log.collapse;aria-label:panels.log.collapse" aria-label="Collapse" title="Collapse">
+              <svg class="icon icon-collapse" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M5 9l7 7 7-7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
             <button class="btn btn-ghost" id="btn-clear-log" data-i18n="panels.log.clear">Clear</button>
             <button class="btn btn-secondary" id="btn-export" data-i18n="panels.log.export" title="Export program as .fcpu">Export</button>
           </div>

@@ -35,3 +35,17 @@
 }
 .panel-actions { display: flex; gap: var(--space-2); flex-wrap: wrap; }
 
+/* Collapse / expand chevron toggle (used on the Activity and Editor panel
+   headers only). Rotates 90° when the panel is collapsed so the user gets
+   a clear visual cue that the row has disappeared from the wide-desktop
+   grid. The actual layout change is driven by the .app-grid:has(...)
+   rules in layout.css. */
+.panel-collapse-btn .icon {
+  width: 1rem;
+  height: 1rem;
+  transition: transform var(--duration-fast) var(--easing-out);
+}
+.panel-collapse-btn[aria-expanded="false"] .icon {
+  transform: rotate(-90deg);
+}
+

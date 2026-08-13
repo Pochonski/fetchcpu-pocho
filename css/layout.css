@@ -164,23 +164,59 @@ body {
   }
 }
 
-/* ≥ 1640px — wide desktop (25–27" monitors). Reorganize the grid into
-   3 columns + a full-width Activity row so the workspace uses horizontal
-   space instead of stacking panels vertically:
-     editor   controls  ram
-     editor   cpu       ram
-     log      log       log
+/* ≥ 1640px — wide desktop (25–27" monitors). Three columns × three rows.
+   The left column stacks CPU · State, the Activity panel, and the Program
+   editor. Controls and RAM each span all three rows so the workspace uses
+   horizontal *and* vertical space instead of a long vertical page:
+
+        +---------+-----------+--------+
+   row1 |  cpu    |           |        |
+        +---------+           |        |
+   row2 |  log    |  controls |  ram   |
+        +---------+           |        |
+   row3 |  editor |           |        |
+        +---------+-----------+--------+
+
    The wider soft cap (--layout-max-width-wide: 2360px) prevents columns
    from stretching to absurd widths on 4K / 32"+ displays. */
 @media (min-width: 1640px) {
   .app-grid {
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.8fr) minmax(0, 1.05fr);
+    grid-template-columns:
+      minmax(0, 0.95fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr);
+    grid-template-rows: auto auto minmax(0, 1fr);
     grid-template-areas:
-      "editor  controls  ram"
-      "editor  cpu       ram"
-      "log     log       log";
+      "cpu     controls  ram"
+      "log     controls  ram"
+      "editor  controls  ram";
     max-width: var(--layout-max-width-wide);
     gap: var(--space-5);
+  }
+
+  /* Activity collapsed → editor absorbs the middle row. */
+  .app-grid:has(.log-panel[data-collapsed="true"]) {
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "cpu     controls  ram"
+      "editor  controls  ram";
+  }
+
+  /* Editor collapsed → Activity absorbs the bottom row. */
+  .app-grid:has(.editor-panel[data-collapsed="true"]) {
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "cpu     controls  ram"
+      "log     controls  ram";
+  }
+
+  /* Controls and RAM span all three rows in normal mode; the cell needs
+     an explicit height so .panel { display: flex; flex-direction: column }
+     can stretch the inner scroll containers to fill the column. */
+  .controls-panel,
+  .ram-panel {
+    height: 100%;
+    min-height: 0;
   }
 }
 

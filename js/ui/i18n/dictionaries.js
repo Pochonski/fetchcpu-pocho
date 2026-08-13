@@ -37,6 +37,8 @@ export const en = {
       import: "Import…",
       clear: "Clear",
       choose: "Choose example program",
+      collapse: "Collapse",
+      expand: "Expand",
     },
     cpu: {
       title: "CPU · State",
@@ -111,6 +113,8 @@ export const en = {
       },
       logFileToggle: "Capture to log file",
       downloadLog: "Download .txt",
+      collapse: "Collapse",
+      expand: "Expand",
     },
   },
 
@@ -332,6 +336,8 @@ export const es = {
       import: "Importar…",
       clear: "Limpiar",
       choose: "Elegir programa de ejemplo",
+      collapse: "Colapsar",
+      expand: "Expandir",
     },
     cpu: {
       title: "CPU · Estado",
@@ -404,6 +410,8 @@ export const es = {
       },
       logFileToggle: "Capturar a archivo",
       downloadLog: "Descargar .txt",
+      collapse: "Colapsar",
+      expand: "Expandir",
     },
   },
 

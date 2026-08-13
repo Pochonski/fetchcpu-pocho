@@ -356,6 +356,52 @@ sel.addEventListener("change", () => {
   // Apply once on boot.
   applyAllTranslations();
 
+  // ---- Panel collapse / expand (wide-desktop only) -------------------------
+  // On ≥1640px the Activity and Editor panels share the left column of the
+  // grid. The user can collapse either to give the other one more height.
+  // The state is persisted in localStorage so the layout is sticky across
+  // reloads.
+  function initPanelToggle(panelEl, btnEl, storageKey, expandKey, collapseKey) {
+    if (!panelEl || !btnEl) return;
+    const stored = localStorage.getItem(storageKey);
+    const collapsed = stored === "true";
+    if (collapsed) panelEl.dataset.collapsed = "true";
+    btnEl.setAttribute("aria-expanded", String(!collapsed));
+    btnEl.setAttribute("title", collapsed ? t(expandKey) : t(collapseKey));
+    btnEl.setAttribute("aria-label", collapsed ? t(expandKey) : t(collapseKey));
+    btnEl.addEventListener("click", () => {
+      const isCollapsed = panelEl.dataset.collapsed === "true";
+      if (isCollapsed) {
+        delete panelEl.dataset.collapsed;
+        btnEl.setAttribute("aria-expanded", "true");
+        btnEl.setAttribute("title", t(collapseKey));
+        btnEl.setAttribute("aria-label", t(collapseKey));
+        localStorage.setItem(storageKey, "false");
+      } else {
+        panelEl.dataset.collapsed = "true";
+        btnEl.setAttribute("aria-expanded", "false");
+        btnEl.setAttribute("title", t(expandKey));
+        btnEl.setAttribute("aria-label", t(expandKey));
+        localStorage.setItem(storageKey, "true");
+      }
+    });
+  }
+
+  initPanelToggle(
+    $("editor-panel"),
+    $("btn-toggle-editor"),
+    "fetchcpu.ui.editor-collapsed",
+    "panels.editor.expand",
+    "panels.editor.collapse",
+  );
+  initPanelToggle(
+    $("log-panel"),
+    $("btn-toggle-log"),
+    "fetchcpu.ui.activity-collapsed",
+    "panels.log.expand",
+    "panels.log.collapse",
+  );
+
   // ---- Loading a program into RAM ----
   function loadProgram() {
     logger.clear();
