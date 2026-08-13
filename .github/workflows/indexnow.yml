@@ -22,11 +22,14 @@ jobs:
           # The key is a 32-char hex string. IndexNow requires the key
           # file to live at https://<host>/<key>.txt with the key as
           # its only contents. We pick the first matching file at root.
+          # We use `ls -A` (no hidden files) plus a node strip of the
+          # leading `./` that `ls` adds under glob expansion, because
+          # the regex anchored to the string start can't match `./…`.
           # `|| echo ''` makes the pipeline exit 0 when no .txt file
           # exists, so the "skip ping" branch below actually runs
           # instead of killing the script under `set -euo pipefail`.
-          KEY_FILE="$(ls ./*.txt 2>/dev/null \
-            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const f=d.split(/\r?\n/).filter(Boolean).find(x=>/^[0-9a-f]{32}\.txt$/.test(x));process.stdout.write(f||'')})" \
+          KEY_FILE="$(ls -A ./*.txt 2>/dev/null \
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const f=d.split(/\r?\n/).filter(Boolean).map(x=>x.replace(/^\\.\\//,'')).find(x=>/^[0-9a-f]{32}\\.txt$/.test(x));process.stdout.write(f||'')})" \
             || echo '')"
           if [ -z "${KEY_FILE:-}" ]; then
             echo "::notice::No IndexNow key file at repo root — skipping ping."
@@ -41,6 +44,7 @@ jobs:
             exit 1
           fi
       - name: Submit URLs to IndexNow
+        if: steps.detect.outputs.key != ''
         env:
           INDEXNOW_KEY: ${{ steps.detect.outputs.key }}
         run: |
@@ -61,7 +65,7 @@ jobs:
           case "$HTTP" in
             200|202) echo "::notice::IndexNow accepted." ;;
             400) echo "::error::IndexNow: bad request (check urlList shape)." ; exit 1 ;;
-            403) echo "::error::IndexNow: key not validated. Make sure $INDEXNOW_KEY.txt is reachable at $HOST/$INDEXNOW_KEY.txt" ; exit 1 ;;
+            403) echo "::error::IndexNow: IndexNow rejected the key — verify $INDEXNOW_KEY.txt is reachable at $HOST/$INDEXNOW_KEY.txt" ; exit 1 ;;
             422) echo "::error::IndexNow: urls do not belong to host." ; exit 1 ;;
             429) echo "::warning::IndexNow: rate-limited (will retry next push)." ;;
             *) echo "::warning::IndexNow: unexpected HTTP $HTTP." ;;
