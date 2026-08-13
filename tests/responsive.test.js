@@ -130,9 +130,9 @@ describe("responsive layout breakpoints", () => {
   // The grid is mobile-first: default is 1 column, with 2-column variants
   // kicking in at the iPad portrait (820 px) and refining at iPad landscape
   // (1024 px) / desktop (1280 px). On wide desktops (≥1640 px) the layout
-  // switches to 3 columns × 3 rows: the left column stacks CPU · State,
-  // the Activity panel and the Program · Assembly editor; Controls and
-  // RAM each span all three rows on the centre and right columns.
+  // switches to a 2-row × 3-column grid: CPU · State over the Program ·
+  // Assembly editor on the left, Controls · Execution over the Activity
+  // panel in the centre, and RAM spanning both rows on the right.
   const expected = [
     { name: "tablet portrait (≥820px)", pattern: /@media\s*\(min-width:\s*820px\)/ },
     { name: "tablet landscape (≥1024px)", pattern: /@media\s*\(min-width:\s*1024px\)/ },
@@ -160,47 +160,46 @@ describe("responsive layout breakpoints", () => {
     expect(layoutCss).toMatch(/--safe-bottom/);
   });
 
-  it("stacks CPU, Activity and Editor in the left column at ≥1640px", () => {
+  it("places CPU/Editor in the left column, Controls/Activity in the centre and RAM full-height on the right at ≥1640px", () => {
     // Pull out just the wide-desktop block so the assertions don't match
     // against the default 1-col or 2-col rules.
     const wideBlock = layoutCss.match(
       /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.app-grid\s*\{[\s\S]*?\}\s*\}/,
     );
     expect(wideBlock).toBeTruthy();
-    // Three columns: left (CPU/Activity/Editor), centre (Controls), right (RAM).
-    expect(wideBlock[0]).toMatch(/grid-template-columns:\s*minmax\(0,\s*0\.95fr\)\s+minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/);
-    // Three rows on the left column; the centre and right columns each
-    // span all three rows (grid resolves repeated area names in a
-    // column into one cell).
-    expect(wideBlock[0]).toMatch(/grid-template-areas:\s*"cpu\s+controls\s+ram"\s+"log\s+controls\s+ram"\s+"editor\s+controls\s+ram"/);
-    // No standalone "log" row at the bottom — Activity lives inside the
-    // left column, never as a fourth horizontal row.
-    expect(wideBlock[0]).not.toMatch(/grid-template-areas:[\s\S]*?"log\s+log\s+log"/);
+    // Three equal columns; left = CPU/Editor, centre = Controls/Activity,
+    // right = RAM (spans both rows).
+    expect(wideBlock[0]).toMatch(/grid-template-columns:\s*minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)\s+minmax\(0,\s*1fr\)/);
+    // Two rows; RAM repeats in both rows of the right column so it spans
+    // the full height of the column.
+    expect(wideBlock[0]).toMatch(/grid-template-areas:\s*"cpu\s+controls\s+ram"\s+"editor\s+activity\s+ram"/);
     expect(wideBlock[0]).toMatch(/max-width:\s*var\(--layout-max-width-wide\)/);
   });
 
-  it("promotes Editor to the middle row when Activity is collapsed", () => {
+  it("expands Controls into the activity slot when Activity is collapsed", () => {
     const collapsedLogBlock = layoutCss.match(
       /\.app-grid:has\(\.log-panel\[data-collapsed="true"\]\)\s*\{[\s\S]*?\}/,
     );
     expect(collapsedLogBlock).toBeTruthy();
+    // Controls takes both rows of the centre column when Activity is gone.
     expect(collapsedLogBlock[0]).toMatch(/"cpu\s+controls\s+ram"\s+"editor\s+controls\s+ram"/);
   });
 
-  it("promotes Activity to the bottom row when Editor is collapsed", () => {
+  it("expands CPU into the editor slot when Editor is collapsed", () => {
     const collapsedEditorBlock = layoutCss.match(
       /\.app-grid:has\(\.editor-panel\[data-collapsed="true"\]\)\s*\{[\s\S]*?\}/,
     );
     expect(collapsedEditorBlock).toBeTruthy();
-    expect(collapsedEditorBlock[0]).toMatch(/"cpu\s+controls\s+ram"\s+"log\s+controls\s+ram"/);
+    // CPU takes both rows of the left column when Editor is gone.
+    expect(collapsedEditorBlock[0]).toMatch(/"cpu\s+controls\s+ram"\s+"cpu\s+activity\s+ram"/);
   });
 
-  it("controls and ram panels fill their full-height cells on ≥1640px", () => {
-    // .controls-panel and .ram-panel each span 3 rows of the grid; the
-    // grid cell has no intrinsic height, so the panel needs height: 100%
-    // to stretch its inner flex containers to fill the column.
+  it("ram panel fills its full-height column on ≥1640px", () => {
+    // RAM spans both rows of the right column; the grid cell has no
+    // intrinsic height, so the panel needs height: 100% to stretch its
+    // inner flex containers to fill the column.
     const wideBlock = layoutCss.match(
-      /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.controls-panel,\s*\.ram-panel\s*\{[\s\S]*?\}\s*\}/,
+      /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.ram-panel\s*\{[\s\S]*?\}\s*\}/,
     );
     expect(wideBlock).toBeTruthy();
     expect(wideBlock[0]).toMatch(/height:\s*100%/);

@@ -9,7 +9,7 @@
      --bp-lg     1024px  iPad landscape / small laptops
      --bp-xl     1280px  desktop
      --bp-2xl    1480px  wide desktop
-     --bp-3xl    1640px  ultra-wide (25–27" monitors, 3-col + log row)
+     --bp-3xl    1640px  ultra-wide (25–27" monitors, 2-row × 3-col)
    ============================================================ */
 
 /* ----- Body / page shell ----- */
@@ -164,56 +164,50 @@ body {
   }
 }
 
-/* ≥ 1640px — wide desktop (25–27" monitors). Three columns × three rows.
-   The left column stacks CPU · State, the Activity panel, and the Program
-   editor. Controls and RAM each span all three rows so the workspace uses
-   horizontal *and* vertical space instead of a long vertical page:
+/* ≥ 1640px — wide desktop (25–27" monitors). Two rows × three columns.
+   The left column stacks CPU · State over the Program · Assembly editor.
+   The centre column stacks Controls · Execution over the Activity panel.
+   RAM spans both rows on the right:
 
-        +---------+-----------+--------+
-   row1 |  cpu    |           |        |
-        +---------+           |        |
-   row2 |  log    |  controls |  ram   |
-        +---------+           |        |
-   row3 |  editor |           |        |
-        +---------+-----------+--------+
+        +---------+------------+--------+
+   row1 |  cpu    |  controls  |        |
+        +---------+------------+        |
+   row2 |  editor |  activity  |  ram   |
+        +---------+------------+--------+
 
    The wider soft cap (--layout-max-width-wide: 2360px) prevents columns
    from stretching to absurd widths on 4K / 32"+ displays. */
 @media (min-width: 1640px) {
   .app-grid {
     grid-template-columns:
-      minmax(0, 0.95fr)
+      minmax(0, 1fr)
       minmax(0, 1fr)
       minmax(0, 1fr);
-    grid-template-rows: auto auto minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas:
       "cpu     controls  ram"
-      "log     controls  ram"
-      "editor  controls  ram";
+      "editor  activity  ram";
     max-width: var(--layout-max-width-wide);
     gap: var(--space-5);
   }
 
-  /* Activity collapsed → editor absorbs the middle row. */
+  /* Activity collapsed → Controls grows to fill the centre column. */
   .app-grid:has(.log-panel[data-collapsed="true"]) {
-    grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas:
       "cpu     controls  ram"
       "editor  controls  ram";
   }
 
-  /* Editor collapsed → Activity absorbs the bottom row. */
+  /* Editor collapsed → CPU grows to take over the left column. */
   .app-grid:has(.editor-panel[data-collapsed="true"]) {
-    grid-template-rows: auto minmax(0, 1fr);
     grid-template-areas:
       "cpu     controls  ram"
-      "log     controls  ram";
+      "cpu     activity  ram";
   }
 
-  /* Controls and RAM span all three rows in normal mode; the cell needs
-     an explicit height so .panel { display: flex; flex-direction: column }
+  /* RAM spans both rows of the right column; the grid cell needs an
+     explicit height so .panel { display: flex; flex-direction: column }
      can stretch the inner scroll containers to fill the column. */
-  .controls-panel,
   .ram-panel {
     height: 100%;
     min-height: 0;
