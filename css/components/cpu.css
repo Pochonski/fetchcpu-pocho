@@ -534,8 +534,14 @@
   margin-left: auto;
 }
 .io-textarea {
+  /* Stretch the textarea to fill the remaining height of the .io-panel
+     column so the input + output panels always look the same height
+     (the .io-slots panel also grows when the input has many slots, so
+     the output scales to match). resize: vertical still lets the user
+     pull the corner if they want a fixed size. */
+  flex: 1 1 auto;
+  min-height: 0;
   resize: vertical;
-  min-height: 6rem;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-sm);
   background: var(--bg-input);
@@ -663,6 +669,5 @@
   }
   .io-panel-actions .io-add-slot,
   .io-panel-actions .io-reset-slot { flex: 1 1 calc(50% - var(--space-2)); }
-  .io-textarea { min-height: 5rem; }
 }
 
