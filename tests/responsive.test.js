@@ -199,12 +199,16 @@ describe("responsive layout breakpoints", () => {
     expect(collapsedEditorBlock[0]).toMatch(/"cpu\s+log\s+ram"\s+"cpu\s+log\s+ram"/);
   });
 
-  it("controls, ram and log panels fill their grid cells on ≥1640px", () => {
-    // The grid cell for Controls, RAM and Activity each has no intrinsic
-    // height, so every panel that participates in the wide-desktop grid
-    // needs height: 100% so the inner scroll containers fill the cell.
+  it("ram and log panels fill their grid cells on ≥1640px", () => {
+    // RAM spans both rows of the right column and Activity fills row 2
+    // (auto minmax(0, 1fr)), so both need height: 100% so their inner
+    // scroll containers fill the grid cell. .controls-panel sits in
+    // row 1 alongside CPU and RAM — letting it size to its content
+    // avoids an empty gap below the IO row when RAM is the tallest
+    // item in row 1; the row's intrinsic height still sizes off
+    // max(CPU, RAM, Controls) so the layout below stays consistent.
     const wideBlock = layoutCss.match(
-      /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.controls-panel,\s*\.ram-panel,\s*\.log-panel\s*\{[\s\S]*?\}\s*\}/,
+      /@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.ram-panel,\s*\.log-panel\s*\{[\s\S]*?\}\s*\}/,
     );
     expect(wideBlock).toBeTruthy();
     expect(wideBlock[0]).toMatch(/height:\s*100%/);

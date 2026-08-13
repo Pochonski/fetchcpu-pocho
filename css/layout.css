@@ -210,9 +210,13 @@ body {
       "cpu     log  ram";
   }
 
-  /* RAM spans both rows. Controls + Activity each need an explicit
-     height so the inner scroll containers fill their grid cells. */
-  .controls-panel,
+  /* RAM spans both rows of the right column and Activity fills row 2
+     (auto minmax(0, 1fr)), so both need height: 100% to fill their
+     grid cell. The Controls panel sits in row 1 alongside CPU and RAM
+     — letting it size to its content avoids a giant empty gap below
+     the IO row when RAM is the tallest item in row 1. The row's
+     intrinsic height still sizes off max(CPU, RAM, Controls) so the
+     layout below stays consistent. */
   .ram-panel,
   .log-panel {
     height: 100%;
