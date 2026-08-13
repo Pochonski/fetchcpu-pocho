@@ -14,6 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 2
     steps:
+      - uses: actions/checkout@v4
       - name: Detect IndexNow key file
         id: detect
         run: |
@@ -21,8 +22,12 @@ jobs:
           # The key is a 32-char hex string. IndexNow requires the key
           # file to live at https://<host>/<key>.txt with the key as
           # its only contents. We pick the first matching file at root.
+          # `|| echo ''` makes the pipeline exit 0 when no .txt file
+          # exists, so the "skip ping" branch below actually runs
+          # instead of killing the script under `set -euo pipefail`.
           KEY_FILE="$(ls ./*.txt 2>/dev/null \
-            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const f=d.split(/\r?\n/).filter(Boolean).find(x=>/^[0-9a-f]{32}\.txt$/.test(x));process.stdout.write(f||'')})")"
+            | node -e "let d='';process.stdin.on('data',c=>d+=c).on('end',()=>{const f=d.split(/\r?\n/).filter(Boolean).find(x=>/^[0-9a-f]{32}\.txt$/.test(x));process.stdout.write(f||'')})" \
+            || echo '')"
           if [ -z "${KEY_FILE:-}" ]; then
             echo "::notice::No IndexNow key file at repo root — skipping ping."
             exit 0
