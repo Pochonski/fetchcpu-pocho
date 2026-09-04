@@ -157,18 +157,6 @@ describe("responsive layout breakpoints", () => {
     expect(gridBlock[0]).toMatch(/grid-template-areas:/);
   });
 
-  it("aligns panels to the top of their grid cell by default", () => {
-    // Panels must NOT stretch to the tallest sibling row. Without
-    // align-items: start the default `stretch` lets RAM (which spans
-    // multiple rows in the 2-column layout) balloon to match the tallest
-    // neighbour and leave a large empty white void at the bottom of the
-    // page. The ≥1640px 3-column layout overrides this for RAM + Activity
-    // via an explicit height: 100%.
-    const gridBlock = layoutCss.match(/\.app-grid\s*\{[\s\S]*?\}/);
-    expect(gridBlock).toBeTruthy();
-    expect(gridBlock[0]).toMatch(/align-items:\s*start/);
-  });
-
   it("applies env(safe-area-inset-*) to the header", () => {
     expect(layoutCss).toMatch(/--safe-top/);
     expect(layoutCss).toMatch(/--safe-bottom/);
@@ -232,6 +220,23 @@ describe("responsive layout breakpoints", () => {
     );
     expect(footerWideBlock).toBeTruthy();
     expect(footerWideBlock[0]).toMatch(/max-width:\s*var\(--layout-max-width-wide\)/);
+  });
+
+  it("ram rows expand uniformly to fill stretched panel on desktop ≥820px", () => {
+    // On desktop the RAM panel spans two grid rows and is stretched to
+    // ~1200 px, but its 10 data rows previously left ~500 px of blank
+    // at the bottom. The fix makes .ram-table / #ram-body flex and each
+    // .ram-row flex:1 so the cells grow to fill the panel.
+    expect(compsCss).toMatch(/@media\s*\(min-width:\s*820px\)\s*\{[\s\S]*?\.ram-table\s*\{[\s\S]*?display:\s*flex[\s\S]*?flex:\s*1/);
+    expect(compsCss).toMatch(/@media\s*\(min-width:\s*820px\)\s*\{[\s\S]*?\.ram-row:not\(.*\)\s*\{[\s\S]*?flex:\s*1/);
+  });
+
+  it("activity panel content fills stretched cell on desktop ≥820px", () => {
+    // log-panel is stretched by the grid on desktop; without flex the
+    // live feed left ~250 px of blank. The tab-panel and live-feed must
+    // be flex:1 so they grow to fill.
+    expect(compsCss).toMatch(/@media\s*\(min-width:\s*820px\)\s*\{[\s\S]*?\.log-panel\s+\.tab-panel:not\(\[hidden\]\)\s*\{[\s\S]*?flex:\s*1/);
+    expect(compsCss).toMatch(/@media\s*\(min-width:\s*820px\)\s*\{[\s\S]*?\.live-feed\s*\{[\s\S]*?flex:\s*1/);
   });
 });
 

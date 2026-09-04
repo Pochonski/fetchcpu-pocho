@@ -84,6 +84,28 @@
 }
 .ram-row { display: flex; gap: 2px; }
 .ram-row-head { margin-bottom: var(--space-1); }
+
+/* On desktop (≥820 px) the RAM panel spans two grid rows and is stretched
+   by the grid. Let the table fill the panel and distribute the extra
+   height uniformly among the 10 data rows so no blank gap stays at the
+   bottom. On mobile the table stays auto-sized to its content. */
+@media (min-width: 820px) {
+  .ram-table {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+  #ram-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: 2px;
+  }
+  .ram-row:not(.ram-row-head) { flex: 1 1 0; min-height: 0; }
+  .ram-row-head { flex: 0 0 auto; }
+}
 .ram-header {
   flex: 0 0 1.25rem;
   height: 1.25rem;
