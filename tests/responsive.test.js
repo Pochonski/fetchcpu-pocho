@@ -157,6 +157,18 @@ describe("responsive layout breakpoints", () => {
     expect(gridBlock[0]).toMatch(/grid-template-areas:/);
   });
 
+  it("aligns panels to the top of their grid cell by default", () => {
+    // Panels must NOT stretch to the tallest sibling row. Without
+    // align-items: start the default `stretch` lets RAM (which spans
+    // multiple rows in the 2-column layout) balloon to match the tallest
+    // neighbour and leave a large empty white void at the bottom of the
+    // page. The ≥1640px 3-column layout overrides this for RAM + Activity
+    // via an explicit height: 100%.
+    const gridBlock = layoutCss.match(/\.app-grid\s*\{[\s\S]*?\}/);
+    expect(gridBlock).toBeTruthy();
+    expect(gridBlock[0]).toMatch(/align-items:\s*start/);
+  });
+
   it("applies env(safe-area-inset-*) to the header", () => {
     expect(layoutCss).toMatch(/--safe-top/);
     expect(layoutCss).toMatch(/--safe-bottom/);

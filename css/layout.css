@@ -117,6 +117,13 @@ body {
   padding: var(--space-4);
   max-width: var(--layout-max-width);
   margin: 0 auto;
+  /* Align every panel to the top of its grid cell instead of stretching
+     it to the tallest sibling row. This stops RAM (which spans multiple
+     rows) and Activity from ballooning to match the tallest neighbour and
+     leaving a large empty white void at the bottom of the page. The
+     ≥1640px 3-column layout overrides this for RAM + Activity via an
+     explicit height: 100% so those two still fill their `1fr` cells. */
+  align-items: start;
   grid-template-columns: 1fr;
   grid-template-areas:
     "ram"
