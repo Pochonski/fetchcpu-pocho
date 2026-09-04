@@ -337,6 +337,16 @@
 
 /* Controls panel (top-level execution control section) */
 .controls-panel { display: flex; flex-direction: column; }
+@media (min-width: 1640px) {
+  /* Let the IO row absorb the ~81 px of blank that previously stayed
+     at the bottom of Controls when the row is stretched to CPU's height.
+     The io-panels already have flex:1 textarea, so they grow. */
+  .controls-panel > .controls-row-io { flex: 1 1 auto; min-height: 0; }
+  /* CPU panel is stretched to row1's height; let the chip area fill the
+     remaining ~26 px so no blank gap stays at the bottom. */
+  .cpu-panel { display: flex; flex-direction: column; }
+  .cpu-card { flex: 1 1 auto; min-height: 0; }
+}
 .controls-row {
   display: flex;
   align-items: center;

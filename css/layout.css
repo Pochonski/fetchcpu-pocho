@@ -181,6 +181,12 @@ body {
    The wider soft cap (--layout-max-width-wide: 2360px) prevents columns
    from stretching to absurd widths on 4K / 32"+ displays. */
 @media (min-width: 1640px) {
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
+  }
+
   .app-grid {
     grid-template-columns:
       minmax(0, 1fr)
@@ -192,6 +198,8 @@ body {
       "editor  log       ram";
     max-width: var(--layout-max-width-wide);
     gap: var(--space-5);
+    flex: 1 1 auto;
+    min-height: 0;
   }
 
   /* Activity collapsed → Controls absorbs the bottom row of the

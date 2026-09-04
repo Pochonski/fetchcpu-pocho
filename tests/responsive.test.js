@@ -238,6 +238,18 @@ describe("responsive layout breakpoints", () => {
     expect(compsCss).toMatch(/@media\s*\(min-width:\s*820px\)\s*\{[\s\S]*?\.log-panel\s+\.tab-panel:not\(\[hidden\]\)\s*\{[\s\S]*?flex:\s*1/);
     expect(compsCss).toMatch(/@media\s*\(min-width:\s*820px\)\s*\{[\s\S]*?\.live-feed\s*\{[\s\S]*?flex:\s*1/);
   });
+
+  it("large screens fill viewport height and controls/cpu absorb blank", () => {
+    // At ≥1640 px (27"+) the grid must occupy the full viewport height
+    // (no ~230 px gap below) so Editor + Activity can grow. Body is
+    // a flex column at 100dvh and the grid is flex:1; the Controls IO
+    // row and the CPU chip area must also be flex:1 to absorb internal
+    // blanks (~81 px in Controls, ~26 px in CPU).
+    expect(layoutCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?body\s*\{[\s\S]*?min-height:\s*100dvh/);
+    expect(layoutCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.app-grid\s*\{[\s\S]*?flex:\s*1/);
+    expect(compsCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.controls-panel\s*>\s*\.controls-row-io\s*\{[\s\S]*?flex:\s*1/);
+    expect(compsCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.cpu-card\s*\{[\s\S]*?flex:\s*1/);
+  });
 });
 
 describe("responsive component rules", () => {
