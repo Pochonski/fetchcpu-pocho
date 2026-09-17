@@ -1048,6 +1048,14 @@ function shouldAutoBoot() {
     && typeof document !== "undefined";
 }
 
+// iOS Safari 100vh viewport bug stabilizer.
+(function() {
+  if (!('orientation' in screen)) return;
+  const vh = window.innerHeight * 0.01;
+  document.documentElement.style.setProperty('--vh', `${vh}px`);
+  window.addEventListener('resize', () => document.documentElement.style.setProperty('--vh', `${window.innerHeight * 0.01}px`));
+})();
+
 if (shouldAutoBoot()) {
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", boot);

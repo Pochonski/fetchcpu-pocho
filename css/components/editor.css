@@ -182,6 +182,9 @@
 @media (max-width: 480px) {
   .examples-strip { padding: var(--space-2) var(--space-3); }
   .examples-picker .btn { flex: 1 1 calc(50% - var(--space-2)); justify-content: center; }
-  .blurb-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.blurb-text { display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden; }
 }
 

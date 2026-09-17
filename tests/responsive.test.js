@@ -245,7 +245,7 @@ describe("responsive layout breakpoints", () => {
     // a flex column at 100dvh and the grid is flex:1; the Controls IO
     // row and the CPU chip area must also be flex:1 to absorb internal
     // blanks (~81 px in Controls, ~26 px in CPU).
-    expect(layoutCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?body\s*\{[\s\S]*?min-height:\s*100dvh/);
+    expect(layoutCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?body\s*\{[\s\S]*?min-height:\s*calc\(100dvh - var\(--safe-bottom\)\)/);
     expect(layoutCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.app-grid\s*\{[\s\S]*?flex:\s*1/);
     expect(compsCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.controls-panel\s*>\s*\.controls-row-io\s*\{[\s\S]*?flex:\s*1/);
     expect(compsCss).toMatch(/@media\s*\(min-width:\s*1640px\)\s*\{[\s\S]*?\.cpu-card\s*\{[\s\S]*?flex:\s*1/);

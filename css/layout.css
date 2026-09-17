@@ -145,6 +145,11 @@ body {
   }
 }
 
+/* ≥ 640px — large phones / phablets. Minor refinements for wider screens. */
+@media (min-width: 640px) {
+  .app-grid { gap: var(--space-5); }
+}
+
 /* ≥ 1024px — iPad landscape / small laptops. Refine the column ratio. */
 @media (min-width: 1024px) {
   .app-grid {
@@ -184,7 +189,7 @@ body {
   body {
     display: flex;
     flex-direction: column;
-    min-height: 100dvh;
+    min-height: calc(100dvh - var(--safe-bottom));
   }
 
   .app-grid {
