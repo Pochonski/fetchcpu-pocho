@@ -3,13 +3,13 @@
    isolation for unit tests or future code-splitting. The order is
    meaningful: panel surfaces come first so later component rules can
    override defaults. */
-@import "./components/panel.css";
-@import "./components/buttons.css";
-@import "./components/forms.css";
-@import "./components/editor.css";
-@import "./components/cpu.css";
-@import "./components/ram.css";
-@import "./components/stats.css";
-@import "./components/log.css";
-@import "./components/modal.css";
-@import "./components/utilities.css";
+@import "./components/panel.css?v=1.1.3";
+@import "./components/buttons.css?v=1.1.3";
+@import "./components/forms.css?v=1.1.3";
+@import "./components/editor.css?v=1.1.3";
+@import "./components/cpu.css?v=1.1.3";
+@import "./components/ram.css?v=1.1.3";
+@import "./components/stats.css?v=1.1.3";
+@import "./components/log.css?v=1.1.3";
+@import "./components/modal.css?v=1.1.3";
+@import "./components/utilities.css?v=1.1.3";

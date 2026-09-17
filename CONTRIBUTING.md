@@ -45,7 +45,10 @@ npm run test:coverage     # v8 coverage report (text + html)
 - 2-space indentation, single quotes, no trailing commas in object literals,
   semicolons avoided inside arrow function bodies when one expression.
 - **If you modify anything under `js/` or `css/`, bump the `?v=` query string
-  in `index.html`** (`js/main.js?v=X.Y.Z` and the favicon URLs). Vercel
+  everywhere it appears**: `js/main.js?v=X.Y.Z` in `index.html`, **every**
+  stylesheet `<link>` in `index.html`, **and every `@import`** in
+  `css/components.css` (sub-files cache under their own URL — busting only
+  the parent is not enough). Favicon URLs follow the same counter. Vercel
   serves `.js` / `.css` with `Cache-Control: public, max-age=31536000,
   immutable`, so without the bump the browser keeps loading the previous
   build for a year.

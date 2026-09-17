@@ -169,18 +169,6 @@ body {
   }
 }
 
-/* 1024–1639px — laptops 13–15" (1366–1536px). Toolbar + 3 columnas compactas.
-   Controls es una barra superior full-width ESTÁTICA (sin sticky para que
-   nunca tape el contenido al hacer scroll) y abajo CPU | RAM | Editor/Log
-   con scroll normal de página:
-
-        +-------------------------------+
-        | controls (static toolbar)     |
-        +--------+------------+---------+
-        | cpu    | ram        | editor  |
-        +--------+------------+---------+
-        | cpu    | ram        | log     |
-        +--------+------------+---------+ */
 /* 1024–1639px — réplica del zoom 75% a zoom 100% (todo en pantalla).
    1) html a 12px: todos los rem (tokens, espacios, celdas) escalan 0.75x.
    2) Mismo grid ancho de ≥1640 (cpu controls ram / editor log ram).
