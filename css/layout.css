@@ -162,11 +162,80 @@ body {
 }
 
 /* ≥ 1280px — desktop. Same layout, slightly larger gaps and breathing room. */
-@media (min-width: 1280px) {
+@media (min-width: 1280px) and (max-width: 1639px) {
   .app-grid {
     grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
     gap: var(--space-5);
   }
+}
+
+/* 1024–1639px — laptops 13–15" (1366–1536px). Toolbar + 3 columnas compactas.
+   Controls es una barra superior full-width ESTÁTICA (sin sticky para que
+   nunca tape el contenido al hacer scroll) y abajo CPU | RAM | Editor/Log
+   con scroll normal de página:
+
+        +-------------------------------+
+        | controls (static toolbar)     |
+        +--------+------------+---------+
+        | cpu    | ram        | editor  |
+        +--------+------------+---------+
+        | cpu    | ram        | log     |
+        +--------+------------+---------+ */
+/* 1024–1639px — réplica del zoom 75% a zoom 100% (todo en pantalla).
+   1) html a 12px: todos los rem (tokens, espacios, celdas) escalan 0.75x.
+   2) Mismo grid ancho de ≥1640 (cpu controls ram / editor log ram).
+   3) Grid bloqueado al viewport con scroll interno por panel: cero scroll
+      global a 1366x768. */
+@media (min-width: 1024px) and (max-width: 1639px) {
+  html { font-size: 12px; }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    min-height: calc(100dvh - var(--safe-bottom));
+  }
+
+  .app-header { min-height: calc(52px + var(--safe-top)); padding-top: var(--space-2); padding-bottom: var(--space-2); }
+  .app-header .logo { width: 40px; height: 40px; }
+
+  .app-grid {
+    grid-template-columns:
+      minmax(0, 1fr)
+      minmax(0, 1fr)
+      minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-areas:
+      "cpu     controls  ram"
+      "editor  log       ram";
+    gap: var(--space-4);
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .controls-panel {
+    position: static;
+  }
+
+  .cpu-panel,
+  .ram-panel,
+  .editor-panel,
+  .log-panel {
+    min-height: 0;
+    height: 100%;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .ram-table,
+  .log-panel .tab-panel:not([hidden]),
+  .editor-wrap {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+  }
+
+  .app-footer { min-height: 2.5rem; padding-top: var(--space-2); padding-bottom: calc(var(--space-2) + var(--safe-bottom)); }
 }
 
 /* ≥ 1640px — wide desktop (25–27" monitors). Three columns × two rows.

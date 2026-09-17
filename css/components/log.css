@@ -354,5 +354,19 @@
 .history-row .history-mnemonic { color: var(--accent); font-weight: 600; }
 .history-row .history-meta { color: var(--fg-muted); font-size: 0.6875rem; }
 
+/* 1024–1639px — Activity compacto: tabs y paneles densos, scroll interno.
+   Topes firmes con scroll interno: sin ellos el live-feed pasa de 0 a 80
+   filas durante el Run, la fila del grid crece y arrastra a RAM
+   (height:100%). Con flex:1 + max-height el panel llena hasta el tope
+   y el resto va con scroll interno. */
+@media (min-width: 1024px) and (max-width: 1639px) {
+  .tabs { padding: var(--space-1) var(--space-2); }
+  .tab { padding: var(--space-1) var(--space-2); }
+  .tab-panel { padding: var(--space-2) var(--space-3); }
+  .live-feed { font-size: var(--fs-sm); flex: 1 1 auto; max-height: 22rem; overflow-y: auto; }
+  .history-list { flex: 1 1 auto; max-height: 22rem; overflow-y: auto; }
+  .log-file { flex: 1 1 auto; max-height: 16rem; overflow-y: auto; }
+}
+
 
 
