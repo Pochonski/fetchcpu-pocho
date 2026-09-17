@@ -12,6 +12,15 @@
 
 import { disassemble } from "./opcodes.js";
 
+// Safety rails: a legitimate program (countdown, multiply, factorial)
+// finishes in hundreds of cycles. Anything past MAX_CYCLES is treated as
+// a probable infinite loop (e.g. BRA to self with no exit condition) so
+// run() stops with a "cycle-limit" event instead of looping forever.
+// MAX_HISTORY bounds the undo snapshots (one per cycle holds a full RAM
+// copy); the History tab only renders the last 50 anyway.
+export const MAX_CYCLES = 50000;
+export const MAX_HISTORY = 1000;
+
 export function createExecutor(cpu, ram, io, events = null, stats = null) {
   const history = []; // {cpu, ram, output, inputIndex, mnemonic, phase}
   let running = false;
@@ -94,6 +103,7 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
   }
 
   function record(prevPc, decoded) {
+    if (history.length >= MAX_HISTORY) history.shift();
     history.push({
       ...snapshot(),
       mnemonic: decoded?.mnemonic ?? null,
@@ -366,9 +376,15 @@ export function createExecutor(cpu, ram, io, events = null, stats = null) {
     }
   }
 
-  /** Advance one FULL FDE cycle. */
+  /** Advance one FULL FDE cycle. Returns false when halted or when the
+   * cycle-limit watchdog fires (probable infinite loop) — run() stops on
+   * either. Manual stepping past the limit is a no-op. */
   function step() {
     if (cpu.state.halted) return false;
+    if (cpu.state.cycle >= MAX_CYCLES) {
+      if (events) events.emit("cycle-limit", { cycles: cpu.state.cycle });
+      return false;
+    }
     performFetch();
     const prevPc = cpu.state.pc - 1;
     const decoded = performDecode(prevPc);

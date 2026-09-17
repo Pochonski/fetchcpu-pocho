@@ -985,6 +985,11 @@ sel.addEventListener("change", () => {
     pauseProgram();
     refreshView();
   });
+  events.on("cycle-limit", ({ cycles }) => {
+    logger.onError(t("log.cycleLimit", [cycles]));
+    pauseProgram();
+    refreshView();
+  });
   events.on("error", ({ message }) => {
     logger.onError(message);
     pauseProgram();
