@@ -32,11 +32,53 @@ const INPUT_KEY = "fetchcpu.input";
 
 const $ = (id) => document.getElementById(id);
 
+function isAllowedParentOrigin(origin) {
+  try {
+    const url = new URL(origin);
+    if (url.protocol === "http:" && url.hostname === "localhost") return true;
+    return url.protocol === "https:" && url.hostname.endsWith(".vercel.app");
+  } catch {
+    return false;
+  }
+}
+
+function reportRoute() {
+  const url = new URL(window.location.href);
+  window.parent.postMessage(
+    { source: "porto-site-route", href: url.origin + url.pathname },
+    "*",
+  );
+}
+
+function initPortfolioRouteBridge() {
+  window.addEventListener("message", (event) => {
+    const data = event.data;
+    if (!data || event.source !== window.parent || !isAllowedParentOrigin(event.origin)) return;
+
+    if (data.source === "porto-site-route-request") {
+      reportRoute();
+      return;
+    }
+    if (data.source !== "porto-site-navigate" || typeof data.href !== "string") return;
+
+    let destination;
+    try {
+      destination = new URL(data.href, window.location.origin);
+    } catch {
+      return;
+    }
+    if (destination.origin !== window.location.origin) return;
+    if (destination.href !== window.location.href) window.location.assign(destination.href);
+  });
+}
+
 let booted = false;
 function boot() {
   if (booted) return;
   booted = true;
 
+  initPortfolioRouteBridge();
+  reportRoute();
   initI18n();
   initTheme($("theme-toggle"));
   initMobileMenu();
